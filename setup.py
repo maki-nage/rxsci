@@ -24,7 +24,7 @@ install_requires = [
 
 setup(
     name="rxsci",
-    version='0.0.0',
+    version='0.1.0',
     url='https://github.com/maki-nage/rxsci.git',
     license='MIT',
     description="ReactiveX for data science",
