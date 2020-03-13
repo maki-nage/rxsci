@@ -19,6 +19,14 @@ def read(file, mode='r', size=None):
                     data = f.read(size)
                     observer.on_next(data)
                     observer.on_completed()
+                else:
+                    data = f.read(size)
+                    while len(data) > 0:
+                        observer.on_next(data)
+                        data = f.read(size)
+
+                    observer.on_completed()
+
         except Exception as e:
             observer.on_error(e)
 
