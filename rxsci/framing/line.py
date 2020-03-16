@@ -1,5 +1,6 @@
 import rx
 import rx.operators as ops
+from rx.scheduler import ImmediateScheduler
 
 
 def unframe():
@@ -14,7 +15,7 @@ def unframe():
         return source.pipe(
             ops.scan(accumulate, seed=('', None)),
             ops.filter(lambda i: i[1] is not None),
-            ops.flat_map(lambda i: rx.from_(i[1])),            
+            ops.flat_map(lambda i: rx.from_(i[1], scheduler=ImmediateScheduler())),
         )
 
     return _unframe
