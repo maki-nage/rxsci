@@ -1,14 +1,15 @@
 import rx
 
+
 def read(file, mode='r', size=None):
     ''' Reads the content of a file
 
-    Args: 
-        file: the path of the file to read 
+    Args:
+        file: the path of the file to read
         mode: how the file must be opened. either 'r' to read text or 'rb' to read binary
         size: Optional. If set file if read by chunks of this size
 
-    Returns: 
+    Returns:
         An observable where eeach item is a chunk of data, or the while
         file if no size has been set.
     '''
