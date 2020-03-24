@@ -16,3 +16,17 @@ RxSci
 
 
 ReactiveX operators for data science and machine learning.
+
+RxSci (pronounced roxy) is a set of RxPY operators and observable factories
+dedicated to data science.
+
+Get Started ============
+
+Install
+========
+
+RxSci is available on PyPi and can be installed with pip:
+
+.. code:: console
+
+    pip install rxsci
