@@ -62,6 +62,19 @@ def load(parse_line, skip=0):
 
 
 def load_from_file(filename, parse_line, skip=1):
+    ''' Loads a csv file.
+
+    This factory loads the provided file and returns its content as an
+    observable emitting one item per line.
+
+    Args:
+        parse_line: A line parser, e.g. created with create_line_parser
+        skip: number of lines to skip before parsing
+
+    Returns:
+        An observable of namedtuple items, where each key is a csv column
+    '''
+
     return file.read(filename, size=64*1024).pipe(
         line.unframe(),
         load(parse_line, skip=skip),

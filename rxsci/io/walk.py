@@ -3,6 +3,16 @@ import rx
 
 
 def walk(top, recursive=True):
+    ''' lists the content of a directory
+
+    Returns an observable emitting the files present in top directory and
+    sub-directories.
+
+    Args:
+        top: The directory to walk
+    Returns:
+        An Observable emitting string path items
+    '''
     def on_subscribe(observer, scheduler):
         def _walk(top):
             for path, dirs, files in os.walk(top):

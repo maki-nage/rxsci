@@ -7,10 +7,13 @@ Reference
     :members:
 
 .. automodule:: rxsci.io
-    :members:
+    :members: walk
 
-.. automodule:: rxsci.framing
-    :members:
+.. automodule:: rxsci.io.file
+    :members: read
 
-.. automodule:: rxsci.container
-    :members:
+.. automodule:: rxsci.framing.line
+    :members: unframe
+
+.. automodule:: rxsci.container.csv
+    :members: load, load_from_file
