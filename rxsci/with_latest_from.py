@@ -14,7 +14,6 @@ def with_latest_from(*sources):
                 values = [NO_VALUE for _ in children]
 
                 def on_parent_next(value):
-                    print("foooo")
                     if NO_VALUE not in values:
                         result = (value,) + tuple(values)
                         observer.on_next(result)
