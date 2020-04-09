@@ -24,7 +24,7 @@ def walk(top, recursive=True):
                         print("bbb: {}".format(dirname))
                         _walk(os.path.join(path, dirname))
                 '''
-
+            observer.on_completed()
         _walk(top)
 
     return rx.create(on_subscribe)
