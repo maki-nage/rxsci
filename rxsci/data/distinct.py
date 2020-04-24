@@ -44,7 +44,6 @@ def distinct(key_mapper=None):
             hashset = set()
 
             def on_next(x):
-                nonlocal hashset
                 key = x
 
                 if key_mapper:
@@ -54,7 +53,7 @@ def distinct(key_mapper=None):
                         observer.on_error(ex)
                         return
 
-                if not key in hashset:
+                if key not in hashset:
                     hashset.add(key)
                     observer.on_next(x)
             return source.subscribe_(
