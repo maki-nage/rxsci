@@ -1,9 +1,10 @@
+import sys
 from collections import namedtuple
 from datetime import datetime, timezone
 from dateutil.parser import isoparse
 
+import rx
 import rx.operators as ops
-from rx.scheduler import ImmediateScheduler
 import rxsci.io.file as file
 import rxsci.framing.line as line
 
@@ -17,8 +18,10 @@ def type_parser(type_repr):
         return lambda i: datetime.fromtimestamp(int(i), tz=timezone.utc)
     elif type_repr == 'iso_datetime':
         return lambda i: isoparse(i)
-    else:
+    elif type_repr == 'str':
         return lambda i: i
+    else:
+        raise TypeError("unknown column type: {}".format(type_repr))
 
 
 def create_line_parser(dtype, none_values=[], separator=","):
@@ -95,3 +98,67 @@ def load_from_file(filename, parse_line, skip=1, encoding=None):
         line.unframe(),
         load(parse_line, skip=skip),
     )
+
+
+def dump(header=True, separator=",", newline='\n'):
+    ''' dumps an observable to csv.
+
+    The source observable must emit one csv row per item
+
+    Args:
+        header: [Optional] indicates whether a header line must be added.
+        separator: [Optional] Token used to separate each columns.
+        newline: [Optional] Character(s) used for end of line.
+
+    Returns:
+        An observable of namedtuple items, where each key is a csv column.
+    '''
+    def _dump(source):
+        def on_subscribe(observer, scheduler):
+            first = True
+
+            def on_next(i):
+                nonlocal first
+                if first is True and header is True:
+                    first = False
+                    columns = i._fields
+                    columns = separator.join([str(c) for c in columns])
+                    columns += newline
+                    observer.on_next(columns)
+
+                line = separator.join([str(f) for f in i])
+                line += newline
+                observer.on_next(line)
+
+            return source.subscribe(
+                on_next=on_next,
+                on_completed=observer.on_completed,
+                on_error=observer.on_error,
+            )
+        return rx.create(on_subscribe)
+
+    return _dump
+
+
+def dump_to_file(filename, header=True, separator=",", newline='\n', encoding=None):
+    ''' dumps each item to a csv file.
+
+    This sink subscribes to the source observable and writes each item to
+    a csv file.
+
+    Args:
+        filename: Path of the file to read
+        parse_line: A line parser, e.g. created with create_line_parser
+        skip: [Optional] Number of lines to skip before parsing
+        encoding [Optional] Encoding used to parse the text content
+
+    Returns:
+        An observable of namedtuple items, where each key is a csv column
+    '''
+    def _dump_to_file(source):
+        return source.pipe(
+            dump(header=header, separator=separator, newline=newline),
+            file.write(file=filename, encoding=encoding),
+        )
+
+    return _dump_to_file
