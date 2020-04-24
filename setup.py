@@ -19,6 +19,7 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 python_requires = '>=3.6'
 install_requires = [
+    'python-dateutil>=2.8',
     'Rx>=3.0',
 ]
 

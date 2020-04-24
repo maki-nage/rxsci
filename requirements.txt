@@ -1,1 +1,2 @@
+python-dateutil>=2.8
 Rx>=3.0
