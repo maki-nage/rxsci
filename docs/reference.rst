@@ -3,17 +3,11 @@
 Reference
 ==========
 
-.. automodule:: rxsci
-    :members:
+.. toctree::
+   :name: reference
 
-.. automodule:: rxsci.io
-    :members: walk
-
-.. automodule:: rxsci.io.file
-    :members: read
-
-.. automodule:: rxsci.framing.line
-    :members: unframe
-
-.. automodule:: rxsci.container.csv
-    :members: load, load_from_file
+   Utilities <reference_utilities>
+   Container <reference_container>
+   Data <reference_data>
+   IO <reference_io>
+   Framing <reference_framing>
