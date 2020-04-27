@@ -12,6 +12,8 @@ import rxsci.framing.line as line
 def type_parser(type_repr):
     if type_repr in ['int']:
         return int
+    if type_repr in ['float']:
+        return float
     elif type_repr in ['bool']:
         return lambda i: i == 'True'
     elif type_repr == 'posix_timestamp':
