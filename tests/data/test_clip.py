@@ -41,11 +41,13 @@ def test_clip_higher_bound():
 
 def test_clip_no_bound():
     source = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    actual_result = []
 
-    with pytest.raises(ValueError):
-        rx.from_(source).pipe(
-            rs.data.clip()
-        ).subscribe()
+    rx.from_(source).pipe(
+        rs.data.clip()
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result == source
 
 
 def test_clip_invalid_bound():
