@@ -30,6 +30,27 @@ def test_roll():
     assert actual_result == expected_result
 
 
+def test_roll_identity():
+    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    window = 1
+    actual_result = []
+    expected_result = [
+        [1], [2], [3], [4], [5], [6], [7], [8], [9]
+    ]
+
+    def on_next(i):
+        actual_result.append(i)
+
+    rx.from_(source).pipe(
+        rs.data.roll(window),
+        ops.flat_map(lambda i: i.pipe(
+            ops.to_list(),
+        )),
+    ).subscribe(on_next)
+
+    assert actual_result == expected_result
+
+
 def test_roll_right_padding():
     source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     window = 3
