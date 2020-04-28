@@ -9,6 +9,13 @@ import rxsci.io.file as file
 import rxsci.framing.line as line
 
 
+def parse_iso_date(i):
+    try:
+        return isoparse(i)
+    except ValueError as e:
+        raise ValueError("{}: {}".format(e, i))
+
+
 def type_parser(type_repr):
     if type_repr in ['int']:
         return int
@@ -19,7 +26,7 @@ def type_parser(type_repr):
     elif type_repr == 'posix_timestamp':
         return lambda i: datetime.fromtimestamp(int(i), tz=timezone.utc)
     elif type_repr == 'iso_datetime':
-        return lambda i: isoparse(i)
+        return parse_iso_date
     elif type_repr == 'str':
         return lambda i: i
     else:
