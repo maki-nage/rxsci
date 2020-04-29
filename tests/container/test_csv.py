@@ -63,6 +63,67 @@ def test_load():
     assert actual_data[1] == (7, 'quick', False)
 
 
+def test_load_error():
+    parser = csv.create_line_parser(
+        dtype=[
+            ("foo", "int"),
+            ("bar", "str"),
+            ("buzz", "bool"),
+        ]
+    )
+
+    actual_data = []
+    error = None
+
+    def on_error(e):
+        nonlocal error
+        error = e
+
+    source = rx.from_([
+        "42,the,True",
+        "07",
+    ])
+    source.pipe(csv.load(parser)).subscribe(
+            on_next=actual_data.append,
+            on_error=on_error,
+        )
+
+    assert type(error) == ValueError
+    assert len(actual_data) == 1
+    assert actual_data[0] == (42, 'the', True)
+
+
+def test_load_ignore_error():
+    parser = csv.create_line_parser(
+        dtype=[
+            ("foo", "int"),
+            ("bar", "str"),
+            ("buzz", "bool"),
+        ],
+        ignore_error=True,
+    )
+
+    actual_data = []
+    error = None
+
+    def on_error(e):
+        nonlocal error
+        error = e
+
+    source = rx.from_([
+        "42,the,True",
+        "07",
+    ])
+    source.pipe(csv.load(parser)).subscribe(
+            on_next=actual_data.append,
+            on_error=on_error,
+        )
+
+    assert error is None
+    assert len(actual_data) == 1
+    assert actual_data[0] == (42, 'the', True)
+
+
 def test_load_from_file():
     parser = csv.create_line_parser(
         dtype=[

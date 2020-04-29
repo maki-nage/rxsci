@@ -1,4 +1,3 @@
-import sys
 from collections import namedtuple
 from datetime import datetime, timezone
 from dateutil.parser import isoparse
@@ -33,13 +32,17 @@ def type_parser(type_repr):
         raise TypeError("unknown column type: {}".format(type_repr))
 
 
-def create_line_parser(dtype, none_values=[], separator=","):
+def create_line_parser(dtype, none_values=[], separator=",",
+                       ignore_error=False):
     ''' creates a parser for csv lines
 
     Args:
         dtype: A list of (name, type) tuples.
         none_values: [Optional] Values to consider as None values
         separator: [Optional] Token used to separate each columns
+        ignore_error: [Optional] when set to True, any line that does not
+            match the provided number of columns raise an error an stop
+            the parsing. When set to False, error lines are skipped.
     '''
     columns = [t[0] for t in dtype]
     columns_parser = [type_parser(i[1]) for index, i in enumerate(dtype)]
@@ -49,10 +52,13 @@ def create_line_parser(dtype, none_values=[], separator=","):
     def parse_line(line):
         parts = line.split(separator)
         if len(parts) != columns_len:
-            raise ValueError(
-                "invalid number of columns: expected {}, found {} on: {}".format(
-                    columns_len, len(parts), line)
-            )
+            error = "invalid number of columns: expected {}, found {} on: {}".format(
+                columns_len, len(parts), line)
+            if ignore_error is True:
+                print(error)
+                return None
+            else:
+                raise ValueError(error)
 
         parsed_parts = []
         for index, i in enumerate(parts):
@@ -82,6 +88,7 @@ def load(parse_line, skip=0):
         return source.pipe(
             ops.skip(skip),
             ops.map(parse_line),
+            ops.filter(lambda i: i is not None),
         )
 
     return _load
@@ -149,20 +156,21 @@ def dump(header=True, separator=",", newline='\n'):
     return _dump
 
 
-def dump_to_file(filename, header=True, separator=",", newline='\n', encoding=None):
+def dump_to_file(filename, header=True, separator=",",
+                 newline='\n', encoding=None):
     ''' dumps each item to a csv file.
-
-    This sink subscribes to the source observable and writes each item to
-    a csv file.
 
     Args:
         filename: Path of the file to read
-        parse_line: A line parser, e.g. created with create_line_parser
-        skip: [Optional] Number of lines to skip before parsing
+        header: [Optional] indicates whether a header line must be added.
+        separator: [Optional] Token used to separate each columns.
+        newline: [Optional] Character(s) used for end of line.
         encoding [Optional] Encoding used to parse the text content
 
     Returns:
-        An observable of namedtuple items, where each key is a csv column
+        An empty observable that completes on success when the source
+        observable completes or completes on error if there is an error
+        while writing the csv file.
     '''
     def _dump_to_file(source):
         return source.pipe(

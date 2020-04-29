@@ -67,7 +67,7 @@ def roll(window, step=1, padding=None):
                 s = Subject()
                 q.append(s)
                 #observer.on_next(add_ref(s, refCountDisposable))
-                observer.on_next(s.observable)
+                observer.on_next(s)
 
             def on_next(x):
                 nonlocal last_value
