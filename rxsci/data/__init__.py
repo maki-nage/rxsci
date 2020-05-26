@@ -5,3 +5,4 @@ from .to_deque import to_deque
 from .distinct import distinct
 from .roll import roll, roll_buffer
 from .sort import sort
+from .split import split
