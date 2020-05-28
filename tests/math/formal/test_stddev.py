@@ -15,3 +15,14 @@ def test_stddev():
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result[0] == approx(np.std(source))
+
+
+def test_stddev_on_empty_observable():
+    source = []
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.math.formal.stddev(reduce=True)
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result[0] is None

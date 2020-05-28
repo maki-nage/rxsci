@@ -6,8 +6,9 @@ Reference
 .. toctree::
    :name: reference
 
-   Utilities <reference_utilities>
+   Math <reference_math>   
    Container <reference_container>
    Data <reference_data>
    IO <reference_io>
+   Utilities <reference_utilities>
    Framing <reference_framing>

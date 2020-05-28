@@ -15,3 +15,14 @@ def test_variance():
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result[0] == approx(np.var(source))
+
+
+def test_variance_on_empty_observable():
+    source = []
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.math.formal.variance(reduce=True)
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result[0] is None

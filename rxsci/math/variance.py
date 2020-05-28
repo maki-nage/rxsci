@@ -18,8 +18,9 @@ def variance(key_mapper=lambda i: i, reduce=False):
             False, otherwise emits a single item on completion.
 
     Returns:
-        An observable emitting items whose value is the variance of source
-        items.
+        An observable emitting the variance of the source items. If the number
+        of items emitted in the source observable is less than 2, and reduce is set,
+        then emits None on completion.
     '''
     def _variance(source):
         def on_subscribe(observer, scheduler):
@@ -46,6 +47,9 @@ def variance(key_mapper=lambda i: i, reduce=False):
 
             def on_completed():
                 if reduce is True:
+                    if k < 2:
+                        observer.on_next(None)
+                        return
                     observer.on_next(s / (k-1))
 
             return source.subscribe(

@@ -7,6 +7,8 @@ def variance(key_mapper=lambda i: i, reduce=False):
 
     The implementation is based on the formal definition of the variance.
     This implies that all items are cached in memory to do the computation.
+    Use the rxsci.math.variance operator to compute varianc on a large
+    observable.
 
     Args:
         key_mapper: [Optional] a function called on each item before computing
@@ -15,8 +17,7 @@ def variance(key_mapper=lambda i: i, reduce=False):
             False, otherwise emits a single item on completion.
 
     Returns:
-        An observable emitting items whose value is the variance of source
-        items.
+        An observable emitting variance of source items.
     '''
     def _variance(source):
         def on_subscribe(observer, scheduler):
@@ -34,6 +35,9 @@ def variance(key_mapper=lambda i: i, reduce=False):
 
             def on_completed():
                 if reduce is True:
+                    if len(q) == 0:
+                        observer.on_next(None)
+                        return
                     mean = _moment(q, 0, 1)
                     v = _moment(q, mean, 2)
                     observer.on_next(v)
