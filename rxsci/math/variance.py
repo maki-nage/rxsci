@@ -2,11 +2,10 @@ import rx
 
 
 def variance(key_mapper=lambda i: i, reduce=False):
-    ''' Computes the variance of the items emitted in the source observable.
+    '''Computes the variance of the items emitted in the source observable.
 
     This is an approximation of the real variance. The implementation is based
-    on the following article:
-        https://www.johndcook.com/blog/standard_deviation/
+    on the following article: `standard_deviation <https://www.johndcook.com/blog/standard_deviation/>`_
 
     Use this operator instead of exact_variance when there are more than 1000
     items in the distribution.
