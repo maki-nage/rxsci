@@ -1,2 +1,3 @@
+-r ../requirements.txt
 sphinx_rtd_theme>=0.4
 sphinxcontrib_dooble>=1.0
