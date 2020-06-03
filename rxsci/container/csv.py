@@ -94,7 +94,8 @@ def load(parse_line, skip=0):
     return _load
 
 
-def load_from_file(filename, parse_line, skip=1, encoding=None):
+def load_from_file(filename, parse_line, skip=1, encoding=None,
+                   transport_params=None):
     ''' Loads a csv file.
 
     This factory loads the provided file and returns its content as an
@@ -105,12 +106,16 @@ def load_from_file(filename, parse_line, skip=1, encoding=None):
         parse_line: A line parser, e.g. created with create_line_parser
         skip: [Optional] Number of lines to skip before parsing
         encoding [Optional] Encoding used to parse the text content
+        transport_params: [Optional] When smart-open is used, then this
+            parameter is used to provide additional configuration information
 
     Returns:
         An observable of namedtuple items, where each key is a csv column
     '''
 
-    return file.read(filename, size=64*1024, encoding=encoding).pipe(
+    return file.read(
+        filename, size=64*1024, encoding=encoding,
+        transport_params=transport_params).pipe(
         line.unframe(),
         load(parse_line, skip=skip),
     )
@@ -157,7 +162,8 @@ def dump(header=True, separator=",", newline='\n'):
 
 
 def dump_to_file(filename, header=True, separator=",",
-                 newline='\n', encoding=None):
+                 newline='\n', encoding=None,
+                 transport_params=None):
     ''' dumps each item to a csv file.
 
     Args:
@@ -166,6 +172,8 @@ def dump_to_file(filename, header=True, separator=",",
         separator: [Optional] Token used to separate each columns.
         newline: [Optional] Character(s) used for end of line.
         encoding [Optional] Encoding used to parse the text content
+        transport_params: [Optional] When smart-open is used, then this
+            parameter is used to provide additional configuration information
 
     Returns:
         An empty observable that completes on success when the source
@@ -173,9 +181,18 @@ def dump_to_file(filename, header=True, separator=",",
         while writing the csv file.
     '''
     def _dump_to_file(source):
+        print("dump transport params: {}".format(transport_params))
+        mode = None
+        if encoding is not None:
+            mode = 'wb'
         return source.pipe(
             dump(header=header, separator=separator, newline=newline),
-            file.write(file=filename, encoding=encoding),
+            ops.map(lambda i: i.encode(encoding) if encoding is not None else i),
+            file.write(
+                file=filename,
+                mode=mode,
+                transport_params=transport_params
+            ),
         )
 
     return _dump_to_file
