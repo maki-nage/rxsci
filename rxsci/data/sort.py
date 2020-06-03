@@ -85,7 +85,7 @@ def sort(key=lambda i: i):
             ops.do_action(lambda i: print("loaded dataset")),
             ops.map(lambda i: sorted(i, key=key)),
             ops.do_action(lambda i: print("sorted dataset")),
-            rs.data.to_deque(),
+            rs.data.to_deque(extend=True),
         )
 
     return _sort
