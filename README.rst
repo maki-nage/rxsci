@@ -20,7 +20,10 @@ ReactiveX operators for data science and machine learning.
 RxSci (pronounced roxy) is a set of RxPY operators and observable factories
 dedicated to data science.
 
-Get Started ============
+Get Started
+============
+
+
 
 Install
 ========
