@@ -1,3 +1,4 @@
+from . import dist as dist
 from . import formal as formal
 from .mean import mean
 from .sum import sum
