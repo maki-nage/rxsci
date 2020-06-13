@@ -3,8 +3,28 @@ import rx.operators as ops
 from rx.scheduler import ImmediateScheduler
 
 
+def frame():
+    ''' Frames a Observable of text item to lines
+    '''
+    def _frame(source):
+        def on_subscribe(observer, scheduler):
+
+            def on_next(i):
+                line = ''.join([i, '\n'])
+                observer.on_next(line)
+
+            return source.subscribe(
+                on_next=on_next,
+                on_completed=observer.on_completed,
+                on_error=observer.on_error
+            )
+        return rx.create(on_subscribe)
+
+    return _frame
+
+
 def unframe():
-    ''' unframe a Observable of text to lines
+    ''' Unframes a Observable of text to lines
     '''
     def _unframe(source):
         def on_subscribe(observer, scheduler):
