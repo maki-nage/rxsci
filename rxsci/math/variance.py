@@ -48,8 +48,8 @@ def variance(key_mapper=lambda i: i, reduce=False):
                 if reduce is True:
                     if k < 2:
                         observer.on_next(None)
-                        return
-                    observer.on_next(s / (k-1))
+                    else:
+                        observer.on_next(s / (k-1))
 
             return source.subscribe(
                 on_next=on_next,
