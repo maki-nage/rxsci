@@ -30,7 +30,10 @@ def mean(key_mapper=lambda i: i, reduce=False):
 
             def on_completed():
                 if reduce is True:
-                    observer.on_next(s/c)
+                    if c == 0:
+                        observer.on_next(None)
+                    else:
+                        observer.on_next(s/c)
 
             return source.subscribe(
                 on_next=on_next,
