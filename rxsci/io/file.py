@@ -29,7 +29,7 @@ def read(file, mode='r', size=None, encoding=None, transport_params=None):
             parameter is used to provide additional configuration information
 
     Returns:
-        An observable where eeach item is a chunk of data, or the while
+        An observable where each item is a chunk of data, or the whole
         file if no size has been set.
     '''
     def on_subscribe(observer, scheduler):
