@@ -50,11 +50,13 @@ def variance(key_mapper=lambda i: i, reduce=False):
                         observer.on_next(None)
                     else:
                         observer.on_next(s / (k-1))
+                observer.on_completed()
 
             return source.subscribe(
                 on_next=on_next,
                 on_completed=on_completed,
-                on_error=observer.on_error
+                on_error=observer.on_error,
+                scheduler=scheduler,
             )
         return rx.create(on_subscribe)
 

@@ -41,11 +41,13 @@ def variance(key_mapper=lambda i: i, reduce=False):
                     mean = _moment(q, 0, 1)
                     v = _moment(q, mean, 2)
                     observer.on_next(v)
+                observer.on_completed()
 
             return source.subscribe(
                 on_next=on_next,
                 on_completed=on_completed,
-                on_error=observer.on_error
+                on_error=observer.on_error,
+                scheduler=scheduler,
             )
         return rx.create(on_subscribe)
 
