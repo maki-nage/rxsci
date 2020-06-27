@@ -1,3 +1,5 @@
+import json
+import csv
 from collections import namedtuple
 from datetime import datetime, timezone
 from dateutil.parser import isoparse
@@ -15,11 +17,36 @@ def parse_iso_date(i):
         raise ValueError("{}: {}".format(e, i))
 
 
+def parse_int(i):
+    return int(i)
+
+
+def parse_float(i):
+    return float(i)
+
+
+def parse_decimal(ii):
+    try:
+        s = ii.split(".")
+        i = int(s[0])
+        if len(s) > 1:
+            r = int(s[1])
+            r = r / (10 ** len(s[1]))
+        else:
+            r = 0
+
+        return float(i) + r
+    except Exception:
+        #print("parse error on {}: {}".format(ii, e))
+        return float(ii)
+
+
 def type_parser(type_repr):
     if type_repr in ['int']:
-        return int
+        return parse_int
     if type_repr in ['float']:
-        return float
+        return parse_decimal
+        #return parse_float
     elif type_repr in ['bool']:
         return lambda i: i == 'True'
     elif type_repr == 'posix_timestamp':
@@ -32,8 +59,29 @@ def type_parser(type_repr):
         raise TypeError("unknown column type: {}".format(type_repr))
 
 
+def create_schema_factory(dtype, schema_name='x'):
+    columns = [t[0] for t in dtype]
+    Item = namedtuple(schema_name, columns)
+    globals()[Item.__name__] = Item
+    return Item, columns
+
+
+class CsvDataFile():
+    def __init__(self):
+        self.data = None
+
+    def set_data(self, i):
+        self.data = i
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.data
+
+
 def create_line_parser(dtype, none_values=[], separator=",",
-                       ignore_error=False):
+                       ignore_error=False, schema_name='x'):
     ''' creates a parser for csv lines
 
     Args:
@@ -44,13 +92,22 @@ def create_line_parser(dtype, none_values=[], separator=",",
             match the provided number of columns raise an error an stop
             the parsing. When set to False, error lines are skipped.
     '''
-    columns = [t[0] for t in dtype]
+    Item, columns = create_schema_factory(dtype, schema_name)
     columns_parser = [type_parser(i[1]) for index, i in enumerate(dtype)]
     columns_len = len(columns)
-    item = namedtuple('x', columns)
 
-    def parse_line(line):
-        parts = line.split(separator)
+    csv_file = CsvDataFile()
+    reader = csv.reader(csv_file)
+
+    def parse_column(index, i):
+        return columns_parser[index](i)
+
+    def split(line, separator):
+        return line.split(separator)
+
+    def parse_line_as_csv(line):
+        csv_file.set_data(line)
+        parts = next(reader)
         if len(parts) != columns_len:
             error = "invalid number of columns: expected {}, found {} on: {}".format(
                 columns_len, len(parts), line)
@@ -60,16 +117,55 @@ def create_line_parser(dtype, none_values=[], separator=",",
             else:
                 raise ValueError(error)
 
-        parsed_parts = []
         for index, i in enumerate(parts):
             if i in none_values:
-                parsed_parts.append(None)
+                parts[index] = None
             else:
-                parsed_parts.append(columns_parser[index](i))
+                parts[index] = parse_column(index, i)
+        return Item(*parts)
+        #return parts
 
-        return item(*parsed_parts)
+    def parse_line_as_json(line):
+        line = "[{}]".format(line)
+        parts = json.loads(line)
+        if len(parts) != columns_len:
+            error = "invalid number of columns: expected {}, found {} on: {}".format(
+                columns_len, len(parts), line)
+            if ignore_error is True:
+                print(error)
+                return None
+            else:
+                raise ValueError(error)
 
+        return Item(*parts)
+        #return parts
+
+    def parse_line(line):
+        parts = split(line, separator)
+        if len(parts) != columns_len:
+            error = "invalid number of columns: expected {}, found {} on: {}".format(
+                columns_len, len(parts), line)
+            if ignore_error is True:
+                print(error)
+                return None
+            else:
+                raise ValueError(error)
+
+        for index, i in enumerate(parts):
+            if i in none_values:
+                parts[index] = None
+            else:
+                parts[index] = parse_column(index, i)
+
+        #return item(*parsed_parts)
+        return Item(*parts)
+        #return parts
+
+    #if separator == ',':
+    #    print("parsing as json")
+    #    return parse_line_as_json
     return parse_line
+    #return parse_line_as_csv
 
 
 def load(parse_line, skip=0):
