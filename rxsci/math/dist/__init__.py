@@ -5,19 +5,19 @@ import rxsci as rs
 import distogram
 
 
-def update():
+def update(weighted_diff=False):
     return rx.pipe(
         ops.scan(
-            lambda acc, i: distogram.update(acc, i),
-            seed=distogram.Distogram()
+            distogram.update,
+            seed=distogram.Distogram(weighted_diff=weighted_diff)
         ))
 
 
-def merge():
+def merge(weighted_diff=False):
     return rx.pipe(
         ops.scan(
-            lambda acc, i: distogram.merge(acc, i),
-            seed=distogram.Distogram()
+            distogram.merge,
+            seed=distogram.Distogram(weighted_diff=weighted_diff)
         ))
 
 
