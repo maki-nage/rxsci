@@ -4,6 +4,7 @@ Reference
 ==========
 
 .. toctree::
+   :maxdepth: 3
    :name: reference
 
    Math <reference_math>   
