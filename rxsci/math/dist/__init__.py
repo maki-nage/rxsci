@@ -33,10 +33,8 @@ def merge():
         An Observable of Distogram objects.
     '''
     return rx.pipe(
-        ops.scan(
-            distogram.merge,
-            seed=distogram.Distogram(weighted_diff=weighted_diff)
-        ))
+        ops.map(distogram.merge),
+    )
 
 
 def min():
