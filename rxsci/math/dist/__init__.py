@@ -10,7 +10,7 @@ def update(bin_count=100, weighted_diff=False):
 
     Args:
         bin_count: [Optional] number of bins to use.
-        weighted_diff: [Optional] Applies log weight to bin computation. This 
+        weighted_diff: [Optional] Applies log weight to bin computation. This
             may be needed if the distribution contains outliers.
 
     Returns:
@@ -19,7 +19,7 @@ def update(bin_count=100, weighted_diff=False):
     return rx.pipe(
         ops.scan(
             distogram.update,
-            seed=distogram.Distogram(weighted_diff=weighted_diff)
+            seed=distogram.Distogram(bin_count=bin_count, weighted_diff=weighted_diff)
         ))
 
 
