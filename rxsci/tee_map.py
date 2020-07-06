@@ -1,16 +1,17 @@
 import rx
 import rx.operators as ops
+from rx.disposable import CompositeDisposable
 
 
-def on_subscribe(post_action):
-    def _on_subscribe(source):
+def connect_on_subscribe(connectable):
+    def _connect_on_subscribe(source):
         def subscribe(observer, scheduler):
             disposable = source.subscribe(observer, scheduler=scheduler)
-            post_action()
-            return disposable
+            disposable2 = connectable.connect()
+            return CompositeDisposable(disposable2, disposable)
         return rx.create(subscribe)
 
-    return _on_subscribe
+    return _connect_on_subscribe
 
 
 def tee_map(*args):
@@ -26,19 +27,13 @@ def tee_map(*args):
         An observable containing tuples of the items emitted by each branch of
         the tee.
     '''
-    tee_args = args
-
     def _tee_map(source):
-        def connect():
-            connectable.connect()
-
         connectable = source.pipe(
             ops.publish()
         )
 
-        args = [arg(connectable) for arg in tee_args]
-        return rx.zip(*args).pipe(
-            on_subscribe(connect),
+        return rx.zip(*[arg(connectable) for arg in args]).pipe(
+            connect_on_subscribe(connectable),
         )
 
     return _tee_map
