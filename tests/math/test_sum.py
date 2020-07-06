@@ -49,3 +49,31 @@ def test_sum_key_mapper():
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == expected_result
+
+
+def test_sum_completed():
+    source = [2, 3, 10, 4]
+    actual_completed = []
+
+    rx.from_(source).pipe(
+        rs.math.sum()
+    ).subscribe(
+        on_completed=lambda: actual_completed.append(True)
+    )
+
+    assert actual_completed == [True]
+
+
+def test_sum_completed_on_empty():
+    actual_result = []
+    actual_completed = []
+
+    rx.empty().pipe(
+        rs.math.sum(reduce=True)
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=lambda: actual_completed.append(True)
+    )
+
+    assert actual_completed == [True]
+    assert actual_result == [0]

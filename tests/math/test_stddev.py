@@ -25,7 +25,7 @@ def test_stddev_on_empty_observable():
         rs.math.stddev(reduce=True)
     ).subscribe(on_next=actual_result.append)
 
-    assert actual_result[0] is None
+    assert actual_result[0] == 0.0
 
 
 def test_stddev_on_unit_observable():
@@ -36,4 +36,4 @@ def test_stddev_on_unit_observable():
         rs.math.stddev(reduce=True)
     ).subscribe(on_next=actual_result.append)
 
-    assert actual_result[0] is None
+    assert actual_result[0] == 0.0
