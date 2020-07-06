@@ -36,11 +36,12 @@ def variance(key_mapper=lambda i: i, reduce=False):
             def on_completed():
                 if reduce is True:
                     if len(q) == 0:
-                        observer.on_next(None)
-                        return
-                    mean = _moment(q, 0, 1)
-                    v = _moment(q, mean, 2)
-                    observer.on_next(v)
+                        observer.on_next(0.0)
+                    else:
+                        mean = _moment(q, 0, 1)
+                        v = _moment(q, mean, 2)
+                        q.clear()
+                        observer.on_next(v)
                 observer.on_completed()
 
             return source.subscribe(
