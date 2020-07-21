@@ -6,6 +6,11 @@ from enum import Enum
 
 Padding = Enum('Padding', 'LEFT RIGHT')
 
+from .mux import (
+    MuxObservable, MuxObserver,
+    OnCreateMux, OnNextMux, OnCompletedMux, OnErrorMux, MuxObservable
+)
+
 import rxsci.data as data
 import rxsci.math as math
 
@@ -16,3 +21,5 @@ from .progress import progress
 from .tee_map import tee_map
 from .train_test_split import train_test_split
 from .with_latest_from import with_latest_from
+
+
