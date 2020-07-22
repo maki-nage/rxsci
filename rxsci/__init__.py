@@ -7,7 +7,9 @@ from enum import Enum
 Padding = Enum('Padding', 'LEFT RIGHT')
 
 from .mux import (
-    MuxObservable, MuxObserver,
+    MuxObservable, cast_as_mux_observable,
+    MuxConnectableProxy, cast_as_mux_connectable,
+    MuxObserver,
     OnCreateMux, OnNextMux, OnCompletedMux, OnErrorMux, MuxObservable
 )
 

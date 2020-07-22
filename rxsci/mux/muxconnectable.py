@@ -1,7 +1,8 @@
 from rx.core.observable import Observable
+from . import MuxObservable
 
 
-class MuxObservable(Observable):
+class MuxConnectableProxy(MuxObservable):
     '''An Observable working on multiplexed observables
 
     A Muxed observable is an alternative implementation of higher order
@@ -16,13 +17,17 @@ class MuxObservable(Observable):
 
     Multuplixed observables must be used with multiplexed observers.
     '''
-    def __init__(self, subscribe):
-        super().__init__(subscribe)    
+    def __init__(self, connectable, subscribe):
+        super().__init__(subscribe)
+        self.connectable = connectable
+
+    def connect(self):
+        return self.connectable.connect()
 
 
-def cast_as_mux_observable():
+def cast_as_mux_connectable():
     def _as_mux(source):
         def on_subscribe(observer, scheduler):
             return source.subscribe(observer, scheduler)
-        return MuxObservable(on_subscribe)
+        return MuxConnectableProxy(source, on_subscribe)
     return _as_mux
