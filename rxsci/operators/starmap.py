@@ -1,5 +1,6 @@
-import rxsci as rs
 import rx.operators as ops
+import rxsci as rs
+import rxsci.operators as rsops
 
 
 def map_mux(mapper):
@@ -27,10 +28,4 @@ def map_mux(mapper):
 
 
 def starmap(mapper):
-    def _map(source):
-        if isinstance(source, rs.MuxObservable):
-            return map_mux(mapper)(source)
-        else:
-            return ops.map(mapper)(source)
-
-    return _map
+    return rsops.map(lambda i: mapper(*i))
