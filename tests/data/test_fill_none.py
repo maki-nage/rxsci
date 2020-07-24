@@ -44,3 +44,29 @@ def test_fill_none_value():
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == expected_result
+
+
+def test_fill_none_mux():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), None),
+        rs.OnNextMux((1, None), 1.2),
+        rs.OnNextMux((1, None), 5.348),
+        rs.OnNextMux((1, None), None),
+        rs.OnCompletedMux((1, None)),
+    ]
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.data.fill_none(0)
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 0),
+        rs.OnNextMux((1, None), 1.2),
+        rs.OnNextMux((1, None), 5.348),
+        rs.OnNextMux((1, None), 0),
+        rs.OnCompletedMux((1, None)),
+    ]
