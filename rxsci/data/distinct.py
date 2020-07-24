@@ -50,7 +50,7 @@ def distinct(key_mapper=None):
                     hashset[x.key] = set()
                     observer.on_next(x)
                     return
-                if isinstance(x, rs.OnCompletedMux) \
+                elif isinstance(x, rs.OnCompletedMux) \
                 or isinstance(x, rs.OnErrorMux):
                     del hashset[x.key]
                     observer.on_next(x)
