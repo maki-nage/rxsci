@@ -42,3 +42,35 @@ def test_distinct_with_key():
         (3, "biz", 1),
         (7, "Biz", 1),
     ]
+
+
+def test_distinct_mux():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 5),
+        rs.OnNextMux((1, None), 3),
+        rs.OnCompletedMux((1, None)),
+    ]
+    actual_result = []
+
+    def on_next(i):
+        actual_result.append(i)
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.data.distinct()
+    ).subscribe(on_next)
+
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 5),
+        rs.OnCompletedMux((1, None)),
+    ]
+

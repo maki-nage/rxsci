@@ -1,5 +1,6 @@
 import rx
 import rx.operators as ops
+import rxsci as rs
 
 
 def distinct(key_mapper=None):
@@ -39,22 +40,35 @@ def distinct(key_mapper=None):
             elements, based on a computed key value, from the source
             sequence.
         """
+        mux = True if isinstance(source, rs.MuxObservable) else False
 
         def subscribe(observer, scheduler=None):
-            hashset = set()
+            hashset = {} if mux else set()
 
             def on_next(x):
-                key = x
+                if isinstance(x, rs.OnCreateMux):
+                    hashset[x.key] = set()
+                    observer.on_next(x)
+                    return
+                if isinstance(x, rs.OnCompletedMux) \
+                or isinstance(x, rs.OnErrorMux):
+                    del hashset[x.key]
+                    observer.on_next(x)
+                    return
+
+                i = x.item if mux else x
+                key = i
 
                 if key_mapper:
                     try:
-                        key = key_mapper(x)
+                        key = key_mapper(i)
                     except Exception as ex:
                         observer.on_error(ex)
                         return
 
-                if key not in hashset:
-                    hashset.add(key)
+                state = hashset[x.key] if mux else hashset
+                if key not in state:
+                    state.add(key)
                     observer.on_next(x)
             return source.subscribe_(
                 on_next,
