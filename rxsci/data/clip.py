@@ -1,8 +1,15 @@
-import rx.operators as ops
+import rxsci.operators as rsops
 
 
 def clip(lower_bound=None, higher_bound=None):
-    '''clip values between lower_bound and higher_bound
+    '''clip values between lower_bound (included) and higher_bound (included)
+
+    .. marble::
+        :alt: clip
+
+        -0-1-2-1-3-4-2-6---|
+        [    clip(2, 4)    ]
+        -----2-----4---6---|
 
     Raises:
         ValueError if no bound is provided or lower_bound is bigger than
@@ -23,7 +30,7 @@ def clip(lower_bound=None, higher_bound=None):
 
     def _clip(source):
         return source.pipe(
-            ops.map(__clip),
+            rsops.map(__clip),
         )
 
     return _clip
