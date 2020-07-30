@@ -76,7 +76,7 @@ def scan(accumulator, seed, reduce=False):
                 return ops.scan(accumulator, seed)(source)
             else:
                 return rx.pipe(
-                    ops.scan(accumulator, seed)(source),
+                    ops.scan(accumulator, seed),
                     ops.last(),
                 )
 
