@@ -1,6 +1,6 @@
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
+from .map import map as map
 
 
 def map_mux(mapper):
@@ -28,4 +28,4 @@ def map_mux(mapper):
 
 
 def starmap(mapper):
-    return rsops.map(lambda i: mapper(*i))
+    return map(lambda i: mapper(*i))

@@ -56,7 +56,6 @@ def roll(window, stride=None):
 
             def on_next(i):
                 if isinstance(i, rs.OnNextMux):
-                    print(i)
                     istate = state[i.key]
                     w = istate['w']
                     n = istate['n']

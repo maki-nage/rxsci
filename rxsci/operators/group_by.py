@@ -1,7 +1,7 @@
 import rx
 from rx.subject import Subject
 import rxsci as rs
-import rxsci.operators as rsops
+from .multiplex import demux_mux_observable
 
 
 def group_by_mux(key_mapper):
@@ -57,5 +57,5 @@ def group_by(key_mapper, pipeline):
     return rx.pipe(
         _group_by,
         pipeline,
-        rsops.demux_mux_observable(outer_obs),
+        demux_mux_observable(outer_obs),
     )
