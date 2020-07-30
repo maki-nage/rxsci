@@ -21,7 +21,7 @@ python_requires = '>=3.6'
 install_requires = [
     'distogram>=1.5',
     'python-dateutil>=2.8',
-    'Rx>=3.0',
+    'Rx>=3.1.1',
 ]
 
 setup(
