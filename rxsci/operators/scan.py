@@ -1,3 +1,4 @@
+import rx
 import rxsci as rs
 import rx.operators as ops
 
