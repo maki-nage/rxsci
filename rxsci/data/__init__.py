@@ -4,6 +4,6 @@ from .fill_none import fill_none
 from .lag import lag1, lag
 from .to_deque import to_deque
 from .distinct import distinct
-from .roll import roll, roll_buffer
+from .roll import roll
 from .sort import sort
 from .split import split

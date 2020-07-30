@@ -13,7 +13,7 @@ def add_ref(xs, r):
     return rx.create(subscribe)
 
 
-def roll(window, step=1, padding=None):
+def roll(window, stride=None):
     """Projects each element of an observable sequence into zero or more
     windows which are produced based on element window information.
 
@@ -22,22 +22,18 @@ def roll(window, step=1, padding=None):
 
         -1-2-3-4-5-6-------|
         [      roll(3)     ]
-        -+-+-+-+-+-+-+-----|
+        -+-----+-----------|
                +4-5-6|
-             +3-4-5|
-           +2-3-4|
          +1-2-3|
 
     Examples:
         >>> rs.data.roll(3),
-        >>> rs.data.roll(3, step=2, padding=rs.Padding.RIGHT),
+        >>> rs.data.roll(window=3, step=2),
 
     Args:
         window: Length of each window.
-        step: [Optional] Number of elements to step between creation of
-            consecutive windows.
-        padding: padding method. Use it to pad items left or right on the
-            begining and end of the source observable.
+        stride: [Optional] Number of elements to step between creation of
+            consecutive windows. Defaults to window value.
 
     Returns:
         An observable sequence of windows.
@@ -49,173 +45,52 @@ def roll(window, step=1, padding=None):
     if window <= 0:
         raise ValueError()
 
-    if step <= 0:
+    if stride is None:
+        stride = window
+    if stride <= 0:
         raise ValueError()
 
     def _roll(source):
         def subscribe(observer, scheduler=None):
-            m = SingleAssignmentDisposable()
-            refCountDisposable = RefCountDisposable(m)
-            n = [0]
-            q = deque()
-            last_value = None
-            padding_count = int((window) / step)
-            if window % step == 0:
-                padding_count -= 1
+            state = {}
 
-            def create_window():
-                s = Subject()
-                q.append(s)
-                #observer.on_next(add_ref(s, refCountDisposable))
-                observer.on_next(s)
+            def on_next(i):
+                if isinstance(i, rs.OnNextMux):
+                    print(i)
+                    istate = state[i.key]
+                    w = istate['w']
+                    n = istate['n']
 
-            def on_next(x):
-                nonlocal last_value
-                last_value = x
-                if n[0] == 0 and padding == rs.Padding.LEFT:
-                    for _ in range(padding_count):
-                        create_window()
+                    if (n % stride) == 0 or n == 0:
+                        w.append(n)
+                        observer.on_next(rs.OnCreateMux((n, i.key)))
 
-                    missing_count = padding_count * step
-                    for item in q:
-                        for _ in range(missing_count):
-                            item.on_next(last_value)
-                        missing_count -= step
+                    pop = False
+                    for index in w:
+                        observer.on_next(rs.OnNextMux((index, i.key), i.item))
+                        count = n - index + 1
+                        if count == window:                            
+                            pop = True
+                            observer.on_next(rs.OnCompletedMux((index, i.key)))
 
-                if (n[0] % step) == 0:
-                    create_window()
+                    if pop:
+                        w.pop(0)
 
-                for item in q:
-                    item.on_next(x)
+                    istate['n'] += 1
 
-                c = n[0] - window + 1
-                if c % step == 0:
-                    if c < 0 and padding == rs.Padding.LEFT:
-                        s = q.popleft()
-                        s.on_completed()
-                    elif c >= 0:
-                        s = q.popleft()
-                        s.on_completed()
+                elif isinstance(i, rs.OnCreateMux):
+                    state[i.key] = {'n': 0, 'w': []}
+                    observer.on_next(i)
+                elif isinstance(i, rs.OnCompletedMux) \
+                or isinstance(i, rs.OnErrorMux):
+                    del state[i.key]
+                    observer.on_next(i)
 
-                n[0] += 1
+            return source.subscribe(
+                on_next=on_next,
+                on_error=observer.on_error,
+                on_completed=observer.on_completed,
+                scheduler=scheduler)
 
-            def on_error(exception):
-                while q:
-                    q.popleft().on_error(exception)
-                observer.on_error(exception)
-
-            def on_completed():
-                if padding == rs.Padding.RIGHT:
-                    missing_count = (n[0] % step) + 1
-                    for item in q:
-                        for _ in range(missing_count):
-                            item.on_next(last_value)
-                        missing_count += step
-                    while q:
-                        q.popleft().on_completed()
-                observer.on_completed()
-
-            m.disposable = source.subscribe_(on_next, on_error, on_completed, scheduler)
-            return refCountDisposable
-        return rx.create(subscribe)
-    return _roll
-
-
-def roll_buffer(window, step=1, padding=None):
-    """Projects each element of an observable sequence into zero or more
-    windows which are produced based on element window information.
-
-    .. marble::
-        :alt: roll
-
-        -1-2-3-4-5-6-------|
-        [      roll(3)     ]
-        --1,2,3-2,3,4-3,4,5-4,5,6-|
-
-    Examples:
-        >>> rs.data.roll(3),
-        >>> rs.data.roll(3, step=2, padding=rs.Padding.RIGHT),
-
-    Args:
-        window: Length of each window.
-        step: [Optional] Number of elements to step between creation of
-            consecutive windows.
-        padding: padding method. Use it to pad items left or right on the
-            begining and end of the source observable.
-
-    Returns:
-        An observable sequence of windows.
-
-    Raises:
-        ValueError if window or step is negative
-    """
-
-    if window <= 0:
-        raise ValueError()
-
-    if step <= 0:
-        raise ValueError()
-
-    def _roll(source):
-        def subscribe(observer, scheduler=None):
-            m = SingleAssignmentDisposable()
-            refCountDisposable = RefCountDisposable(m)
-            n = [0]
-            q = deque()
-            last_value = None
-            padding_count = int((window) / step)
-            if window % step == 0:
-                padding_count -= 1
-
-            def create_window():
-                s = []
-                q.append(s)
-
-            def on_next(x):
-                nonlocal last_value
-                last_value = x
-                if n[0] == 0 and padding == rs.Padding.LEFT:
-                    for _ in range(padding_count):
-                        create_window()
-
-                    missing_count = padding_count * step
-                    for item in q:
-                        for _ in range(missing_count):
-                            item.append(last_value)
-                        missing_count -= step
-
-                if (n[0] % step) == 0:
-                    create_window()
-
-                for item in q:
-                    item.append(x)
-
-                c = n[0] - window + 1
-                if c % step == 0:
-                    if c < 0 and padding == rs.Padding.LEFT:
-                        s = q.popleft()
-                        observer.on_next(s)
-                    elif c >= 0:
-                        s = q.popleft()
-                        observer.on_next(s)
-
-                n[0] += 1
-
-            def on_error(exception):
-                observer.on_error(exception)
-
-            def on_completed():
-                if padding == rs.Padding.RIGHT:
-                    missing_count = (n[0] % step) + 1
-                    for item in q:
-                        for _ in range(missing_count):
-                            item.append(last_value)
-                        missing_count += step
-                    while q:
-                        observer.on_next(q.popleft())
-                observer.on_completed()
-
-            m.disposable = source.subscribe_(on_next, on_error, on_completed, scheduler)
-            return refCountDisposable
         return rx.create(subscribe)
     return _roll

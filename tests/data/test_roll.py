@@ -4,156 +4,130 @@ import rxsci as rs
 
 
 def test_roll():
-    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    window = 3
-    actual_result = []
-    expected_result = [
-        [1, 2, 3],
-        [2, 3, 4],
-        [3, 4, 5],
-        [4, 5, 6],
-        [5, 6, 7],
-        [6, 7, 8],
-        [7, 8, 9],
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 4),
+        rs.OnNextMux((1, None), 5),
+        rs.OnCompletedMux((1, None)),
     ]
+
+    actual_result = []
 
     def on_next(i):
         actual_result.append(i)
 
     rx.from_(source).pipe(
-        rs.data.roll(window),
-        ops.flat_map(lambda i: i.pipe(
-            ops.to_list(),
-        )),
+        rs.cast_as_mux_observable(),
+        rs.data.roll(3),
     ).subscribe(on_next)
 
-    assert actual_result == expected_result
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((0, (1 ,None))),
+        rs.OnNextMux((0, (1, None)), 1),
+        rs.OnNextMux((0, (1, None)), 2),
+        rs.OnNextMux((0, (1, None)), 3),        
+        rs.OnCompletedMux((0, (1 ,None))),
+
+        rs.OnCreateMux((3, (1 ,None))),
+        rs.OnNextMux((3, (1, None)), 4),
+        rs.OnNextMux((3, (1, None)), 5),
+        #rs.OnCompletedMux((3, (1 ,None))),  # only complete windows are notified for now
+        
+        rs.OnCompletedMux((1, None)),
+    ]
+
+
+def test_roll_with_stride():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 4),
+        rs.OnNextMux((1, None), 5),
+        rs.OnNextMux((1, None), 6),
+        rs.OnCompletedMux((1, None)),
+    ]
+
+    actual_result = []
+
+    def on_next(i):
+        actual_result.append(i)
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.data.roll(window=3, stride=2),
+    ).subscribe(on_next)
+
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((0, (1 ,None))),
+        rs.OnNextMux((0, (1, None)), 1),
+        rs.OnNextMux((0, (1, None)), 2),
+
+        rs.OnCreateMux((2, (1 ,None))),
+        rs.OnNextMux((0, (1, None)), 3),
+        rs.OnCompletedMux((0, (1 ,None))),
+        rs.OnNextMux((2, (1, None)), 3),        
+        rs.OnNextMux((2, (1, None)), 4),
+
+        rs.OnCreateMux((4, (1 ,None))),
+        rs.OnNextMux((2, (1, None)), 5),
+        rs.OnCompletedMux((2, (1 ,None))),
+        rs.OnNextMux((4, (1, None)), 5),
+        
+        rs.OnNextMux((4, (1, None)), 6),
+        
+        #rs.OnCompletedMux((4, (1 ,None))),  # only complete windows are notified for now
+        
+        rs.OnCompletedMux((1, None)),
+    ]
 
 
 def test_roll_identity():
-    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    window = 1
-    actual_result = []
-    expected_result = [
-        [1], [2], [3], [4], [5], [6], [7], [8], [9]
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 4),
+        rs.OnCompletedMux((1, None)),
     ]
+
+    actual_result = []
 
     def on_next(i):
         actual_result.append(i)
 
     rx.from_(source).pipe(
-        rs.data.roll(window),
-        ops.flat_map(lambda i: i.pipe(
-            ops.to_list(),
-        )),
+        rs.cast_as_mux_observable(),
+        rs.data.roll(1),
     ).subscribe(on_next)
 
-    assert actual_result == expected_result
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((0, (1 ,None))),
+        rs.OnNextMux((0, (1, None)), 1),
+        rs.OnCompletedMux((0, (1 ,None))),
 
+        rs.OnCreateMux((1, (1 ,None))),
+        rs.OnNextMux((1, (1, None)), 2),
+        rs.OnCompletedMux((1, (1 ,None))),
 
-def test_roll_right_padding():
-    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    window = 3
-    actual_result = []
-    expected_result = [
-        [1, 2, 3],
-        [2, 3, 4],
-        [3, 4, 5],
-        [4, 5, 6],
-        [5, 6, 7],
-        [6, 7, 8],
-        [7, 8, 9],
-        [8, 9, 9],
-        [9, 9, 9],
+        rs.OnCreateMux((2, (1 ,None))),
+        rs.OnNextMux((2, (1, None)), 3),
+        rs.OnCompletedMux((2, (1 ,None))),
+
+        rs.OnCreateMux((3, (1 ,None))),
+        rs.OnNextMux((3, (1, None)), 4),
+        rs.OnCompletedMux((3, (1 ,None))),
+
+        rs.OnCompletedMux((1, None)),
     ]
 
-    def on_next(i):
-        actual_result.append(i)
-
-    rx.from_(source).pipe(
-        rs.data.roll(window, padding=rs.Padding.RIGHT),
-        ops.flat_map(lambda i: i.pipe(
-            ops.to_list(),
-        )),
-    ).subscribe(on_next)
-
-    assert actual_result == expected_result
 
 
-def test_roll_right_padding_5_2():
-    source = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    window = 5
-    actual_result = []
-    expected_result = [
-        [1, 2, 3, 4, 5],
-        [3, 4, 5, 6, 7],
-        [5, 6, 7, 8, 9],
-        [7, 8, 9, 10, 10],
-        [9, 10, 10, 10, 10],
-    ]
-
-    def on_next(i):
-        actual_result.append(i)
-
-    rx.from_(source).pipe(
-        rs.data.roll(window, step=2, padding=rs.Padding.RIGHT),
-        ops.flat_map(lambda i: i.pipe(
-            ops.to_list(),
-        )),
-    ).subscribe(on_next)
-
-    assert actual_result == expected_result
-
-
-def test_roll_left_padding():
-    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    window = 3
-    actual_result = []
-    expected_result = [
-        [1, 1, 1],
-        [1, 1, 2],
-        [1, 2, 3],
-        [2, 3, 4],
-        [3, 4, 5],
-        [4, 5, 6],
-        [5, 6, 7],
-        [6, 7, 8],
-        [7, 8, 9],
-    ]
-
-    def on_next(i):
-        actual_result.append(i)
-
-    rx.from_(source).pipe(
-        rs.data.roll(window, padding=rs.Padding.LEFT),
-        ops.flat_map(lambda i: i.pipe(
-            ops.to_list(),
-        )),
-    ).subscribe(on_next)
-
-    assert actual_result == expected_result
-
-
-def test_roll_left_padding_5_2():
-    source = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    window = 5
-    actual_result = []
-    expected_result = [
-        [1, 1, 1, 1, 1],
-        [1, 1, 1, 2, 3],
-        [1, 2, 3, 4, 5],
-        [3, 4, 5, 6, 7],
-        [5, 6, 7, 8, 9],
-    ]
-
-    def on_next(i):
-        actual_result.append(i)
-
-    rx.from_(source).pipe(
-        rs.data.roll(window, step=2, padding=rs.Padding.LEFT),
-        ops.flat_map(lambda i: i.pipe(
-            ops.to_list(),
-        )),
-    ).subscribe(on_next)
-
-    assert actual_result == expected_result
