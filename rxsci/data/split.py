@@ -1,8 +1,10 @@
 import rx
 from rx.subject import Subject
+import rxsci as rs
+from rxsci.operators.multiplex import demux_mux_observable
 
 
-def split(predicate):
+def split_obs(predicate):
     ''' Split an observable based on a predicate criteria.
 
     Args:
@@ -45,3 +47,68 @@ def split(predicate):
             )
         return rx.create(on_subscribe)
     return _split
+
+
+def split_mux(predicate):
+    outer_observer = Subject()
+
+    def _split(source):
+        def on_subscribe(observer, scheduler):
+            state = {}
+
+            def on_next(i):
+                if isinstance(i, rs.OnNextMux):
+                    new_predicate = predicate(i.item)
+                    current_predicate = state[i.key]
+                    if current_predicate is None:
+                        current_predicate = new_predicate
+                        state[i.key] = current_predicate
+                        observer.on_next(rs.OnCreateMux((1, i.key)))
+
+                    print("{}, {}".format(new_predicate, current_predicate))
+                    if new_predicate != current_predicate:
+                        state[i.key] = new_predicate
+                        observer.on_next(rs.OnCompletedMux((1, i.key)))
+                        observer.on_next(rs.OnCreateMux((1, i.key)))
+
+                    observer.on_next(rs.OnNextMux((1, i.key), i.item))
+                elif isinstance(i, rs.OnCreateMux):
+                    state[i.key] = None                    
+                    outer_observer.on_next(i)
+                elif isinstance(i, rs.OnCompletedMux):
+                    del state[i.key]
+                    observer.on_next(rs.OnCompletedMux((1, i.key)))
+                    outer_observer.on_next(i)
+                elif isinstance(i, rs.OnErrorMux):
+                    del state[i.key]
+                    observer.on_next(rs.OnErrordMux((1, i.key), i.error))
+                    outer_observer.on_next(i)
+
+            return source.subscribe(
+                on_next=on_next,
+                on_completed=observer.on_completed,
+                on_error=observer.on_error,
+            )
+        return rs.MuxObservable(on_subscribe)
+
+
+    return _split, outer_observer
+
+
+def split(predicate, pipeline):
+    ''' Split an observable based on a predicate criteria.
+
+    Args:
+        predicate: A function called for each item, that returns the split 
+            criteria.
+
+    Returns:
+        A higher order observable returning on observable for each split criteria.
+    '''
+    _split, outer_obs = split_mux(predicate)
+
+    return rx.pipe(
+        _split,
+        pipeline,
+        demux_mux_observable(outer_obs),
+    )
