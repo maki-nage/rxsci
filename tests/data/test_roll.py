@@ -15,29 +15,30 @@ def test_roll():
     ]
 
     actual_result = []
+    mux_actual_result = []
 
     def on_next(i):
         actual_result.append(i)
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.roll(3),
+        rs.data.roll(window=3, stride=3, pipeline=rx.pipe(
+            ops.do_action(mux_actual_result.append),
+        )),
     ).subscribe(on_next)
 
-    assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((0, (1 ,None))),
-        rs.OnNextMux((0, (1, None)), 1),
-        rs.OnNextMux((0, (1, None)), 2),
-        rs.OnNextMux((0, (1, None)), 3),        
-        rs.OnCompletedMux((0, (1 ,None))),
+    assert actual_result == source
+    assert mux_actual_result == [
+        rs.OnCreateMux((1, (1 ,None))),
+        rs.OnNextMux((1, (1, None)), 1),
+        rs.OnNextMux((1, (1, None)), 2),
+        rs.OnNextMux((1, (1, None)), 3),        
+        rs.OnCompletedMux((1, (1 ,None))),
 
-        rs.OnCreateMux((3, (1 ,None))),
-        rs.OnNextMux((3, (1, None)), 4),
-        rs.OnNextMux((3, (1, None)), 5),
+        rs.OnCreateMux((1, (1 ,None))),
+        rs.OnNextMux((1, (1, None)), 4),
+        rs.OnNextMux((1, (1, None)), 5),
         #rs.OnCompletedMux((3, (1 ,None))),  # only complete windows are notified for now
-        
-        rs.OnCompletedMux((1, None)),
     ]
 
 
@@ -54,17 +55,19 @@ def test_roll_with_stride():
     ]
 
     actual_result = []
+    mux_actual_result = []
 
     def on_next(i):
         actual_result.append(i)
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.roll(window=3, stride=2),
+        rs.data.roll(window=3, stride=2, pipeline=rx.pipe(
+            ops.do_action(mux_actual_result.append),
+        )),
     ).subscribe(on_next)
 
-    assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
+    assert mux_actual_result == [
         rs.OnCreateMux((0, (1 ,None))),
         rs.OnNextMux((0, (1, None)), 1),
         rs.OnNextMux((0, (1, None)), 2),
@@ -83,8 +86,6 @@ def test_roll_with_stride():
         rs.OnNextMux((4, (1, None)), 6),
         
         #rs.OnCompletedMux((4, (1 ,None))),  # only complete windows are notified for now
-        
-        rs.OnCompletedMux((1, None)),
     ]
 
 
@@ -99,34 +100,35 @@ def test_roll_identity():
     ]
 
     actual_result = []
+    mux_actual_result = []
 
     def on_next(i):
         actual_result.append(i)
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.roll(1),
+        rs.data.roll(1, 1, rx.pipe(
+            ops.do_action(mux_actual_result.append),
+        )),
     ).subscribe(on_next)
 
-    assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((0, (1 ,None))),
-        rs.OnNextMux((0, (1, None)), 1),
-        rs.OnCompletedMux((0, (1 ,None))),
+    assert actual_result == source
+    assert mux_actual_result == [
+        rs.OnCreateMux((1, (1 ,None))),
+        rs.OnNextMux((1, (1, None)), 1),
+        rs.OnCompletedMux((1, (1 ,None))),
 
         rs.OnCreateMux((1, (1 ,None))),
         rs.OnNextMux((1, (1, None)), 2),
         rs.OnCompletedMux((1, (1 ,None))),
 
-        rs.OnCreateMux((2, (1 ,None))),
-        rs.OnNextMux((2, (1, None)), 3),
-        rs.OnCompletedMux((2, (1 ,None))),
+        rs.OnCreateMux((1, (1 ,None))),
+        rs.OnNextMux((1, (1, None)), 3),
+        rs.OnCompletedMux((1, (1 ,None))),
 
-        rs.OnCreateMux((3, (1 ,None))),
-        rs.OnNextMux((3, (1, None)), 4),
-        rs.OnCompletedMux((3, (1 ,None))),
-
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1, (1 ,None))),
+        rs.OnNextMux((1, (1, None)), 4),
+        rs.OnCompletedMux((1, (1 ,None))),
     ]
 
 

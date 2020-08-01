@@ -2,45 +2,12 @@ from collections import deque
 
 import rx
 import rxsci as rs
-from rx.disposable import SingleAssignmentDisposable, CompositeDisposable, RefCountDisposable
 from rx.subject import Subject
+from rxsci.operators.multiplex import demux_mux_observable
 
 
-def add_ref(xs, r):
-    def subscribe(observer, scheduler=None):
-        return CompositeDisposable(r.disposable, xs.subscribe(observer))
-
-    return rx.create(subscribe)
-
-
-def roll(window, stride=None):
-    """Projects each element of an observable sequence into zero or more
-    windows which are produced based on element window information.
-
-    .. marble::
-        :alt: roll
-
-        -1-2-3-4-5-6-------|
-        [      roll(3)     ]
-        -+-----+-----------|
-               +4-5-6|
-         +1-2-3|
-
-    Examples:
-        >>> rs.data.roll(3),
-        >>> rs.data.roll(window=3, step=2),
-
-    Args:
-        window: Length of each window.
-        stride: [Optional] Number of elements to step between creation of
-            consecutive windows. Defaults to window value.
-
-    Returns:
-        An observable sequence of windows.
-
-    Raises:
-        ValueError if window or step is negative
-    """
+def roll_mux(window, stride=None):
+    outer_observer = Subject()
 
     if window <= 0:
         raise ValueError()
@@ -79,11 +46,15 @@ def roll(window, stride=None):
 
                 elif isinstance(i, rs.OnCreateMux):
                     state[i.key] = {'n': 0, 'w': []}
-                    observer.on_next(i)
-                elif isinstance(i, rs.OnCompletedMux) \
-                or isinstance(i, rs.OnErrorMux):
+                    outer_observer.on_next(i)
+                elif isinstance(i, rs.OnCompletedMux):
                     del state[i.key]
-                    observer.on_next(i)
+                    #observer.on_next(rs.OnCompletedMux((1, i.key)))
+                    outer_observer.on_next(i)
+                elif isinstance(i, rs.OnErrorMux):
+                    del state[i.key]
+                    #observer.on_next(rs.OnErrordMux((1, i.key), i.error))
+                    outer_observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,
@@ -91,5 +62,91 @@ def roll(window, stride=None):
                 on_completed=observer.on_completed,
                 scheduler=scheduler)
 
-        return rx.create(subscribe)
-    return _roll
+        return rs.MuxObservable(subscribe)
+
+    def _roll_count(source):
+        def subscribe(observer, scheduler=None):
+            state = {}
+
+            def on_next(i):
+                if isinstance(i, rs.OnNextMux):
+                    count = state[i.key]
+                    '''
+                    if count is None:
+                        count = 1
+                        state[i.key] = 1
+                        observer.on_next(rs.OnCreateMux((1, i.key)))
+                    '''
+
+                    if count == 0:
+                        observer.on_next(rs.OnCreateMux((1, i.key)))
+
+                    count += 1                    
+                    observer.on_next(rs.OnNextMux((1, i.key), i.item))
+        
+                    if count == window:
+                        state[i.key] = 0
+                        observer.on_next(rs.OnCompletedMux((1, i.key)))
+                    else:
+                        state[i.key] += 1
+
+                elif isinstance(i, rs.OnCreateMux):
+                    state[i.key] = 0
+                    outer_observer.on_next(i)
+                elif isinstance(i, rs.OnCompletedMux):
+                    del state[i.key]
+                    outer_observer.on_next(i)
+                elif isinstance(i, rs.OnErrorMux):
+                    del state[i.key]
+                    observer.on_next(rs.OnErrordMux((1, i.key), i.error))
+                    outer_observer.on_next(i)
+
+            return source.subscribe(
+                on_next=on_next,
+                on_error=observer.on_error,
+                on_completed=observer.on_completed,
+                scheduler=scheduler)
+
+        return rs.MuxObservable(subscribe)
+
+    if window == stride:
+        return _roll_count, outer_observer
+    else:
+        return _roll, outer_observer
+
+
+def roll(window, stride, pipeline):
+    """Projects each element of an observable sequence into zero or more
+    windows which are produced based on element window information.
+
+    .. marble::
+        :alt: roll
+
+        -1-2-3-4-5-6-------|
+        [      roll(3)     ]
+        -+-----+-----------|
+               +4-5-6|
+         +1-2-3|
+
+    Examples:
+        >>> rs.data.roll(3),
+        >>> rs.data.roll(window=3, step=2),
+
+    Args:
+        window: Length of each window.
+        stride: Number of elements to step between creation of
+            consecutive windows.
+
+    Returns:
+        An observable sequence of windows.
+
+    Raises:
+        ValueError if window or step is negative
+    """
+    _roll, outer_obs = roll_mux(window, stride)
+
+    return rx.pipe(
+        _roll,
+        pipeline,
+        demux_mux_observable(outer_obs),
+    )
