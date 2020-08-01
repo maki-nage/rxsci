@@ -32,7 +32,6 @@ def group_by_mux(key_mapper):
                     del state[i.key]
                     outer_observer.on_next(i)
                 elif type(i) is rs.OnErrorMux:
-                    dellist = []
                     for k in state[i.key]:
                         observer.on_next(rs.OnErrorMux((k, i.key), i.error))
                     del state[i.key]
