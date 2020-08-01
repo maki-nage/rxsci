@@ -53,6 +53,7 @@ def demux_mux_observable(outer_group):
             def on_next(i):
                 if type(i) is rs.OnNextMux:
                     observer.on_next(rs.OnNextMux(i.key[1], i.item))
+                '''
                 elif type(i) is rs.OnCreateMux:
                     observer.on_next(rs.OnCreateMux(i.key[1]))
                 elif type(i) is rs.OnCompletedMux:
@@ -61,6 +62,7 @@ def demux_mux_observable(outer_group):
                     observer.on_next(rs.OnErrorMux(i.key[1], i.error))
                 else:
                     observer.on_next(TypeError("flatten_aggregate: unknow item type: {}".format(type(i))))
+                '''
 
             def on_next_outer(i):
                 observer.on_next(i)
