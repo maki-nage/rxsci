@@ -1,3 +1,4 @@
+from .count import count
 from .filter import filter
 from .group_by import group_by
 from .map import map
