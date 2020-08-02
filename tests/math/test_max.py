@@ -73,3 +73,122 @@ def test_max_key_mapper():
         on_error=lambda e: print(e))
 
     assert actual_result == expected_result
+
+
+def test_max_mux():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 4),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnNextMux((2, None), 6),
+        rs.OnNextMux((1, None), 10),
+        rs.OnNextMux((1, None), 3),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_error = []
+    actual_completed = []
+    actual_result = []
+
+    def on_completed():
+        actual_completed.append(True)
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.max(),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=on_completed,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert actual_completed == [True]
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 4),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnNextMux((2, None), 8),
+        rs.OnNextMux((1, None), 10),
+        rs.OnNextMux((1, None), 10),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+
+
+def test_max_mux_reduce():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 4),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnNextMux((2, None), 6),
+        rs.OnNextMux((1, None), 10),
+        rs.OnNextMux((1, None), 3),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_error = []
+    actual_completed = []
+    actual_result = []
+
+    def on_completed():
+        actual_completed.append(True)
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.max(reduce=True),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=on_completed,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert actual_completed == [True]
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), 10),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnCompletedMux((2, None)),
+    ]
+
+
+def test_max_mux_empty_reduce():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_error = []
+    actual_completed = []
+    actual_result = []
+
+    def on_completed():
+        actual_completed.append(True)
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.max(reduce=True),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=on_completed,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert actual_completed == [True]
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), None),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), None),
+        rs.OnCompletedMux((2, None)),
+    ]
+
