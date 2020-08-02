@@ -14,6 +14,17 @@ def test_max_empty():
     assert actual_result == [None]
 
 
+def test_max_empty_reduce():
+    source = []
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.math.max(reduce=True)
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result == [None]
+
+
 def test_max_int():
     source = [4, 10, 3, 2]
     actual_result = []
@@ -57,6 +68,8 @@ def test_max_key_mapper():
 
     rx.from_(source).pipe(
         rs.math.max(lambda i: i[1], reduce=True)
-    ).subscribe(on_next=actual_result.append)
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=lambda e: print(e))
 
     assert actual_result == expected_result

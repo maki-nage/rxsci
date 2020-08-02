@@ -1,4 +1,5 @@
 import rx
+import rxsci.operators as rsops
 
 
 def max(key_mapper=lambda i: i, reduce=False):
@@ -13,29 +14,12 @@ def max(key_mapper=lambda i: i, reduce=False):
     Returns:
         An observable emitting the max of source items.
     '''
-    def _max(source):
-        def on_subscribe(observer, scheduler):
-            m = None
+    def accumulate(acc, i):
+        i = key_mapper(i)
 
-            def on_next(i):
-                nonlocal m
-                i = key_mapper(i)
+        if acc is None or i > acc:
+            acc = i
 
-                if m is None or i > m:
-                    m = i
-                if reduce is False:
-                    observer.on_next(m)
+        return acc
 
-            def on_completed():
-                if reduce is True or m is None:
-                    observer.on_next(m)
-                observer.on_completed()
-
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler,
-            )
-        return rx.create(on_subscribe)
-    return _max
+    return rsops.scan(accumulate, None, reduce=reduce)
