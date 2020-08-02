@@ -191,4 +191,3 @@ def test_max_mux_empty_reduce():
         rs.OnNextMux((2, None), None),
         rs.OnCompletedMux((2, None)),
     ]
-
