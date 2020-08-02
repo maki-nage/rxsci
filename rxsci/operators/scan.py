@@ -74,11 +74,15 @@ def scan(accumulator, seed, reduce=False):
             return scan_mux(accumulator, seed, reduce)(source)
         else:
             if reduce is False:
-                return ops.scan(accumulator, seed)(source)
+                return rx.pipe(
+                    ops.scan(accumulator, seed),
+                    ops.default_if_empty(None),
+                )(source)
             else:
                 return rx.pipe(
                     ops.scan(accumulator, seed),
-                    ops.last(),
-                )
+                    ops.do_action(print),
+                    ops.last_or_default(None),
+                )(source)
 
     return _scan
