@@ -60,3 +60,57 @@ def test_min_key_mapper():
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == expected_result
+
+
+def test_min_mux_reduce():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 4),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnNextMux((2, None), 6),
+        rs.OnNextMux((1, None), 10),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 2),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.min(reduce=True)
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), 2),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), 6),
+        rs.OnCompletedMux((2, None)),
+    ]
+
+
+def test_min_mux_empty_reduce():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.min(reduce=True),
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), None),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), None),
+        rs.OnCompletedMux((2, None)),
+    ]
