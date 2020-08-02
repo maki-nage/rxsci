@@ -1,4 +1,5 @@
 import rx
+import rxsci.operators as rsops
 
 
 def sum(key_mapper=lambda i: i, reduce=False):
@@ -13,28 +14,8 @@ def sum(key_mapper=lambda i: i, reduce=False):
     Returns:
         An observable emitting items whose value is the sum of source items.
     '''
-    def _sum(source):
-        def on_subscribe(observer, scheduler):
-            s = 0
+    def accumulate(acc, i):
+        i = key_mapper(i)
+        return acc + i
 
-            def on_next(i):
-                nonlocal s
-                i = key_mapper(i)
-
-                s += i
-                if reduce is False:
-                    observer.on_next(s)
-
-            def on_completed():
-                if reduce is True:
-                    observer.on_next(s)
-                observer.on_completed()
-
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler,
-            )
-        return rx.create(on_subscribe)
-    return _sum
+    return rsops.scan(accumulate, 0, reduce=reduce)

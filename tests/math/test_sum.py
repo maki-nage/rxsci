@@ -77,3 +77,69 @@ def test_sum_completed_on_empty():
 
     assert actual_completed == [True]
     assert actual_result == [0]
+
+
+def test_sum_mux_completed_on_empty():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_completed = []
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.sum(reduce=True),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=lambda e: print(e),
+        on_completed=lambda: actual_completed.append(True)
+    )
+
+    assert actual_completed == [True]
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), 0),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), 0),
+        rs.OnCompletedMux((2, None)),
+    ]
+
+
+def test_sum_mux():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 2),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnNextMux((2, None), 6),
+        rs.OnNextMux((1, None), 3),
+        rs.OnNextMux((1, None), 10),
+        rs.OnNextMux((1, None), 4),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+
+    actual_completed = []
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.math.sum(reduce=True),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=lambda: actual_completed.append(True)
+    )
+
+    assert actual_completed == [True]
+    assert actual_result == [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), 19),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), 14),
+        rs.OnCompletedMux((2, None)),
+    ]
