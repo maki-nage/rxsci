@@ -31,9 +31,17 @@ def scan_mux(accumulator, seed, reduce):
                 else:
                     observer.on_next(TypeError("scan: unknow item type: {}".format(type(i))))
 
+            def on_completed():
+                if reduce is True:
+                    for k in state:
+                        observer.on_next(rs.OnNextMux(k, seed))
+                        observer.on_next(rs.OnCompletedMux(k))
+                state.clear()
+                observer.on_completed()
+
             return source.subscribe(
                 on_next=on_next,
-                on_completed=observer.on_completed,
+                on_completed=on_completed,
                 on_error=observer.on_error,
                 scheduler=scheduler
             )
@@ -76,13 +84,12 @@ def scan(accumulator, seed, reduce=False):
             if reduce is False:
                 return rx.pipe(
                     ops.scan(accumulator, seed),
-                    ops.default_if_empty(None),
+                    ops.default_if_empty(default_value=seed),
                 )(source)
             else:
                 return rx.pipe(
                     ops.scan(accumulator, seed),
-                    ops.do_action(print),
-                    ops.last_or_default(None),
+                    ops.last_or_default(default_value=seed),
                 )(source)
 
     return _scan
