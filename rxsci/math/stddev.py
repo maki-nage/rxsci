@@ -1,6 +1,7 @@
 import math
 import rx.operators as ops
 import rxsci as rs
+import rxsci.operators as rsops
 
 
 def stddev(key_mapper=lambda i: i, reduce=False):
@@ -27,7 +28,7 @@ def stddev(key_mapper=lambda i: i, reduce=False):
 
         return source.pipe(
             rs.math.variance(key_mapper, reduce=reduce),
-            ops.map(lambda i: math.sqrt(i) if i is not None else None),
+            rsops.map(lambda i: math.sqrt(i) if i is not None else None),
         )
 
     return _stddev

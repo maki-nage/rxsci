@@ -1,4 +1,5 @@
 import rx
+import rxsci.operators as rsops
 
 
 def variance(key_mapper=lambda i: i, reduce=False):
@@ -19,43 +20,23 @@ def variance(key_mapper=lambda i: i, reduce=False):
     Returns:
         An observable emitting the variance of the source items.
     '''
-    def _variance(source):
-        def on_subscribe(observer, scheduler):
-            m = None
-            s = 0
-            k = 0
+    # state is (m, s, k)
+    def accumulate(acc, i):
+        m = acc[0]
+        s = acc[1]
+        k = acc[2] + 1
+        i = key_mapper(i)
 
-            def on_next(i):
-                nonlocal m
-                nonlocal s
-                nonlocal k
-                i = key_mapper(i)
+        if m is None:
+            m = i
+        else:
+            m1 = m
+            m = m + (i - m) / k
+            s = s + (i - m1)*(i - m)
 
-                k += 1
-                if m is None:
-                    m = i
-                else:
-                    m1 = m
-                    m = m + (i - m) / k
-                    s = s + (i - m1)*(i - m)
+        return (m, s, k)
 
-                if reduce is False and k > 1:
-                    observer.on_next(s / (k-1))
-
-            def on_completed():
-                if reduce is True:
-                    if k < 2:
-                        observer.on_next(0.0)
-                    else:
-                        observer.on_next(s / (k-1))
-                observer.on_completed()
-
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler,
-            )
-        return rx.create(on_subscribe)
-
-    return _variance
+    return rx.pipe(
+        rsops.scan(accumulate, (None, 0, 0), reduce=reduce),
+        rsops.map(lambda acc: 0.0 if acc[2] < 2 else acc[1] / (acc[2]-1)),
+    )
