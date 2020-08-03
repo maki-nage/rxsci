@@ -2,25 +2,29 @@ from collections import namedtuple
 import rx
 import rx.operators as ops
 import rxsci as rs
+import rxsci.operators as rsops
 import distogram
 
 
-def update(bin_count=100, weighted_diff=False):
+def update(bin_count=100, weighted_diff=False, reduce=False):
     '''Updates the distribution by adding source items to it
 
     Args:
         bin_count: [Optional] number of bins to use.
         weighted_diff: [Optional] Applies log weight to bin computation. This
             may be needed if the distribution contains outliers.
+        reduce: [Optional] Emit an item for each source item when reduce is
+            False, otherwise emits a single item on completion.
 
     Returns:
         An Observable of Distrogram objects.
     '''
     return rx.pipe(
-        ops.scan(
+        rsops.scan(
             distogram.update,
-            seed=distogram.Distogram(bin_count=bin_count, weighted_diff=weighted_diff)
-        ))
+            seed=lambda: distogram.Distogram(bin_count=bin_count, weighted_diff=weighted_diff),
+            reduce=reduce,
+    ))
 
 
 def merge():
@@ -33,7 +37,7 @@ def merge():
         An Observable of Distogram objects.
     '''
     return rx.pipe(
-        ops.map(distogram.merge),
+        rsops.map(distogram.merge),
     )
 
 
@@ -44,7 +48,7 @@ def min():
         An observable emitting the minimum value of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.bounds(i)[0])
+        rsops.map(lambda i: distogram.bounds(i)[0])
     )
 
 
@@ -55,7 +59,7 @@ def max():
         An observable emitting the maximum value of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.bounds(i)[1])
+        rsops.map(lambda i: distogram.bounds(i)[1])
     )
 
 
@@ -66,7 +70,7 @@ def mean():
         An observable emitting the mean value of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.mean(i))
+        rsops.map(lambda i: distogram.mean(i))
     )
 
 
@@ -77,7 +81,7 @@ def variance():
         An observable emitting the variance of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.variance(i))
+        rsops.map(lambda i: distogram.variance(i))
     )
 
 
@@ -88,7 +92,7 @@ def stddev():
         An observable emitting the standard deviation of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.stddev(i))
+        rsops.map(lambda i: distogram.stddev(i))
     )
 
 
@@ -102,7 +106,7 @@ def quantile(value):
         An observable emitting the quantile value of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.quantile(i, value))
+        rsops.map(lambda i: distogram.quantile(i, value))
     )
 
 
@@ -140,7 +144,7 @@ def describe(quantiles=[0.25, 0.5, 0.75]):
     x = namedtuple('x', fields)
     return rx.pipe(
         rs.tee_map(*metrics),
-        ops.map(lambda i: x(*i)),
+        rsops.map(lambda i: x(*i)),
     )
 
 
@@ -157,5 +161,5 @@ def histogram(bin_count=100):
         An observable emitting the histogram of each source items.
     '''
     return rx.pipe(
-        ops.map(lambda i: distogram.histogram(i, ucount=bin_count))
+        rsops.map(lambda i: distogram.histogram(i, ucount=bin_count))
     )
