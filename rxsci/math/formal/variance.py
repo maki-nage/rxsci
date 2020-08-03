@@ -1,4 +1,5 @@
 import rx
+import rxsci.operators as rsops
 from rxsci.math.formal import _moment
 
 
@@ -19,37 +20,21 @@ def variance(key_mapper=lambda i: i, reduce=False):
     Returns:
         An observable emitting variance of source items.
     '''
-    def _variance(source):
-        def on_subscribe(observer, scheduler):
-            q = []
+    def accumulate(acc, i):
+        i = key_mapper(i)
+        acc.append(i)
+        return acc
 
-            def on_next(i):
-                nonlocal q
-                i = key_mapper(i)
+    def _variance(acc):
+        if len(acc) == 0:
+            return 0.0
+        else:
+            mean = _moment(acc, 0, 1)
+            v = _moment(acc, mean, 2)
+            acc.clear()
+            return v
 
-                q.append(i)
-                if reduce is False:
-                    mean = _moment(q, 0, 1)
-                    v = _moment(q, mean, 2)
-                    observer.on_next(v)
-
-            def on_completed():
-                if reduce is True:
-                    if len(q) == 0:
-                        observer.on_next(0.0)
-                    else:
-                        mean = _moment(q, 0, 1)
-                        v = _moment(q, mean, 2)
-                        q.clear()
-                        observer.on_next(v)
-                observer.on_completed()
-
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler,
-            )
-        return rx.create(on_subscribe)
-
-    return _variance
+    return rx.pipe(
+        rsops.scan(accumulate, [], reduce=reduce),
+        rsops.map(_variance),
+    )
