@@ -1,3 +1,4 @@
+import copy
 import rx
 import rxsci as rs
 import rx.operators as ops
@@ -18,7 +19,7 @@ def scan_mux(accumulator, seed, reduce):
                     except Exception as e:
                         observer.on_next(rs.OnErrorMux(i.key, e))
                 elif type(i) is rs.OnCreateMux:
-                    state[i.key] = seed
+                    state[i.key] = seed() if callable(seed) else copy.deepcopy(seed)
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:
                     if reduce is True:
@@ -69,7 +70,8 @@ def scan(accumulator, seed, reduce=False):
     Args:
         accumulator: A function called on each item, that accumulates
             tranformation results.
-        seed: The initial value of the accumulator
+        seed: The initial value of the accumulator. On MuxObservables, seed is
+            deep copied for each observable, or called if seed is callable.
         reduce: [Optional] Emit an item for each source item when reduce is
             False, otherwise emits a single item on completion.
 
@@ -81,15 +83,16 @@ def scan(accumulator, seed, reduce=False):
         if isinstance(source, rs.MuxObservable):
             return scan_mux(accumulator, seed, reduce)(source)
         else:
+            _seed = seed() if callable(seed) else seed
             if reduce is False:
                 return rx.pipe(
-                    ops.scan(accumulator, seed),
-                    ops.default_if_empty(default_value=seed),
+                    ops.scan(accumulator, _seed),
+                    ops.default_if_empty(default_value=_seed),
                 )(source)
             else:
                 return rx.pipe(
-                    ops.scan(accumulator, seed),
-                    ops.last_or_default(default_value=seed),
+                    ops.scan(accumulator, _seed),
+                    ops.last_or_default(default_value=_seed),
                 )(source)
 
     return _scan
