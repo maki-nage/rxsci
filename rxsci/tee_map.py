@@ -25,7 +25,7 @@ def _zip(*args, connectable):
                 return
             elif isinstance(x, rs.OnCompletedMux) \
                     or isinstance(x, rs.OnErrorMux):                
-                if i == 0:
+                if i == n-1:
                     observer.on_next(x)
                     del queue[x.key]
                 return
