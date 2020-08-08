@@ -1,4 +1,5 @@
 from collections import deque
+from array import array
 
 import rx
 import rxsci as rs
@@ -17,42 +18,59 @@ def roll_mux(window, stride=None):
     if stride <= 0:
         raise ValueError()
 
+    density = window // stride
+    if window % stride:
+        density += 1
+
     def _roll(source):
         def subscribe(observer, scheduler=None):
-            state = {}
+            state_n = array('Q')
+            state_w = array('q')
 
             def on_next(i):
                 if isinstance(i, rs.OnNextMux):
-                    istate = state[i.key]
-                    w = istate['w']
-                    n = istate['n']
+                    n = state_n[i.key[0]]
+                    index = (n % window) // stride
 
-                    if (n % stride) == 0 or n == 0:
-                        w.append(n)
-                        observer.on_next(rs.OnCreateMux((n, i.key)))
+                    if (n % stride) == 0:                        
+                        index = i.key[0] * density + index
+                        state_w[index] = n
+                        observer.on_next(rs.OnCreateMux((index, i.key)))
 
-                    pop = False
-                    for index in w:
-                        observer.on_next(rs.OnNextMux((index, i.key), i.item))
-                        count = n - index + 1
-                        if count == window:                            
-                            pop = True
-                            observer.on_next(rs.OnCompletedMux((index, i.key)))
+                    for offset in range(density):
+                        index = i.key[0] * density + offset
+                        if state_w[index] != -1:
+                            observer.on_next(rs.OnNextMux((index, i.key), i.item))
+                            count = n - state_w[index] + 1
+                            if count == window:
+                                state_w[index] = -1
+                                observer.on_next(rs.OnCompletedMux((index, i.key)))
 
-                    if pop:
-                        w.pop(0)
 
-                    istate['n'] += 1
+                    state_n[i.key[0]] += 1
 
                 elif isinstance(i, rs.OnCreateMux):
-                    state[i.key] = {'n': 0, 'w': []}
+                    n_append_count = (i.key[0]+1) - len(state_n)
+                    w_append_count = (i.key[0]+1) * density - len(state_w)
+                    if n_append_count > 0:
+                        for _ in range(n_append_count):
+                            state_n.append(0)
+                    if w_append_count > 0:
+                        for _ in range(w_append_count):
+                            state_w.append(-1)
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnCompletedMux):
-                    del state[i.key]
+                    kindex = i.key[0]
+                    state_n[kindex] = 0
+                    for offset in range(density):                        
+                        state_w[kindex+offset] = -1
                     #observer.on_next(rs.OnCompletedMux((1, i.key)))
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
-                    del state[i.key]
+                    kindex = i.key[0]
+                    state_n[kindex] = 0
+                    for offset in range(density):                        
+                        state_w[kindex+offset] = -1
                     #observer.on_next(rs.OnErrordMux((1, i.key), i.error))
                     outer_observer.on_next(i)
 

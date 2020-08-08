@@ -54,34 +54,35 @@ def split_mux(predicate):
 
     def _split(source):
         def on_subscribe(observer, scheduler):
-            state = {}
+            state = []
 
             def on_next(i):
                 if isinstance(i, rs.OnNextMux):
                     new_predicate = predicate(i.item)
-                    current_predicate = state[i.key]
+                    current_predicate = state[i.key[0]]
                     if current_predicate is None:
                         current_predicate = new_predicate
-                        state[i.key] = current_predicate
-                        observer.on_next(rs.OnCreateMux((1, i.key)))
+                        state[i.key[0]] = current_predicate
+                        observer.on_next(rs.OnCreateMux((i.key[0], i.key)))
 
-                    print("{}, {}".format(new_predicate, current_predicate))
                     if new_predicate != current_predicate:
-                        state[i.key] = new_predicate
-                        observer.on_next(rs.OnCompletedMux((1, i.key)))
-                        observer.on_next(rs.OnCreateMux((1, i.key)))
+                        state[i.key[0]] = new_predicate
+                        observer.on_next(rs.OnCompletedMux((i.key[0], i.key)))
+                        observer.on_next(rs.OnCreateMux((i.key[0], i.key)))
 
-                    observer.on_next(rs.OnNextMux((1, i.key), i.item))
+                    observer.on_next(rs.OnNextMux((i.key[0], i.key), i.item))
                 elif isinstance(i, rs.OnCreateMux):
-                    state[i.key] = None                    
+                    append_count = i.key[0] + 1 - len(state)
+                    if append_count > 0:
+                        for _ in range(append_count):
+                            state.append(None)
+                    state[i.key[0]] = None
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnCompletedMux):
-                    del state[i.key]
-                    observer.on_next(rs.OnCompletedMux((1, i.key)))
+                    observer.on_next(rs.OnCompletedMux((i.key[0], i.key)))
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
-                    del state[i.key]
-                    observer.on_next(rs.OnErrordMux((1, i.key), i.error))
+                    observer.on_next(rs.OnErrordMux((i.key[0], i.key), i.error))
                     outer_observer.on_next(i)
 
             return source.subscribe(

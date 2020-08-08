@@ -44,14 +44,14 @@ def test_roll():
 
 def test_roll_with_stride():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 4),
-        rs.OnNextMux((1, None), 5),
-        rs.OnNextMux((1, None), 6),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((0 ,)),
+        rs.OnNextMux((0,), 1),
+        rs.OnNextMux((0,), 2),
+        rs.OnNextMux((0,), 3),
+        rs.OnNextMux((0,), 4),
+        rs.OnNextMux((0,), 5),
+        rs.OnNextMux((0,), 6),
+        rs.OnCompletedMux((0,)),
     ]
 
     actual_result = []
@@ -68,22 +68,22 @@ def test_roll_with_stride():
     ).subscribe(on_next)
 
     assert mux_actual_result == [
-        rs.OnCreateMux((0, (1 ,None))),
-        rs.OnNextMux((0, (1, None)), 1),
-        rs.OnNextMux((0, (1, None)), 2),
+        rs.OnCreateMux((0, (0,))),
+        rs.OnNextMux((0, (0,)), 1),
+        rs.OnNextMux((0, (0,)), 2),
 
-        rs.OnCreateMux((2, (1 ,None))),
-        rs.OnNextMux((0, (1, None)), 3),
-        rs.OnCompletedMux((0, (1 ,None))),
-        rs.OnNextMux((2, (1, None)), 3),        
-        rs.OnNextMux((2, (1, None)), 4),
+        rs.OnCreateMux((1, (0,))),
+        rs.OnNextMux((0, (0,)), 3),
+        rs.OnCompletedMux((0, (0,))),
+        rs.OnNextMux((1, (0,)), 3),        
+        rs.OnNextMux((1, (0,)), 4),
 
-        rs.OnCreateMux((4, (1 ,None))),
-        rs.OnNextMux((2, (1, None)), 5),
-        rs.OnCompletedMux((2, (1 ,None))),
-        rs.OnNextMux((4, (1, None)), 5),
-        
-        rs.OnNextMux((4, (1, None)), 6),
+        rs.OnCreateMux((0, (0,))),
+        rs.OnNextMux((0, (0,)), 5),
+        rs.OnNextMux((1, (0,)), 5),
+        rs.OnCompletedMux((1, (0,))),
+                
+        rs.OnNextMux((0, (0,)), 6),
         
         #rs.OnCompletedMux((4, (1 ,None))),  # only complete windows are notified for now
     ]

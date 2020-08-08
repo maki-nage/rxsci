@@ -7,17 +7,17 @@ def mux_observable():
     def __mux(source):
         def on_subscribe(observer, scheduler):
             def on_next(i):
-                observer.on_next(rs.OnNextMux(None, i))
+                observer.on_next(rs.OnNextMux((0,), i))
 
             def on_error(e):
-                observer.on_next(rs.OnErrorMux(None, e))
+                observer.on_next(rs.OnErrorMux((0,), e))
                 observer.on_error(e)
 
             def on_completed():
-                observer.on_next(rs.OnCompletedMux(None))
+                observer.on_next(rs.OnCompletedMux((0,)))
                 observer.on_completed()
 
-            observer.on_next(rs.OnCreateMux(None))
+            observer.on_next(rs.OnCreateMux((0,)))
             return source.subscribe(
                 on_next=on_next,
                 on_completed=on_completed,

@@ -31,10 +31,10 @@ def test_multiplex():
     assert actual_completed == [True]
     assert actual_result == source
     assert mux_actual_result == [
-        rs.OnCreateMux(None),
-        rs.OnNextMux(None, 1),
-        rs.OnNextMux(None, 2),
-        rs.OnNextMux(None, 3),
-        rs.OnNextMux(None, 4),
-        rs.OnCompletedMux(None),
+        rs.OnCreateMux((0,)),
+        rs.OnNextMux((0,), 1),
+        rs.OnNextMux((0,), 2),
+        rs.OnNextMux((0,), 3),
+        rs.OnNextMux((0,), 4),
+        rs.OnCompletedMux((0,)),
     ]

@@ -14,6 +14,38 @@ def test_assert_ok():
     assert actual_result == expected_result
 
 
+def test_assert_mux_ok():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 2),
+        rs.OnNextMux((2, None), 3),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_result = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.assert_(lambda i: i > 0)
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result ==  [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 2),
+        rs.OnNextMux((2, None), 3),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), 3),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+
+
 def test_assert_fail():
     source = [1, 2, 3, 4]
     expected_result = [1, 2]
@@ -31,33 +63,60 @@ def test_assert_fail():
     assert type(error[0]) == ValueError
 
 
-def test_assert_scan_ok():
+def test_assert_mux_fail():
+    source = [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 2),
+        rs.OnNextMux((2, None), -1),
+        rs.OnNextMux((1, None), 2),
+        rs.OnNextMux((1, None), -1),
+        rs.OnCompletedMux((1, None)),
+        rs.OnCompletedMux((2, None)),
+    ]
+    actual_result = []
+    error = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.assert_(lambda i: i > 0)
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=error.append,
+    )
+
+    assert actual_result ==  [
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), 1),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((2, None), 2),
+    ]
+    assert type(error[0]) == ValueError
+
+
+def test_assert_1_ok():
     source = [1, 2, 3, 4]
     expected_result = [1, 2, 3, 4]
     actual_result = []
 
     rx.from_(source).pipe(
-        rs.assert_(
-            lambda i: i[1] > i[0] if (i[0] is not None and i[1] is not None) else True,
-            accumulator=lambda acc, i: (acc[1], i),
-            seed=(None, None))
+        rs.assert_1(lambda prev, cur: cur > prev),
     ).subscribe(
-        on_next=actual_result.append)
+        on_next=actual_result.append,        
+    )
 
     assert actual_result == expected_result
 
 
-def test_assert_scan_error():
+def test_assert_1_error():
     source = [1, 2, 4, 3]
     expected_result = [1, 2, 4]
     actual_result = []
     error = []
 
     rx.from_(source).pipe(
-        rs.assert_(
-            lambda i: i[1] > i[0] if (i[0] is not None and i[1] is not None) else True,
-            accumulator=lambda acc, i: (acc[1], i),
-            seed=(None, None))
+        rs.assert_1(lambda prev, cur: cur > prev),
     ).subscribe(
         on_next=actual_result.append,
         on_error=error.append

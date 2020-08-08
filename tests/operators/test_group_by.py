@@ -33,12 +33,12 @@ def test_group_by():
     assert actual_completed == [True]
     assert actual_result == source
     assert mux_actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((0 ,(0,))),
+        rs.OnNextMux((0, (0,)), 1),
+        rs.OnCreateMux((1, (0,))),
+        rs.OnNextMux((1, (0,)), 2),
+        rs.OnNextMux((1, (0,)), 2),
+        rs.OnNextMux((0, (0,)), 1),
+        rs.OnCompletedMux((0, (0,))),
+        rs.OnCompletedMux((1, (0,))),
     ]

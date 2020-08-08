@@ -16,7 +16,7 @@ from .mux import (
 import rxsci.data as data
 import rxsci.math as math
 
-from .assert_ import assert_
+from .assert_ import assert_, assert_1
 from .flat_map import flat_map
 from .on_subscribe import on_subscribe
 from .progress import progress

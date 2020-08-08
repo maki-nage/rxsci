@@ -5,20 +5,24 @@ import rx.operators as ops
 def last_mux():
     def _last(source):
         def on_subscribe(observer, scheduler):
-            state = {}
+            state = []
             def on_next(i):
                 if type(i) is rs.OnNextMux:
-                    state[i.key] = i.item
+                    state[i.key[0]] = i.item
                 elif type(i) is rs.OnCreateMux:
+                    append_count = (i.key[0]+1) - len(state)
+                    if append_count > 0:
+                        for _ in range(append_count):
+                            state.append(None)                    
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:                    
-                    if i.key in state:
-                        observer.on_next(rs.OnNextMux(i.key, state[i.key]))
+                    #if i.key[0] in state:
+                    observer.on_next(rs.OnNextMux(i.key, state[i.key[0]]))
                     observer.on_next(i)
-                    del state[i.key]
+                    state[i.key[0]] = None
                 elif type(i) is rs.OnErrorMux:
                     observer.on_next(rs.OnErrorMux(i.key, i.error))
-                    del state[i.key]
+                    state[i.key[0]] = None
                 else:
                     observer.on_next(TypeError("first: unknow item type: {}".format(type(i))))
 

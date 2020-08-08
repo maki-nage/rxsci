@@ -1,3 +1,4 @@
+from array import array
 import functools
 import rx
 import rx.operators as ops
@@ -7,47 +8,77 @@ import rxsci as rs
 
 def _zip(*args, connectable):
     sources = list(args)
-    mux = False
-    if isinstance(connectable, rs.MuxObservable):
-        mux = True
+
+    def subscribe_mux(observer, scheduler):
+        n = len(sources)
+        queue = []
+        has_next = array('B')
+
+        def on_next(i, x):
+            if isinstance(x, rs.OnCreateMux):
+                if i == 0:
+                    append_count = (x.key[0]+1) * n - len(queue)
+                    if append_count > 0:
+                        for _ in range(append_count):
+                            queue.append(None)
+                            has_next.append(False)
+                    observer.on_next(x)
+                return
+            elif isinstance(x, rs.OnCompletedMux):
+                if i == n-1:
+                    observer.on_next(x)
+                return
+            elif isinstance(x, rs.OnErrorMux):
+                observer.on_next(x)
+                return
+            
+            base_index = x.key[0] * n
+            index = base_index + i            
+            queue[index] = x.item
+            has_next[index] = True
+            _next = has_next[base_index:base_index+n]
+            if all(_next):
+                try:
+                    _queue = queue[base_index:base_index+n]
+                    res = tuple(_queue)
+                    res = rs.OnNextMux(x.key, res)
+                    for index in range(n):
+                        has_next[base_index+index] = False
+                except Exception as ex:  # pylint: disable=broad-except
+                    observer.on_error(ex)
+                    return
+
+                observer.on_next(res)
+
+        subscriptions = [None] * n
+        for i in range(n):
+            subscriptions[i] = sources[i].subscribe_(
+                on_next=functools.partial(on_next, i),
+                on_error=observer.on_error,
+                on_completed=observer.on_completed,
+                scheduler=scheduler,
+            )
+        subscriptions.append(connectable.connect())
+        return CompositeDisposable(subscriptions)
+
 
     def subscribe(observer, scheduler):
         n = len(sources)
-        queue = [None] * n if mux is False else {}
+        queue = [None] * n
         has_next = [False] * n
         is_done = [False] * n
 
-        def on_next(i, x):            
-            if isinstance(x, rs.OnCreateMux):
-                if i == 0:
-                    queue[x.key] = [None] * n
-                    observer.on_next(x)
-                return
-            elif isinstance(x, rs.OnCompletedMux) \
-                    or isinstance(x, rs.OnErrorMux):                
-                if i == n-1:
-                    observer.on_next(x)
-                    del queue[x.key]
-                return
-
-            if mux is True:
-                queue[x.key][i] = x.item
-            else:
-                queue[i] = x
+        def on_next(i, x):
+            queue[i] = x
             has_next[i] = True
             if all(has_next):
                 try:                    
-                    if mux is True:
-                        res = tuple(queue[x.key])
-                        res = rs.OnNextMux(x.key, res)
-                    else:
-                        res = tuple(queue)
+                    res = tuple(queue)
                     for index in range(n):
                         has_next[index] = False
                 except Exception as ex:  # pylint: disable=broad-except
                     observer.on_error(ex)
                     return
-
 
                 observer.on_next(res)
 
@@ -66,10 +97,11 @@ def _zip(*args, connectable):
             )
         subscriptions.append(connectable.connect())
         return CompositeDisposable(subscriptions)
-    if mux is False:
-        return rx.create(subscribe)
+
+    if isinstance(connectable, rs.MuxObservable):
+        return rs.MuxObservable(subscribe_mux)
     else:
-        return rs.MuxObservable(subscribe)
+        return rx.create(subscribe)
 
 
 def tee_map(*args):

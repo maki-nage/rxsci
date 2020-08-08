@@ -1,42 +1,61 @@
 import copy
 import rx
 import rxsci as rs
+from rxsci.internal.utils import NotSet
 import rx.operators as ops
 
 
 def scan_mux(accumulator, seed, reduce):
     def _scan(source):
         def on_subscribe(observer, scheduler):
-            state = {}
+            state = []
+            keys = []
 
             def on_next(i):
                 if type(i) is rs.OnNextMux:
                     try:
-                        acc = accumulator(state[i.key], i.item)
-                        state[i.key] = acc
+                        _state = state[i.key[0]]
+                        if _state is NotSet:
+                            _state = seed() if callable(seed) else copy.deepcopy(seed)
+                        acc = accumulator(_state, i.item)
+                        state[i.key[0]] = acc
                         if reduce is False:
                             observer.on_next(rs.OnNextMux(i.key, acc))
                     except Exception as e:
                         observer.on_next(rs.OnErrorMux(i.key, e))
                 elif type(i) is rs.OnCreateMux:
-                    state[i.key] = seed() if callable(seed) else copy.deepcopy(seed)
+                    append_count = (i.key[0]+1) - len(state)
+                    if append_count > 0:
+                        for _ in range(append_count):
+                            state.append(None)
+                            keys.append(None)
+                    state[i.key[0]] = NotSet
+                    keys[i.key[0]] = i.key
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:
                     if reduce is True:
-                        observer.on_next(rs.OnNextMux(i.key, state[i.key]))
+                        _state = state[i.key[0]]
+                        if _state is NotSet:
+                            _state = seed() if callable(seed) else copy.deepcopy(seed)
+                        observer.on_next(rs.OnNextMux(i.key, _state))
                     observer.on_next(i)
-                    del state[i.key]
+                    state[i.key[0]] = None
+                    keys[i.key[0]] = None
                 elif type(i) is rs.OnErrorMux:
                     observer.on_next(rs.OnErrorMux(i.key, i.error))
-                    del state[i.key]
+                    state[i.key[0]] = None
+                    keys[i.key[0]] = None
                 else:
                     observer.on_next(TypeError("scan: unknow item type: {}".format(type(i))))
 
             def on_completed():
                 if reduce is True:
-                    for k in state:
-                        observer.on_next(rs.OnNextMux(k, seed))
-                        observer.on_next(rs.OnCompletedMux(k))
+                    for index in range(len(keys)):
+                        _state = state[index]
+                        if _state is NotSet:
+                            _state = seed() if callable(seed) else copy.deepcopy(seed)
+                            observer.on_next(rs.OnNextMux(keys[index], _state))
+                            observer.on_next(rs.OnCompletedMux(keys[index]))
                 state.clear()
                 observer.on_completed()
 

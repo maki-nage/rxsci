@@ -24,9 +24,9 @@ def lag1():
 
             def on_next(i):
                 nonlocal last
-                ii = (last if last is not None else i, i)
+                if last is not None:
+                    observer.on_next((last, i))
                 last = i
-                observer.on_next(ii)
 
             return source.subscribe(
                 on_next=on_next,
