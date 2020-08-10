@@ -30,9 +30,9 @@ def roll_mux(window, stride=None):
             def on_next(i):
                 if isinstance(i, rs.OnNextMux):
                     n = state_n[i.key[0]]
-                    index = (n % window) // stride
 
-                    if (n % stride) == 0:                        
+                    if (n % stride) == 0:
+                        index = (n // stride) % density
                         index = i.key[0] * density + index
                         state_w[index] = n
                         observer.on_next(rs.OnCreateMux((index, i.key)))
