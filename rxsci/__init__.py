@@ -15,6 +15,7 @@ from .mux import (
 
 import rxsci.data as data
 import rxsci.math as math
+import rxsci.operators as ops
 
 from .assert_ import assert_, assert_1
 from .flat_map import flat_map
