@@ -1,4 +1,4 @@
-name: Python package
+name: make doc
 
 on:
   push:
@@ -29,7 +29,9 @@ jobs:
         python -m pip install sphinx sphinx-rtd-theme sphinx-tabs
     - name: Make doc
       run: |
-        cd rxsci/docs && make html
+        cd rxsci/docs
+        pip install requirements.txt
+        make html
     - name: Publish master
       run: |
         cd www
