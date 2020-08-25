@@ -30,7 +30,7 @@ jobs:
     - name: Make doc
       run: |
         cd rxsci/docs
-        pip install requirements.txt
+        pip install -r requirements.txt
         make html
     - name: Publish master
       run: |
