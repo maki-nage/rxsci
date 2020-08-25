@@ -1,0 +1,42 @@
+name: Python package
+
+on: push
+  branches:
+    - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: rxsci
+    - name: Checkout site
+      uses: actions/checkout@v2
+      with:
+        repository: maki-nage/maki-nage.github.io
+        token: ${{ secrets.SITE_PAT }}
+        path: www
+    - name: Install dependencies
+      run: |
+        python -m pip install sphinx sphinx-rtd-theme sphinx-tabs
+    - name: Make doc
+      run: |
+        cd rxsci/docs && make html
+    - name: Publish master
+      run: |
+        cd www
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git rm -rf --ignore-unmatch doc/rxsci/latest/*
+        install -d doc/rxsci/latest
+        cp -r ../rxsci/_build/html/* doc/rxsci/latest/
+        git add doc/rxsci/latest
+        git commit -m "rxsci: push latest"
+        git push
