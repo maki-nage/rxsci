@@ -1,5 +1,5 @@
 import rx
-import rxsci.operators as rsops
+import rxsci as rs
 
 
 def mean(key_mapper=lambda i: i, reduce=False):
@@ -19,6 +19,6 @@ def mean(key_mapper=lambda i: i, reduce=False):
         return (acc[0]+i, acc[1]+1)
 
     return rx.pipe(
-        rsops.scan(accumulate, (0, 0), reduce=reduce),
-        rsops.map(lambda acc: acc[0] / acc[1] if acc is not None else None),
+        rs.ops.scan(accumulate, (0, 0), reduce=reduce),
+        rs.ops.map(lambda acc: acc[0] / acc[1] if acc is not None else None),
     )

@@ -1,5 +1,5 @@
 from collections import namedtuple
-import rxsci.operators as rsops
+import rxsci as rs
 
 
 def fill_none(value):
@@ -23,7 +23,7 @@ def fill_none(value):
 
     def _fill_none(source):
         return source.pipe(
-            rsops.map(__fill_none),
+            rs.ops.map(__fill_none),
         )
 
     return _fill_none

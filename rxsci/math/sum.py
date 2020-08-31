@@ -1,5 +1,5 @@
 import rx
-import rxsci.operators as rsops
+import rxsci as rs
 
 
 def sum(key_mapper=lambda i: i, reduce=False):
@@ -18,4 +18,4 @@ def sum(key_mapper=lambda i: i, reduce=False):
         i = key_mapper(i)
         return acc + i
 
-    return rsops.scan(accumulate, 0, reduce=reduce)
+    return rs.ops.scan(accumulate, 0, reduce=reduce)

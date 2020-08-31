@@ -8,7 +8,7 @@ def test_assert_ok():
     actual_result = []
 
     rx.from_(source).pipe(
-        rs.assert_(lambda i: i > 0)
+        rs.ops.assert_(lambda i: i > 0)
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == expected_result
@@ -30,7 +30,7 @@ def test_assert_mux_ok():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.assert_(lambda i: i > 0)
+        rs.ops.assert_(lambda i: i > 0)
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result ==  [
@@ -53,7 +53,7 @@ def test_assert_fail():
     error = []
 
     rx.from_(source).pipe(
-        rs.assert_(lambda i: i < 3)
+        rs.ops.assert_(lambda i: i < 3)
     ).subscribe(
         on_next=actual_result.append,
         on_error=error.append,
@@ -80,7 +80,7 @@ def test_assert_mux_fail():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.assert_(lambda i: i > 0)
+        rs.ops.assert_(lambda i: i > 0)
     ).subscribe(
         on_next=actual_result.append,
         on_error=error.append,
@@ -101,7 +101,7 @@ def test_assert_1_ok():
     actual_result = []
 
     rx.from_(source).pipe(
-        rs.assert_1(lambda prev, cur: cur > prev),
+        rs.ops.assert_1(lambda prev, cur: cur > prev),
     ).subscribe(
         on_next=actual_result.append,        
     )
@@ -116,7 +116,7 @@ def test_assert_1_error():
     error = []
 
     rx.from_(source).pipe(
-        rs.assert_1(lambda prev, cur: cur > prev),
+        rs.ops.assert_1(lambda prev, cur: cur > prev),
     ).subscribe(
         on_next=actual_result.append,
         on_error=error.append

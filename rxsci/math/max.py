@@ -1,5 +1,5 @@
 import rx
-import rxsci.operators as rsops
+import rxsci as rs
 
 
 def max(key_mapper=lambda i: i, reduce=False):
@@ -22,4 +22,4 @@ def max(key_mapper=lambda i: i, reduce=False):
 
         return acc
 
-    return rsops.scan(accumulate, None, reduce=reduce)
+    return rs.ops.scan(accumulate, None, reduce=reduce)

@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_last_mux():
@@ -24,7 +23,7 @@ def test_last_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.last(),
+        rs.ops.last(),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,

@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def assert_mux(predicate, name="", error=ValueError):
@@ -194,6 +193,6 @@ def assert_1(predicate, name="", error=ValueError):
 
     return rx.pipe(
         rs.data.lag1(),
-        rsops.map(_assert),
+        rs.ops.map(_assert),
     )
 """

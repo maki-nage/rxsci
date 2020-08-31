@@ -29,7 +29,7 @@ def test_train_test_split():
     dataset = rx.from_([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     train, test = dataset.pipe(
-        rxsci.train_test_split(0.2),
+        rxsci.data.train_test_split(0.2),
     )
 
     actual_train, actual_test = base_test(train, test)
@@ -42,7 +42,7 @@ def test_train_test_split_sampling3():
     dataset = rx.from_([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     train, test = dataset.pipe(
-        rxsci.train_test_split(0.5, sampling_size=3),
+        rxsci.data.train_test_split(0.5, sampling_size=3),
     )
 
     actual_train, actual_test = base_test(train, test)

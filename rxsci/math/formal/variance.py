@@ -1,5 +1,5 @@
 import rx
-import rxsci.operators as rsops
+import rxsci as rs
 from rxsci.math.formal import _moment
 
 
@@ -35,6 +35,6 @@ def variance(key_mapper=lambda i: i, reduce=False):
             return v
 
     return rx.pipe(
-        rsops.scan(accumulate, [], reduce=reduce),
-        rsops.map(_variance),
+        rs.ops.scan(accumulate, [], reduce=reduce),
+        rs.ops.map(_variance),
     )

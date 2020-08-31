@@ -5,7 +5,6 @@ import rx
 import rx.operators as ops
 import rxsci as rs
 import rxsci.container as csv
-import rxsci.operators as rsops
 
 random.seed(42)
 
@@ -29,11 +28,11 @@ def dataset(count):
 source = dataset(dataset_size)
 
 rx.from_(source).pipe(
-    rsops.multiplex(rx.pipe(
-        rsops.group_by(lambda i: i.k1, rx.pipe(
-            rsops.group_by(lambda i: i.k2, rx.pipe(                        
+    rs.ops.multiplex(rx.pipe(
+        rs.ops.group_by(lambda i: i.k1, rx.pipe(
+            rs.ops.group_by(lambda i: i.k2, rx.pipe(                        
                 rs.data.roll(5, 5, rx.pipe(
-                    rsops.count(reduce=True),
+                    rs.ops.count(reduce=True),
                 )),                
             )),
         )),

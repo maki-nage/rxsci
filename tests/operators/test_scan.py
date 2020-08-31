@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_scan_mux():
@@ -24,7 +23,7 @@ def test_scan_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.scan(lambda acc, i: i+acc, seed=0),
+        rs.ops.scan(lambda acc, i: i+acc, seed=0),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
@@ -65,7 +64,7 @@ def test_scan_mux_reduce():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.scan(lambda acc, i: i+acc, seed=0, reduce=True),
+        rs.ops.scan(lambda acc, i: i+acc, seed=0, reduce=True),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
@@ -102,7 +101,7 @@ def test_scan_mux_reduce_empty():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.scan(lambda acc, i: i+acc, seed=0, reduce=True),
+        rs.ops.scan(lambda acc, i: i+acc, seed=0, reduce=True),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
@@ -134,7 +133,7 @@ def test_scan_mux_reduce_empty_on_complete():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.scan(lambda acc, i: i+acc, seed=0, reduce=True),
+        rs.ops.scan(lambda acc, i: i+acc, seed=0, reduce=True),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,

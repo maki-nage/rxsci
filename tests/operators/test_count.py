@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_count():
@@ -24,7 +23,7 @@ def test_count():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.count(),
+        rs.ops.count(),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
@@ -65,7 +64,7 @@ def test_count_reduce():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.count(reduce=True),
+        rs.ops.count(reduce=True),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,

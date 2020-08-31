@@ -9,7 +9,7 @@ def test_completion():
     actual_completed = []
 
     rx.from_(data).pipe(
-        rs.tee_map(
+        rs.ops.tee_map(
             ops.count(),
             rs.math.sum(reduce=True),
         )

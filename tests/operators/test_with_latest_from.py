@@ -12,7 +12,7 @@ def test_parent_before_source():
         actual_value = i
 
     disposable = parent.pipe(
-        rxsci.with_latest_from(source),
+        rxsci.ops.with_latest_from(source),
     ).subscribe(
         on_next=on_next,
         on_error=lambda e: print(e),

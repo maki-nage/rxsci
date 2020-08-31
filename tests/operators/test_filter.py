@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_filter_mux():
@@ -25,7 +24,7 @@ def test_filter_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.filter(lambda i: i % 2 == 0),
+        rs.ops.filter(lambda i: i % 2 == 0),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,

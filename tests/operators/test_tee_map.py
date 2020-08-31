@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_tee_map():
@@ -15,7 +14,7 @@ def test_tee_map():
     ]
 
     rx.from_(source).pipe(
-        rs.tee_map(
+        rs.ops.tee_map(
             lambda d: d.pipe(
                 ops.map(lambda i: i*2),
             ),
@@ -46,12 +45,12 @@ def test_tee_map_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.tee_map(
+        rs.ops.tee_map(
             lambda d: d.pipe(
-                rsops.map(lambda i: i*2),
+                rs.ops.map(lambda i: i*2),
             ),
             lambda d: d.pipe(
-                rsops.map(lambda i: i)
+                rs.ops.map(lambda i: i)
             )
         ),
     ).subscribe(

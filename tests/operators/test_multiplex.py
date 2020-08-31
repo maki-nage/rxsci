@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_multiplex():
@@ -12,11 +11,10 @@ def test_multiplex():
     mux_actual_result = []
 
     def on_completed():
-        print("PPPPPPPPP")
         actual_completed.append(True)
 
     rx.from_(source).pipe(
-        rsops.multiplex(
+        rs.ops.multiplex(
             rx.pipe(
                 ops.do_action(mux_actual_result.append),
             ),

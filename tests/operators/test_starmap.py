@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_starmap():
@@ -19,7 +18,7 @@ def test_starmap():
         actual_completed.append(True)
 
     rx.from_(source).pipe(
-        rsops.starmap(lambda i, j: i+j),
+        rs.ops.starmap(lambda i, j: i+j),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
@@ -50,7 +49,7 @@ def test_starmap_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rsops.starmap(lambda i, j: i+j),
+        rs.ops.starmap(lambda i, j: i+j),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,

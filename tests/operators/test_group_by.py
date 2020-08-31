@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_group_by():
@@ -15,8 +14,8 @@ def test_group_by():
         actual_completed.append(True)
 
     rx.from_(source).pipe(
-        rsops.multiplex(rx.pipe(            
-            rsops.group_by(
+        rs.ops.multiplex(rx.pipe(            
+            rs.ops.group_by(
                 lambda i: i,
                 rx.pipe(
                     ops.do_action(mux_actual_result.append),

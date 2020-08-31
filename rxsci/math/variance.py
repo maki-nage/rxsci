@@ -1,5 +1,5 @@
 import rx
-import rxsci.operators as rsops
+import rxsci as rs
 
 
 def variance(key_mapper=lambda i: i, reduce=False):
@@ -37,6 +37,6 @@ def variance(key_mapper=lambda i: i, reduce=False):
         return (m, s, k)
 
     return rx.pipe(
-        rsops.scan(accumulate, (None, 0, 0), reduce=reduce),
-        rsops.map(lambda acc: 0.0 if acc[2] < 2 else acc[1] / (acc[2]-1)),
+        rs.ops.scan(accumulate, (None, 0, 0), reduce=reduce),
+        rs.ops.map(lambda acc: 0.0 if acc[2] < 2 else acc[1] / (acc[2]-1)),
     )

@@ -1,4 +1,4 @@
-import rxsci.operators as rsops
+import rxsci as rs
 
 
 def clip(lower_bound=None, higher_bound=None):
@@ -30,7 +30,7 @@ def clip(lower_bound=None, higher_bound=None):
 
     def _clip(source):
         return source.pipe(
-            rsops.map(__clip),
+            rs.ops.map(__clip),
         )
 
     return _clip

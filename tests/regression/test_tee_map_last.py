@@ -1,7 +1,6 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
-import rxsci.operators as rsops
 
 
 def test_completion():
@@ -16,9 +15,9 @@ def test_completion():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.tee_map(
-            rsops.first(),
-            rsops.last(),
+        rs.ops.tee_map(
+            rs.ops.first(),
+            rs.ops.last(),
         ),
     ).subscribe(
         on_next=actual_result.append,
