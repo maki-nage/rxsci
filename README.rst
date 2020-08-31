@@ -11,7 +11,7 @@
     :target: https://github.com/maki-nage/rxsci/actions?query=workflow%3A%22Python+package%22
     :alt: Github WorkFlows
 
-.. image:: https://github.com/maki-nage/rxsci/raw/master/asset/docs_download.svg
+.. image:: https://github.com/maki-nage/rxsci/raw/master/asset/apis_read.svg
     :target: https://www.makinage.org/doc/rxsci/latest/index.html
     :alt: Documentation
 
