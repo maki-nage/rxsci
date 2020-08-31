@@ -1,7 +1,8 @@
-==========
-RxSci
-==========
+=======================
+|makinage-logo| RxSci
+=======================
 
+.. |makinage-logo| image:: https://github.com/maki-nage/makinage/raw/master/asset/makinage_logo.png
 
 .. image:: https://badge.fury.io/py/rxsci.svg
     :target: https://badge.fury.io/py/rxsci
@@ -10,9 +11,9 @@ RxSci
     :target: https://github.com/maki-nage/rxsci/actions?query=workflow%3A%22Python+package%22
     :alt: Github WorkFlows
 
-.. image:: https://readthedocs.org/projects/rxsci/badge/?version=latest
-    :target: https://rxsci.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+.. image:: https://github.com/maki-nage/rxsci/raw/master/asset/docs_download.svg
+    :target: https://www.makinage.org/doc/rxsci/latest/index.html
+    :alt: Documentation
 
 
 ReactiveX operators for data science and machine learning.
@@ -23,10 +24,32 @@ dedicated to data science.
 Get Started
 ============
 
+This examples computes a rolling mean on a window and stride of three elements:
+
+.. code:: Python
+
+    import rx
+    import rxsci as rs
+
+    source = [1, 2, 3, 4, 5, 6, 7]
+
+    rx.from_(source).pipe(
+        rs.ops.multiplex(rx.pipe(
+            rs.data.roll(window=3, stride=3, pipeline=rx.pipe(
+                rs.math.mean(reduce=True),
+            )),
+        )),
+    ).subscribe(
+        on_next=print
+    )
 
 
-Install
-========
+See the
+`Maki Nage documentation <https://www.makinage.org/doc/makinage-book/latest/index.html>`_
+for more information.
+
+Installation
+=============
 
 RxSci is available on PyPi and can be installed with pip:
 
