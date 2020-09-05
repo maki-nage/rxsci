@@ -18,13 +18,19 @@
 
 ReactiveX operators for data science and machine learning.
 
-RxSci (pronounced roxy) is a set of RxPY operators and observable factories
-dedicated to data science.
+RxSci is a set of RxPY operators and observable factories dedicated to data
+science. Being reactive, RxSci is especially suited to work on streaming data
+and time series.
+
+However it can also be used on traditional datasets. Such datasets are processed
+as bounded streams by RxSci. So it is possible to use RxSci for both streaming
+data and file based datasets. This is especially useful when a
+machine learning model is trained with a dataset and deployed on streaming data. 
 
 Get Started
 ============
 
-This examples computes a rolling mean on a window and stride of three elements:
+This example computes a rolling mean on a window and stride of three elements:
 
 .. code:: Python
 
@@ -43,6 +49,11 @@ This examples computes a rolling mean on a window and stride of three elements:
         on_next=print
     )
 
+.. code:: console
+
+    2.0
+    5.0
+
 
 See the
 `Maki Nage documentation <https://www.makinage.org/doc/makinage-book/latest/index.html>`_
@@ -55,4 +66,4 @@ RxSci is available on PyPi and can be installed with pip:
 
 .. code:: console
 
-    pip install rxsci
+    python3 -m pip install rxsci
