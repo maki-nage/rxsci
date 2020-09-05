@@ -45,10 +45,6 @@ extensions = [
     'sphinxcontrib_dooble',
 ]
 
-autodoc_default_options = {
-     'imported-members': True,
-}
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

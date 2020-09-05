@@ -1,15 +1,22 @@
 .. RxSci documentation master file
 
-Welcome to RxSci's documentation!
-=====================================
+RxSci Reference Documentation
+===============================
+
+ReactiveX operators for data science and machine learning.
+
+This documentation contains the reference of all RxSci operators. For an
+introduction to RxSci, see the `Maki Nage documentation
+<https://www.makinage.org/doc/makinage-book/latest/index.html>`_.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
+   installation
    get_started
-   reference
+   operators
 
 
 Indices and tables
@@ -17,4 +24,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
