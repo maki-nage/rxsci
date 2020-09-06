@@ -35,6 +35,21 @@ def get_intern(i):
 
 
 def cache(field=None):
+    '''cache items
+
+    Each received items is cached, and the cached item is returned. This
+    operator can save memory on graphs that buffer some items, with many
+    identical values.
+
+    Args:
+        field: [Optional] cache the provided field is set. Otherwise the 
+                whole item is cached. When field is set, this field value
+                must be accessible via the getattr function.
+
+    Returns:
+        An Observable returning the same items than the source observable, but 
+        with cached values.
+    '''
     def _cache(source):
         def on_subscribe(observer, scheduler):
             intern = None
