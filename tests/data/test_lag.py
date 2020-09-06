@@ -18,7 +18,7 @@ def test_lag1():
     ]
 
     rx.from_(source).pipe(
-        rs.data.lag1(),
+        rs.data.lag(1),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == expected_result
@@ -37,7 +37,7 @@ def test_lag1_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.lag1(),
+        rs.data.lag(1),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [

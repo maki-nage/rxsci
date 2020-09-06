@@ -4,64 +4,49 @@ import rx
 import rxsci as rs
 
 
-def lag1():
-    '''Buffers a lag of 1 on source items
+def _lag1(source):
+    def on_subscribe(observer, scheduler):
+        last = None
 
-        .. marble::
-            :alt: lag
+        def on_next(i):
+            nonlocal last
+            if last is not None:
+                observer.on_next((last, i))
+            last = i
 
-            -0--1---2---3---4---|
-            [       lag1()      ]
-            ----0,1-1,2-2,3-3,4-|
+        return source.subscribe(
+            on_next=on_next,
+            on_completed=observer.on_completed,
+            on_error=observer.on_error,
+            scheduler=scheduler)
 
-    Returns:
-        An observable where each item is a tuple of (lag, current) items. On 
-        the first iteration, the item (current, current) is emitted.
-    '''
-    def _lag1(source):
-        def on_subscribe(observer, scheduler):
-            last = None
+    def on_subscribe_mux(observer, scheduler):
+        last = {}
 
-            def on_next(i):
-                nonlocal last
-                if last is not None:
-                    observer.on_next((last, i))
-                last = i
+        def on_next(i):
+            if isinstance(i, rs.OnNextMux):
+                ii = (last[i.key] if last[i.key] is not None else i.item, i.item)
+                last[i.key] = i.item
+                observer.on_next(rs.OnNextMux(i.key, ii))
+            elif isinstance(i, rs.OnCreateMux):
+                last[i.key] = None
+                observer.on_next(i)
+            elif isinstance(i, rs.OnCompletedMux) \
+            or isinstance(i, rs.OnErrorMux):
+                del last[i.key]
+                observer.on_next(i)
 
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=observer.on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler)
+        return source.subscribe(
+            on_next=on_next,
+            on_completed=observer.on_completed,
+            on_error=observer.on_error,
+            scheduler=scheduler)
 
-        def on_subscribe_mux(observer, scheduler):
-            last = {}
+    if isinstance(source, rs.MuxObservable):
+        return rx.create(on_subscribe_mux)
+    else:
+        return rx.create(on_subscribe)
 
-            def on_next(i):
-                if isinstance(i, rs.OnNextMux):
-                    ii = (last[i.key] if last[i.key] is not None else i.item, i.item)
-                    last[i.key] = i.item
-                    observer.on_next(rs.OnNextMux(i.key, ii))
-                elif isinstance(i, rs.OnCreateMux):
-                    last[i.key] = None
-                    observer.on_next(i)
-                elif isinstance(i, rs.OnCompletedMux) \
-                or isinstance(i, rs.OnErrorMux):
-                    del last[i.key]
-                    observer.on_next(i)
-
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=observer.on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler)
-
-        if isinstance(source, rs.MuxObservable):
-            return rx.create(on_subscribe_mux)
-        else:
-            return rx.create(on_subscribe)
-
-    return _lag1
 
 
 def lag(size=1):
@@ -70,9 +55,9 @@ def lag(size=1):
         .. marble::
             :alt: lag
 
-            -0--1---2---3---4---|
+            -0--1---2-----3-----|
             [       lag(2)      ]
-            --------0,2-1,3-2,4-|
+            --------0,1,2-1,2,3-|
 
     Args:
         size: [Optional] size of the lag.
@@ -137,4 +122,6 @@ def lag(size=1):
         else:
             return rx.create(on_subscribe)
 
+    if size == 1:
+        return _lag1
     return _lag
