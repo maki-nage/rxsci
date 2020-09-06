@@ -1,4 +1,3 @@
-import sys
 from collections import deque
 import rx
 import rxsci as rs
@@ -25,7 +24,10 @@ def _lag1(source):
 
         def on_next(i):
             if isinstance(i, rs.OnNextMux):
-                ii = (last[i.key] if last[i.key] is not None else i.item, i.item)
+                ii = (
+                    last[i.key] if last[i.key] is not None else i.item,
+                    i.item
+                )
                 last[i.key] = i.item
                 observer.on_next(rs.OnNextMux(i.key, ii))
             elif isinstance(i, rs.OnCreateMux):
@@ -48,7 +50,6 @@ def _lag1(source):
         return rx.create(on_subscribe)
 
 
-
 def lag(size=1):
     '''Buffers a lag of size on source items
 
@@ -63,7 +64,7 @@ def lag(size=1):
         size: [Optional] size of the lag.
 
     Returns:
-        An observable where each item is a tuple of (lag, current) items. On 
+        An observable where each item is a tuple of (lag, current) items. On
         the first iterations, the item (first, current) is emitted.
     '''
     def _lag(source):
