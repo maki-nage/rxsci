@@ -9,7 +9,14 @@ def clip(lower_bound=None, higher_bound=None):
 
         -0-1-2-1-3-4-2-6---|
         [    clip(2, 4)    ]
-        -----2-----4---6---|
+        -2-2-2-2-3-4-2-4---|
+
+    Args:
+        lower_bound: [Optional] The minimal value to emit.
+        higher_bound: [Optional] The maximal value to emit.
+
+    Returns:
+        AN observable emiting the source items, clipped to the provided bounds.
 
     Raises:
         ValueError if no bound is provided or lower_bound is bigger than
