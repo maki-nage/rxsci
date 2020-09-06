@@ -5,6 +5,13 @@ import rxsci as rs
 def mean(key_mapper=lambda i: i, reduce=False):
     '''Averages the items emitted in the source observable
 
+    .. marble::
+        :alt: mean
+
+        -0---1---2---3---4---|
+        [        max()       ]
+        -0--0.5--1---1.5-2.0-|
+
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the average.

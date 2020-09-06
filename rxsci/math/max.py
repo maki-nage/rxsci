@@ -5,6 +5,13 @@ import rxsci as rs
 def max(key_mapper=lambda i: i, reduce=False):
     '''Returns the maximum value emitted in the source observable.
 
+    .. marble::
+        :alt: max
+
+        -0-1-4-2-3-8-2-6---|
+        [       max()      ]
+        -0-1-4-----8-------|
+
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the max.

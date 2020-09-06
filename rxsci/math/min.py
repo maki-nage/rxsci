@@ -5,6 +5,13 @@ import rxsci as rs
 def min(key_mapper=lambda i: i, reduce=False):
     '''Returns the minimum value emitted in the source observable.
 
+    .. marble::
+        :alt: min
+
+        -9-7-8-2-3-8-2-6---|
+        [       min()      ]
+        -9-7---2-----------|
+
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the min.
