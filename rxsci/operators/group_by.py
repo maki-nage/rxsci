@@ -93,6 +93,7 @@ def group_by(key_mapper, pipeline):
 
     Args:
         key_mapper: A function to extract the key from each item
+        pipeline: The Rx pipe to execute on each group.
 
     Source:
         A MuxObservable.

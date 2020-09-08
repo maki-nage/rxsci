@@ -99,9 +99,9 @@ def roll_mux(window, stride=None):
                     if count == 0:
                         observer.on_next(rs.OnCreateMux((1, i.key)))
 
-                    count += 1                    
+                    count += 1
                     observer.on_next(rs.OnNextMux((1, i.key), i.item))
-        
+
                     if count == window:
                         state[i.key] = 0
                         observer.on_next(rs.OnCompletedMux((1, i.key)))
@@ -154,6 +154,10 @@ def roll(window, stride, pipeline):
         window: Length of each window.
         stride: Number of elements to step between creation of
             consecutive windows.
+        pipeline: The Rx pipe to execute on each window.
+
+    Source:
+        A MuxObservable.
 
     Returns:
         An observable sequence of windows.
