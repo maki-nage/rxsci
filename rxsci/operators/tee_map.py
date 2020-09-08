@@ -6,7 +6,7 @@ from rx.disposable import CompositeDisposable
 import rxsci as rs
 
 
-def _zip(*args, connectable):
+def _process_many(*args, connectable, zip):
     sources = list(args)
 
     def subscribe_mux(observer, scheduler):
@@ -17,11 +17,12 @@ def _zip(*args, connectable):
         def on_next(i, x):
             if isinstance(x, rs.OnCreateMux):
                 if i == 0:
-                    append_count = (x.key[0]+1) * n - len(queue)
-                    if append_count > 0:
-                        for _ in range(append_count):
-                            queue.append(None)
-                            has_next.append(False)
+                    if zip is True:
+                        append_count = (x.key[0]+1) * n - len(queue)
+                        if append_count > 0:
+                            for _ in range(append_count):
+                                queue.append(None)
+                                has_next.append(False)
                     observer.on_next(x)
                 return
             elif isinstance(x, rs.OnCompletedMux):
@@ -31,24 +32,27 @@ def _zip(*args, connectable):
             elif isinstance(x, rs.OnErrorMux):
                 observer.on_next(x)
                 return
-            
-            base_index = x.key[0] * n
-            index = base_index + i            
-            queue[index] = x.item
-            has_next[index] = True
-            _next = has_next[base_index:base_index+n]
-            if all(_next):
-                try:
-                    _queue = queue[base_index:base_index+n]
-                    res = tuple(_queue)
-                    res = rs.OnNextMux(x.key, res)
-                    for index in range(n):
-                        has_next[base_index+index] = False
-                except Exception as ex:  # pylint: disable=broad-except
-                    observer.on_error(ex)
-                    return
 
-                observer.on_next(res)
+            if zip is True:
+                base_index = x.key[0] * n
+                index = base_index + i
+                queue[index] = x.item
+                has_next[index] = True
+                _next = has_next[base_index:base_index+n]
+                if all(_next):
+                    try:
+                        _queue = queue[base_index:base_index+n]
+                        res = tuple(_queue)
+                        res = rs.OnNextMux(x.key, res)
+                        for index in range(n):
+                            has_next[base_index+index] = False
+                    except Exception as ex:  # pylint: disable=broad-except
+                        observer.on_error(ex)
+                        return
+
+                    observer.on_next(res)
+            else:
+                observer.on_next(x)
 
         subscriptions = [None] * n
         for i in range(n):
@@ -61,7 +65,6 @@ def _zip(*args, connectable):
         subscriptions.append(connectable.connect())
         return CompositeDisposable(subscriptions)
 
-
     def subscribe(observer, scheduler):
         n = len(sources)
         queue = [None] * n
@@ -69,18 +72,21 @@ def _zip(*args, connectable):
         is_done = [False] * n
 
         def on_next(i, x):
-            queue[i] = x
-            has_next[i] = True
-            if all(has_next):
-                try:                    
-                    res = tuple(queue)
-                    for index in range(n):
-                        has_next[index] = False
-                except Exception as ex:  # pylint: disable=broad-except
-                    observer.on_error(ex)
-                    return
+            if zip is True:
+                queue[i] = x
+                has_next[i] = True
+                if all(has_next):
+                    try:
+                        res = tuple(queue)
+                        for index in range(n):
+                            has_next[index] = False
+                    except Exception as ex:  # pylint: disable=broad-except
+                        observer.on_error(ex)
+                        return
 
-                observer.on_next(res)
+                    observer.on_next(res)
+            else:
+                observer.on_next(x)
 
         def done(i):
             is_done[i] = True
@@ -104,14 +110,34 @@ def _zip(*args, connectable):
         return rx.create(subscribe)
 
 
-def tee_map(*args):
+def tee_map(*args, zip=True):
     '''Processes several operators chains simultaneously on the same source
     observable. This operator allows to do multiple processing on the same
     source, and combine the results as a single tuple object.
 
+    .. marble::
+        :alt: tee_map
+
+        --4---2---1---3-----|
+        [tee_map(count, min)]
+        --1,4-2,2-3,1-4,1---|
+
+    Examples:
+        >>> rx.from_([1, 2, 3, 4]).pipe(
+        >>>     rs.ops.tee_map(
+        >>>         rs.ops.count(),
+        >>>         rs.math.min(),
+        >>>))
+
     Args:
         args: list of operators that will process the source observable
             concurrently
+        zip: [Optional] If set to True, then all processing are zipped
+            together. Otherwise items are emitted by tee map as they are
+            emitted by each arg pipeline.
+
+    Source:
+        An Observable or a MuxObservable
 
     Returns:
         An observable containing tuples of the items emitted by each branch of
@@ -129,9 +155,10 @@ def tee_map(*args):
                 ops.publish()
             )
 
-        return _zip(
+        return _process_many(
             *[arg(connectable) for arg in args],
             connectable=connectable,
+            zip=zip
         )
 
     return _tee_map
