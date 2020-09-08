@@ -92,16 +92,28 @@ def split_mux(predicate):
             )
         return rs.MuxObservable(on_subscribe)
 
-
     return _split, outer_observer
 
 
 def split(predicate, pipeline):
     ''' Split an observable based on a predicate criteria.
 
+    .. marble::
+        :alt: split
+
+        -1,a--1,b-1,c-2,b-2,c-|
+        [       split()       ]
+        -+------------+-------|
+                      +2,b-2,c|
+         +1,a-1,b--1,c|
+
     Args:
-        predicate: A function called for each item, that returns the split 
+        predicate: A function called for each item, that returns the split
             criteria.
+        pipeline: The Rx pipe to execute on each split.
+
+    Source:
+        A MuxObservable
 
     Returns:
         A higher order observable returning on observable for each split criteria.

@@ -6,6 +6,7 @@ def first_mux():
     def _first(source):
         def on_subscribe(observer, scheduler):
             state = []
+
             def on_next(i):
                 if type(i) is rs.OnNextMux:
                     if state[i.key[0]] is False:
