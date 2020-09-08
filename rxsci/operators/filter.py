@@ -38,16 +38,20 @@ def filter(predicate):
         [   filter(i: i>2)  ]
         ------------3---4---|
 
-    Example:
+    Examples:
         >>> rs.operators.filter(lambda value: value < 10)
 
     Args:
         predicate: A function to test each source item for a
             condition.
 
+    Source:
+        An Observable or a MuxObservable.
+
     Returns:
         An observable that emits items from the
-        source observable that satisfy the condition.
+        source observable that satisfy the condition. The type of the returned
+        observable is the same than the source observable.
     """
 
     def _filter(source):

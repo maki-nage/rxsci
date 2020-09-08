@@ -32,7 +32,7 @@ def assert_mux(predicate, name="", error=ValueError):
                             observer.on_next(rs.OnNextMux(i.key, i.item))
                         else:
                             observer.on_error(error("assert {} failed on: {}".format(name, i.item)))
-                        
+
                     except Exception as e:
                         observer.on_next(rs.OnErrorMux(i.key, e))
                 else:
@@ -50,10 +50,24 @@ def assert_mux(predicate, name="", error=ValueError):
 
 
 def assert_(predicate, name="", error=ValueError):
+    '''Ensure that predicate evaluates to True for all items
+
+    If any of item on the source observable evaluates to False, then
+    error is emitted on the on_error handler.
+
+    Args:
+        predicate: A function to evaluate each item.
+        name: [Optional] A firendly name to display with the error.
+        error: [Optional] The error to emit when predicate evaluates to False.
+
+    Returns:
+        An observable returning the source items, and completing on error if
+        any source pair evaluates to False.
+    '''
     def _assert_obs(i):
         if predicate(i) is True:
             return i
-        
+
         raise error("assert {} failed on: {}".format(name, i))
 
     def _assert(source):
@@ -66,7 +80,7 @@ def assert_(predicate, name="", error=ValueError):
 
 
 def assert_1(predicate, name="", error=ValueError):
-    '''Ensure that predicate evaluates to True for all pairs of item / previous item
+    '''Ensures that predicate evaluates to True for all pairs of item / previous item
 
     If any of the lag1 pair on the source observable evaluates to False, then
     error is emitted on the on_error handler.
@@ -85,7 +99,7 @@ def assert_1(predicate, name="", error=ValueError):
             last = None
 
             def on_next(i):
-                nonlocal last                
+                nonlocal last
                 if last is not None:
                     print(i)
                     if predicate(last, i) is True:
@@ -94,7 +108,7 @@ def assert_1(predicate, name="", error=ValueError):
                         observer.on_error(error("assert {} failed on: {}-{}".format(name, last, i)))
                 else:
                     observer.on_next(i)
-                
+
                 last = i
 
             return source.subscribe(
@@ -116,9 +130,9 @@ def assert_1(predicate, name="", error=ValueError):
                             observer.on_error(error("assert {} failed on: {}-{}".format(name, last, i.item)))
                     else:
                         observer.on_next(rs.OnNextMux(i.key, i))
-                            
+
                     last[i.key] = i.item
-                    
+
                 elif isinstance(i, rs.OnCreateMux):
                     last[i.key] = None
                     observer.on_next(i)

@@ -77,6 +77,29 @@ def group_by_mux(key_mapper):
 
 
 def group_by(key_mapper, pipeline):
+    """Groups items of according to a key mapper
+
+    .. marble::
+        :alt: group_by
+
+        --1--2--a--3--b--c-|
+        [    group_by()    ]
+        -+-----+-----------|
+               +a-----b--c-|
+         +1--2-----3-------|
+
+    Examples:
+        >>> rs.ops.group_by(lambda i: i.category, rs.ops.count)
+
+    Args:
+        key_mapper: A function to extract the key from each item
+
+    Source:
+        A MuxObservable.
+
+    Returns:
+        A MuxObservable with one observable per group.
+    """
     _group_by, outer_obs = group_by_mux(key_mapper)
 
     return rx.pipe(
