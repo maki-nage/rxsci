@@ -42,7 +42,7 @@ def distinct(key_mapper=None):
         """
         mux = True if isinstance(source, rs.MuxObservable) else False
 
-        def subscribe(observer, scheduler=None):
+        def on_subscribe(observer, scheduler=None):
             hashset = {} if mux else set()
 
             def on_next(x):
@@ -75,5 +75,8 @@ def distinct(key_mapper=None):
                 observer.on_error,
                 observer.on_completed,
                 scheduler)
-        return rx.create(subscribe)
+        if mux is True:
+            return rs.MuxObservable(on_subscribe)
+        else:
+            return rx.create(on_subscribe)
     return _distinct
