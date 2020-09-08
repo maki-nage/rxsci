@@ -45,7 +45,7 @@ def _lag1(source):
             scheduler=scheduler)
 
     if isinstance(source, rs.MuxObservable):
-        return rx.create(on_subscribe_mux)
+        return rs.MuxObservable(on_subscribe_mux)
     else:
         return rx.create(on_subscribe)
 
