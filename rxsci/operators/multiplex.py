@@ -48,8 +48,8 @@ def demux_observable():
 
 
 def demux_mux_observable(outer_group):
-    def _demux(source):        
-        def on_subscribe(observer, scheduler):            
+    def _demux(source):
+        def on_subscribe(observer, scheduler):
             def on_next(i):
                 if type(i) is rs.OnNextMux:
                     observer.on_next(rs.OnNextMux(i.key[1], i.item))
@@ -79,7 +79,7 @@ def demux_mux_observable(outer_group):
                 scheduler=scheduler,
             ))
             return disposable
-        return rx.create(on_subscribe)
+        return rs.MuxObservable(on_subscribe)
 
     return _demux
 
