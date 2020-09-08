@@ -10,7 +10,7 @@ def test_distinct():
         actual_result.append(i)
 
     rx.from_(source).pipe(
-        rs.data.distinct()
+        rs.ops.distinct()
     ).subscribe(on_next)
 
     assert actual_result == [1, 2, 3, 4, 10]
@@ -32,7 +32,7 @@ def test_distinct_with_key():
         actual_result.append(i)
 
     rx.from_(source).pipe(
-        rs.data.distinct(lambda i: (i[0], i[1]))
+        rs.ops.distinct(lambda i: (i[0], i[1]))
     ).subscribe(on_next)
 
     assert actual_result == [
@@ -46,14 +46,14 @@ def test_distinct_with_key():
 
 def test_distinct_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 5),
-        rs.OnNextMux((1, None), 3),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 5),
+        rs.OnNextMux((1,), 3),
+        rs.OnCompletedMux((1,)),
     ]
     actual_result = []
 
@@ -62,15 +62,14 @@ def test_distinct_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.distinct()
+        rs.ops.distinct()
     ).subscribe(on_next)
 
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 5),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 5),
+        rs.OnCompletedMux((1,)),
     ]
-
