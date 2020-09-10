@@ -7,16 +7,8 @@ from rx.subject import Subject
 from rxsci.operators.multiplex import demux_mux_observable
 
 
-def roll_mux(window, stride=None):
+def roll_mux(window, stride):
     outer_observer = Subject()
-
-    if window <= 0:
-        raise ValueError()
-
-    if stride is None:
-        stride = window
-    if stride <= 0:
-        raise ValueError()
 
     density = window // stride
     if window % stride:
@@ -141,7 +133,7 @@ def roll(window, stride, pipeline):
         :alt: roll
 
         -1-2-3-4-5-6-------|
-        [      roll(3)     ]
+        [     roll(3,3)    ]
         -+-----+-----------|
                +4-5-6|
          +1-2-3|
@@ -163,8 +155,14 @@ def roll(window, stride, pipeline):
         An observable sequence of windows.
 
     Raises:
-        ValueError if window or step is negative
+        ValueError if window or stride is negative
     """
+    if window <= 0:
+        raise ValueError()
+
+    if stride <= 0:
+        raise ValueError()
+
     _roll, outer_obs = roll_mux(window, stride)
 
     return rx.pipe(
