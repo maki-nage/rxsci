@@ -26,6 +26,8 @@ class MuxState(object):
             self.create_values = functools.partial(array, 'q')
         elif data_type is float:
             self.create_values = functools.partial(array, 'd')
+        elif data_type is bool:
+            self.create_values = functools.partial(array, 'B')
         else:
             self.create_values = list
         self.values = self.create_values()
