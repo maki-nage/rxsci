@@ -1,6 +1,7 @@
 from collections import deque
 import rx
 import rxsci as rs
+from rxsci.mux.state import MuxState
 
 
 def _lag1(source):
@@ -20,22 +21,23 @@ def _lag1(source):
             scheduler=scheduler)
 
     def on_subscribe_mux(observer, scheduler):
-        last = {}
+        state = MuxState()
 
         def on_next(i):
             if isinstance(i, rs.OnNextMux):
+                _, value, _state = state.get(i.key)
                 ii = (
-                    last[i.key] if last[i.key] is not None else i.item,
+                    value if _state is not MuxState.STATE_NOTSET else i.item,
                     i.item
                 )
-                last[i.key] = i.item
+                state.set(i.key, i.item)
                 observer.on_next(rs.OnNextMux(i.key, ii))
             elif isinstance(i, rs.OnCreateMux):
-                last[i.key] = None
+                state.add_key(i.key)
                 observer.on_next(i)
             elif isinstance(i, rs.OnCompletedMux) \
             or isinstance(i, rs.OnErrorMux):
-                del last[i.key]
+                state.del_key(i.key)
                 observer.on_next(i)
 
         return source.subscribe(
