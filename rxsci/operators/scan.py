@@ -13,9 +13,10 @@ def scan_mux(accumulator, seed, reduce):
             def on_next(i):
                 if type(i) is rs.OnNextMux:
                     try:
-                        _, value, _state  = state.get(i.key)
-                        if _state is MuxState.STATE_NOTSET:
+                        if not state.is_set(i.key):
                             value = seed() if callable(seed) else copy.deepcopy(seed)
+                        else:
+                            value = state.get(i.key)
                         acc = accumulator(value, i.item)
                         state.set(i.key, acc)
                         if reduce is False:
@@ -27,28 +28,28 @@ def scan_mux(accumulator, seed, reduce):
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:
                     if reduce is True:
-                        _, value, _state = state.get(i.key)
-                        if _state is MuxState.STATE_NOTSET:
+                        if not state.is_set(i.key):
                             value = seed() if callable(seed) else copy.deepcopy(seed)
+                        else:
+                            value = state.get(i.key)
                         observer.on_next(rs.OnNextMux(i.key, value))
                     observer.on_next(i)
                     state.del_key(i.key)
                 elif type(i) is rs.OnErrorMux:
-                    observer.on_next(rs.OnErrorMux(i.key, i.error))
+                    observer.on_next(i)
                     state.del_key(i.key)
                 else:
-                    observer.on_next(TypeError("scan: unknow item type: {}".format(type(i))))
+                    observer.on_error(TypeError("scan: unknow item type: {}".format(type(i))))
 
             def on_completed():
                 if reduce is True:
-                    for _key, value, _state  in state.iterate():
+                    for key, value, is_set in state.iterate():
                         print("foo")
-                        print('{}, {}, {}'.format(_key, _state, value))
-                        if _state is MuxState.STATE_NOTSET:
+                        print('{}, {}, {}'.format(key, is_set, value))
+                        if not is_set:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
-                        if _state is not MuxState.STATE_CLEARED:
-                            observer.on_next(rs.OnNextMux(_key, value))
-                            observer.on_next(rs.OnCompletedMux(_key))
+                        observer.on_next(rs.OnNextMux(key, value))
+                        observer.on_next(rs.OnCompletedMux(key))
                 state.clear()
                 observer.on_completed()
 

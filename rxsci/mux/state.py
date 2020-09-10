@@ -51,15 +51,29 @@ class MuxState(object):
         self.state = array('B')
         self.keys.clear()
 
+    def is_cleared(self, key):
+        if self.state[key[0]] == MuxState.STATE_CLEARED:
+            return True
+        return False
+
     def get(self, key):
-        return self.keys[key[0]], self.values[key[0]], self.state[key[0]]
+        return self.values[key[0]]
 
     def set(self, key, value):
         self.keys[key[0]] = key
         self.state[key[0]] = MuxState.STATE_SET
         self.values[key[0]] = value
 
+    def is_set(self, key):
+        if self.state[key[0]] == MuxState.STATE_SET:
+            return True
+        return False
+
     def iterate(self):
         for index in range(len(self.keys)):
             if self.state[index] is not MuxState.STATE_CLEARED:
-                yield self.keys[index], self.values[index], self.state[index]
+                yield (
+                    self.keys[index],
+                    self.values[index],
+                    self.state[index] == MuxState.STATE_SET,
+                )

@@ -24,21 +24,21 @@ def _lag1(source):
         state = MuxState()
 
         def on_next(i):
-            if isinstance(i, rs.OnNextMux):
-                _, value, _state = state.get(i.key)
+            if type(i) is rs.OnNextMux:
                 ii = (
-                    value if _state is not MuxState.STATE_NOTSET else i.item,
+                    state.get(i.key) if state.is_set(i.key) else i.item,
                     i.item
                 )
                 state.set(i.key, i.item)
                 observer.on_next(rs.OnNextMux(i.key, ii))
-            elif isinstance(i, rs.OnCreateMux):
+            elif type(i) is rs.OnCreateMux:
                 state.add_key(i.key)
                 observer.on_next(i)
-            elif isinstance(i, rs.OnCompletedMux) \
-            or isinstance(i, rs.OnErrorMux):
+            elif type(i) is rs.OnCompletedMux or type(i) is rs.OnErrorMux:
                 state.del_key(i.key)
                 observer.on_next(i)
+            else:
+                observer.on_error(TypeError("lag1: unknow item type: {}".format(type(i))))
 
         return source.subscribe(
             on_next=on_next,
@@ -60,7 +60,7 @@ def lag(size=1):
 
             -0--1---2-----3-----|
             [       lag(2)      ]
-            --------0,1,2-1,2,3-|
+            --------0,2---1,3---|
 
     Args:
         size: [Optional] size of the lag.
