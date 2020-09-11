@@ -2,6 +2,8 @@ from .cache import cache
 from .clip import clip
 from .fill_none import fill_none
 from .lag import lag
+from .pad import pad_start, pad_end
+from .to_array import to_array
 from .to_deque import to_deque
 from .roll import roll
 from .sort import sort

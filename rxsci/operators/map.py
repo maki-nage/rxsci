@@ -11,6 +11,7 @@ def map_mux(mapper):
                         ii = mapper(i.item)
                         observer.on_next(rs.OnNextMux(i.key, ii))
                     except Exception as e:
+                        print("EEEEEEEEEEEEEEEEEEEEEEEEE {}: {}".format(e, i))
                         observer.on_next(rs.OnErrorMux(i.key, e))
                 else:
                     observer.on_next(i)
