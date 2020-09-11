@@ -18,4 +18,4 @@ def sum(key_mapper=lambda i: i, reduce=False):
         i = key_mapper(i)
         return acc + i
 
-    return rs.ops.scan(accumulate, 0, reduce=reduce)
+    return rs.ops.scan(accumulate, 0.0, reduce=reduce)
