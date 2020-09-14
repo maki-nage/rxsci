@@ -24,8 +24,8 @@ def roll_mux(window, stride):
                     n = state_n[i.key[0]]
 
                     if (n % stride) == 0:
-                        index = (n // stride) % density
-                        index = i.key[0] * density + index
+                        offset = (n // stride) % density
+                        index = i.key[0] * density + offset
                         state_w[index] = n
                         observer.on_next(rs.OnCreateMux((index, i.key)))
 
@@ -37,7 +37,6 @@ def roll_mux(window, stride):
                             if count == window:
                                 state_w[index] = -1
                                 observer.on_next(rs.OnCompletedMux((index, i.key)))
-
 
                     state_n[i.key[0]] += 1
 
@@ -54,14 +53,14 @@ def roll_mux(window, stride):
                 elif isinstance(i, rs.OnCompletedMux):
                     kindex = i.key[0]
                     state_n[kindex] = 0
-                    for offset in range(density):                        
+                    for offset in range(density):
                         state_w[kindex+offset] = -1
                     #observer.on_next(rs.OnCompletedMux((1, i.key)))
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
                     kindex = i.key[0]
                     state_n[kindex] = 0
-                    for offset in range(density):                        
+                    for offset in range(density):
                         state_w[kindex+offset] = -1
                     #observer.on_next(rs.OnErrordMux((1, i.key), i.error))
                     outer_observer.on_next(i)
