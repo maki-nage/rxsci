@@ -58,7 +58,7 @@ def read(file, mode='r', size=None, encoding=None, transport_params=None):
     return rx.create(on_subscribe)
 
 
-def write(file, mode='wb', encoding=None, transport_params=None):
+def write(file, mode=None, encoding=None, transport_params=None):
     ''' Writes the content of a file
 
     Args:
@@ -74,6 +74,8 @@ def write(file, mode='wb', encoding=None, transport_params=None):
         An observable where eeach item is a chunk of data, or the while
         file if no size has been set.
     '''
+    mode = mode or 'wb'
+
     def _write(source):
         def on_subscribe(observer, scheduler):
             kwargs = {}
@@ -95,7 +97,7 @@ def write(file, mode='wb', encoding=None, transport_params=None):
                 observer.on_completed()
 
             def on_error(e):
-                f.close()
+                #f.close()
                 observer.on_error(e)
 
             return source.subscribe(

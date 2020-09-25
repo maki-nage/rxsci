@@ -80,6 +80,32 @@ class CsvDataFile():
         return self.data
 
 
+def merge_escape_parts(parts, separator):
+    try:
+        merged_parts = []
+        agg = None
+        for t in parts:            
+            if len(t) > 0 and t[0] == '"' and t[-1] == '"' and agg is None:
+                merged_parts.append(t)
+            elif len(t) > 0 and t[-1] == '"' and agg is not None:
+                agg.append(t)
+                merged_parts.append(separator.join(agg))
+                agg = None
+            elif len(t) > 0 and t[0] == '"' and agg is None:
+                agg = [t]
+            elif agg is not None:
+                agg.append(t)
+            else:
+                merged_parts.append(t)
+
+        return merged_parts
+    except Exception as e:
+        print(e)
+        print(parts)
+        print(merged_parts)
+        raise e
+
+
 def create_line_parser(dtype, none_values=[], separator=",",
                        ignore_error=False, schema_name='x'):
     ''' creates a parser for csv lines
@@ -143,15 +169,21 @@ def create_line_parser(dtype, none_values=[], separator=",",
     def parse_line(line):
         parts = split(line, separator)
         if len(parts) != columns_len:
-            error = "invalid number of columns: expected {}, found {} on: {}".format(
-                columns_len, len(parts), line)
-            if ignore_error is True:
-                print(error)
-                return None
-            else:
-                raise ValueError(error)
+            parts = merge_escape_parts(parts, separator)
+            if len(parts) != columns_len:
+                error = "invalid number of columns: expected {}, found {} on: {}".format(
+                    columns_len, len(parts), line)
+                if ignore_error is True:
+                    print("{}, \nignoring this line".format(error))
+                    return None
+                else:
+                    raise ValueError(error)
 
         for index, i in enumerate(parts):
+            if i[0] == '"' and i[-1] == '"':
+                #i = i.strip('"')                
+                i = i[1:-1]
+                i = i.replace('\\"', '"')                
             if i in none_values:
                 parts[index] = None
             else:
@@ -228,7 +260,7 @@ def dump(header=True, separator=",", newline='\n'):
         newline: [Optional] Character(s) used for end of line.
 
     Returns:
-        An observable of namedtuple items, where each key is a csv column.
+        An observable string items, where each item is a csv line.
     '''
     def _dump(source):
         def on_subscribe(observer, scheduler):
@@ -243,7 +275,14 @@ def dump(header=True, separator=",", newline='\n'):
                     columns += newline
                     observer.on_next(columns)
 
-                line = separator.join([str(f) for f in i])
+                ii = []
+                for f in i:
+                    if type(f) is str:
+                        f = f.replace('"', '\\"')
+                        f = '"{}"'.format(f)
+                    ii.append(f)
+
+                line = separator.join([str(f) for f in ii])
                 line += newline
                 observer.on_next(line)
 
