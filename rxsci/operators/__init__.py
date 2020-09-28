@@ -8,6 +8,7 @@ from .last import last
 from .map import map
 from .multiplex import multiplex, demux_mux_observable
 from .on_subscribe import on_subscribe
+from .pandas import to_pandas
 from .progress import progress
 from .starmap import starmap
 from .start_with import start_with

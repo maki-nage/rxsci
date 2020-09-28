@@ -7,4 +7,5 @@ Other Operators
     :members: assert_, assert_1,
                 count, distinct, filter, first, group_by, last, map,
                 multiplex, demux_mux_observable, on_subscribe,
-                progress, scan, starmap, start_with, tee_map, with_latest_from
+                progress, scan, starmap, start_with, tee_map, to_pandas,
+                with_latest_from
