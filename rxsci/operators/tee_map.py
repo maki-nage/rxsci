@@ -6,7 +6,7 @@ from rx.disposable import CompositeDisposable
 import rxsci as rs
 
 
-def _process_many(*args, connectable, zip):
+def _process_many(*args, connectable, zip, combine):
     sources = list(args)
 
     def subscribe_mux(observer, scheduler):
@@ -17,7 +17,7 @@ def _process_many(*args, connectable, zip):
         def on_next(i, x):
             if isinstance(x, rs.OnCreateMux):
                 if i == 0:
-                    if zip is True:
+                    if zip is True or combine is True:
                         append_count = (x.key[0]+1) * n - len(queue)
                         if append_count > 0:
                             for _ in range(append_count):
@@ -33,19 +33,31 @@ def _process_many(*args, connectable, zip):
                 observer.on_next(x)
                 return
 
-            if zip is True:
+            if zip is True or combine is True:
                 base_index = x.key[0] * n
                 index = base_index + i
                 queue[index] = x.item
                 has_next[index] = True
-                _next = has_next[base_index:base_index+n]
-                if all(_next):
+
+                if zip is True:
+                    _next = has_next[base_index:base_index+n]
+                    if all(_next):
+                        try:
+                            _queue = queue[base_index:base_index+n]
+                            res = tuple(_queue)
+                            res = rs.OnNextMux(x.key, res)
+                            for index in range(n):
+                                has_next[base_index+index] = False
+                        except Exception as ex:  # pylint: disable=broad-except
+                            observer.on_error(ex)
+                            return
+
+                        observer.on_next(res)
+                else:
                     try:
                         _queue = queue[base_index:base_index+n]
                         res = tuple(_queue)
                         res = rs.OnNextMux(x.key, res)
-                        for index in range(n):
-                            has_next[base_index+index] = False
                     except Exception as ex:  # pylint: disable=broad-except
                         observer.on_error(ex)
                         return
@@ -85,6 +97,11 @@ def _process_many(*args, connectable, zip):
                         return
 
                     observer.on_next(res)
+            elif combine is True:
+                queue[i] = x
+                has_next[i] = True
+                res = tuple(queue)
+                observer.on_next(res)
             else:
                 observer.on_next(x)
 
@@ -110,7 +127,7 @@ def _process_many(*args, connectable, zip):
         return rx.create(subscribe)
 
 
-def tee_map(*args, zip=True):
+def tee_map(*args, join='zip'):
     '''Processes several operators chains simultaneously on the same source
     observable. This operator allows to do multiple processing on the same
     source, and combine the results as a single tuple object.
@@ -132,9 +149,10 @@ def tee_map(*args, zip=True):
     Args:
         args: list of operators that will process the source observable
             concurrently
-        zip: [Optional] If set to True, then all processing are zipped
-            together. Otherwise items are emitted by tee map as they are
-            emitted by each arg pipeline.
+        join: [Optional] If set to 'zip', then all processings are zipped
+            together. If set to 'merge' items are emitted by tee map as they are
+            emitted by each arg pipeline. If set to 'combine_latest', then
+            the last value of each processing are combined.
 
     Source:
         An Observable or a MuxObservable
@@ -143,6 +161,18 @@ def tee_map(*args, zip=True):
         An observable containing tuples of the items emitted by each branch of
         the tee.
     '''
+    if join == 'zip':
+        zip = True
+        combine = False
+    elif join == 'merge':
+        zip = False
+        combine = False
+    elif join == 'combine_latest':
+        zip = False
+        combine = True
+    else:
+        raise ValueError("tee_map join argument must be on of zip, merge, combine_latest")
+
     def _tee_map(source):
         if isinstance(source, rs.MuxObservable):
             connectable = source.pipe(
@@ -158,7 +188,8 @@ def tee_map(*args, zip=True):
         return _process_many(
             *[arg(connectable) for arg in args],
             connectable=connectable,
-            zip=zip
+            zip=zip,
+            combine=combine,
         )
 
     return _tee_map
