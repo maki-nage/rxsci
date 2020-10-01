@@ -5,6 +5,7 @@ from .lag import lag
 from .pad import pad_start, pad_end
 from .to_array import to_array
 from .to_deque import to_deque
+from .to_list import to_list
 from .roll import roll
 from .sort import sort
 from .split import split
