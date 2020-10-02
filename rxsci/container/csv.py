@@ -280,6 +280,8 @@ def dump(header=True, separator=",", newline='\n'):
                     if type(f) is str:
                         f = f.replace('"', '\\"')
                         f = '"{}"'.format(f)
+                    elif f is None:
+                        f = ''
                     ii.append(f)
 
                 line = separator.join([str(f) for f in ii])

@@ -172,12 +172,14 @@ def test_dump():
         x(foo='a', bar=1, buz=True),
         x(foo='b', bar=2, buz=False),
         x(foo='ab', bar=42, buz=False),
+        x(foo='cl', bar=None, buz=False),
     ]
     expected_data = [
         'foo,bar,buz\n',
         '"a",1,True\n',
         '"b",2,False\n',
         '"ab",42,False\n',
+        '"cl",,False\n',
     ]
 
     actual_data = []
@@ -212,6 +214,7 @@ def test_dump_with_quote():
     )
 
     assert actual_data == expected_data
+
 
 def test_dump_with_cr():
     x = namedtuple('x', ['foo', 'bar', 'buz'])
