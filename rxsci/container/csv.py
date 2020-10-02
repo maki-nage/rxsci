@@ -180,7 +180,7 @@ def create_line_parser(dtype, none_values=[], separator=",",
                     raise ValueError(error)
 
         for index, i in enumerate(parts):
-            if i[0] == '"' and i[-1] == '"':
+            if len(i) > 0 and i[0] == '"' and i[-1] == '"':
                 #i = i.strip('"')                
                 i = i[1:-1]
                 i = i.replace('\\"', '"')                

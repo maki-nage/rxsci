@@ -53,11 +53,13 @@ def test_load():
     actual_data = process(rx.from_([
         "42,the,True",
         "07,quick,False",
+        "08,,False",
     ]), [csv.load(parser)])
 
-    assert len(actual_data) == 2
+    assert len(actual_data) == 3
     assert actual_data[0] == (42, 'the', True)
     assert actual_data[1] == (7, 'quick', False)
+    assert actual_data[2] == (8, '', False)
 
 
 def test_load_quoted():
@@ -71,13 +73,15 @@ def test_load_quoted():
     actual_data = process(rx.from_([
         '1,"the, quick"',
         '2,"\\"brown fox\\""',
-        '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^\"[^BƆm^A^Q^]#lx"'
+        '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^\"[^BƆm^A^Q^]#lx"',
+        '4,""',
     ]), [csv.load(parser)])
 
-    assert len(actual_data) == 3
+    assert len(actual_data) == 4
     assert actual_data[0] == (1, 'the, quick')
     assert actual_data[1] == (2, '"brown fox"')
     assert actual_data[2] == (3, 'a"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^"[^BƆm^A^Q^]#lx')
+    assert actual_data[3] == (4, '')
 
 
 def test_load_error():
