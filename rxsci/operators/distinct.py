@@ -28,6 +28,9 @@ def distinct(key_mapper=None):
         >>>     ops.distinct(),
         >>> )
 
+    Source:
+        An Observable or a MuxObservable
+
     Args:
         key_mapper: [Optional]  A function to compute the comparison
             key for each element.
