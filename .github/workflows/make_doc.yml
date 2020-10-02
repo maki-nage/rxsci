@@ -41,5 +41,5 @@ jobs:
         install -d doc/rxsci/latest
         cp -r ../rxsci/docs/_build/html/* doc/rxsci/latest/
         git add doc/rxsci/latest
-        git commit -m "rxsci: push latest"
+        git commit -m "rxsci: push latest" || true
         git push
