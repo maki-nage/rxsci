@@ -277,14 +277,18 @@ def dump(header=True, separator=",", newline='\n'):
 
                 ii = []
                 for f in i:
+                    if type(f) not in [int, float, bool, str, type(None)]:
+                        f = str(f)
                     if type(f) is str:
                         f = f.replace('"', '\\"')
                         f = '"{}"'.format(f)
                     elif f is None:
                         f = ''
+                    else:
+                        f = str(f)
                     ii.append(f)
 
-                line = separator.join([str(f) for f in ii])
+                line = separator.join(ii)
                 line += newline
                 observer.on_next(line)
 

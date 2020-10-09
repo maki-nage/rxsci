@@ -177,6 +177,7 @@ def test_dump():
         x(foo='b', bar=2, buz=False),
         x(foo='ab', bar=42, buz=False),
         x(foo='cl', bar=None, buz=False),
+        x(foo='cl', bar=[1, '2', "3"], buz=False),
     ]
     expected_data = [
         'foo,bar,buz\n',
@@ -184,6 +185,7 @@ def test_dump():
         '"b",2,False\n',
         '"ab",42,False\n',
         '"cl",,False\n',
+        '"cl","[1, \'2\', \'3\']",False\n',
     ]
 
     actual_data = []
