@@ -44,8 +44,6 @@ def scan_mux(accumulator, seed, reduce):
             def on_completed():
                 if reduce is True:
                     for key, value, is_set in state.iterate():
-                        print("foo")
-                        print('{}, {}, {}'.format(key, is_set, value))
                         if not is_set:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
                         observer.on_next(rs.OnNextMux(key, value))
