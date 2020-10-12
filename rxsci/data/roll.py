@@ -54,15 +54,19 @@ def roll_mux(window, stride):
                     kindex = i.key[0]
                     state_n[kindex] = 0
                     for offset in range(density):
-                        state_w[kindex+offset] = -1
-                    #observer.on_next(rs.OnCompletedMux((1, i.key)))
+                        index = i.key[0] * density + offset
+                        if state_w[index] != -1:
+                            observer.on_next(rs.OnCompletedMux((index, i.key)))
+                        state_w[index] = -1
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
                     kindex = i.key[0]
                     state_n[kindex] = 0
                     for offset in range(density):
-                        state_w[kindex+offset] = -1
-                    #observer.on_next(rs.OnErrordMux((1, i.key), i.error))
+                        index = i.key[0] * density + offset
+                        if state_w[index] != -1:
+                            observer.on_next(rs.OnErrordMux((index, i.key), i.error))
+                        state_w[index] = -1
                     outer_observer.on_next(i)
 
             return source.subscribe(
@@ -75,39 +79,39 @@ def roll_mux(window, stride):
 
     def _roll_count(source):
         def subscribe(observer, scheduler=None):
-            state = {}
+            state = array('Q')
 
             def on_next(i):
                 if isinstance(i, rs.OnNextMux):
-                    count = state[i.key]
-                    '''
-                    if count is None:
-                        count = 1
-                        state[i.key] = 1
-                        observer.on_next(rs.OnCreateMux((1, i.key)))
-                    '''
-
+                    count = state[i.key[0]]
                     if count == 0:
-                        observer.on_next(rs.OnCreateMux((1, i.key)))
+                        observer.on_next(rs.OnCreateMux((0, i.key)))
 
                     count += 1
-                    observer.on_next(rs.OnNextMux((1, i.key), i.item))
+                    observer.on_next(rs.OnNextMux((0, i.key), i.item))
 
                     if count == window:
-                        state[i.key] = 0
-                        observer.on_next(rs.OnCompletedMux((1, i.key)))
+                        state[i.key[0]] = 0
+                        observer.on_next(rs.OnCompletedMux((0, i.key)))
                     else:
-                        state[i.key] += 1
+                        state[i.key[0]] += 1
 
                 elif isinstance(i, rs.OnCreateMux):
-                    state[i.key] = 0
+                    append_count = (i.key[0]+1) - len(state)
+                    if append_count > 0:
+                        for _ in range(append_count):
+                            state.append(0)
+
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnCompletedMux):
-                    del state[i.key]
+                    if state[i.key[0]] > 0:
+                        observer.on_next(rs.OnCompletedMux((0, i.key)))
+                    del state[i.key[0]]
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
-                    del state[i.key]
-                    observer.on_next(rs.OnErrordMux((1, i.key), i.error))
+                    if state[i.key[0]] > 0:
+                        observer.on_next(rs.OnErrorMux((0, i.key), i.error))
+                    del state[i.key[0]]
                     outer_observer.on_next(i)
 
             return source.subscribe(

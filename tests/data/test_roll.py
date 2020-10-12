@@ -5,13 +5,13 @@ import rxsci as rs
 
 def test_roll():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 4),
-        rs.OnNextMux((1, None), 5),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 4),
+        rs.OnNextMux((1,), 5),
+        rs.OnCompletedMux((1,)),
     ]
 
     actual_result = []
@@ -29,16 +29,16 @@ def test_roll():
 
     assert actual_result == source
     assert mux_actual_result == [
-        rs.OnCreateMux((1, (1 ,None))),
-        rs.OnNextMux((1, (1, None)), 1),
-        rs.OnNextMux((1, (1, None)), 2),
-        rs.OnNextMux((1, (1, None)), 3),        
-        rs.OnCompletedMux((1, (1 ,None))),
+        rs.OnCreateMux((0, (1,))),
+        rs.OnNextMux((0, (1,)), 1),
+        rs.OnNextMux((0, (1,)), 2),
+        rs.OnNextMux((0, (1,)), 3),        
+        rs.OnCompletedMux((0, (1,))),
 
-        rs.OnCreateMux((1, (1 ,None))),
-        rs.OnNextMux((1, (1, None)), 4),
-        rs.OnNextMux((1, (1, None)), 5),
-        #rs.OnCompletedMux((3, (1 ,None))),  # only complete windows are notified for now
+        rs.OnCreateMux((0, (1,))),
+        rs.OnNextMux((0, (1,)), 4),
+        rs.OnNextMux((0, (1,)), 5),
+        rs.OnCompletedMux((0, (1,))),
     ]
 
 
@@ -82,21 +82,21 @@ def test_roll_with_stride():
         rs.OnNextMux((0, (0,)), 5),
         rs.OnNextMux((1, (0,)), 5),
         rs.OnCompletedMux((1, (0,))),
-                
+
         rs.OnNextMux((0, (0,)), 6),
-        
-        #rs.OnCompletedMux((4, (1 ,None))),  # only complete windows are notified for now
+
+        rs.OnCompletedMux((0, (0,))),
     ]
 
 
 def test_roll_identity():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 4),
+        rs.OnCompletedMux((1,)),
     ]
 
     actual_result = []
@@ -114,21 +114,21 @@ def test_roll_identity():
 
     assert actual_result == source
     assert mux_actual_result == [
-        rs.OnCreateMux((1, (1 ,None))),
-        rs.OnNextMux((1, (1, None)), 1),
-        rs.OnCompletedMux((1, (1 ,None))),
+        rs.OnCreateMux((0, (1,))),
+        rs.OnNextMux((0, (1,)), 1),
+        rs.OnCompletedMux((0, (1,))),
 
-        rs.OnCreateMux((1, (1 ,None))),
-        rs.OnNextMux((1, (1, None)), 2),
-        rs.OnCompletedMux((1, (1 ,None))),
+        rs.OnCreateMux((0, (1,))),
+        rs.OnNextMux((0, (1,)), 2),
+        rs.OnCompletedMux((0, (1,))),
 
-        rs.OnCreateMux((1, (1 ,None))),
-        rs.OnNextMux((1, (1, None)), 3),
-        rs.OnCompletedMux((1, (1 ,None))),
+        rs.OnCreateMux((0, (1,))),
+        rs.OnNextMux((0, (1,)), 3),
+        rs.OnCompletedMux((0, (1,))),
 
-        rs.OnCreateMux((1, (1 ,None))),
-        rs.OnNextMux((1, (1, None)), 4),
-        rs.OnCompletedMux((1, (1 ,None))),
+        rs.OnCreateMux((0, (1,))),
+        rs.OnNextMux((0, (1,)), 4),
+        rs.OnCompletedMux((0, (1,))),
     ]
 
 
