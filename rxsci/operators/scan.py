@@ -4,51 +4,61 @@ import rxsci as rs
 import rx.operators as ops
 from rxsci.mux.state import MuxState
 
+index = 0
+def next_id(): 
+    global index
+    nid = 'scan-{}'.format(index)
+    index += 1
+    return nid
+
 
 def scan_mux(accumulator, seed, reduce):
     def _scan(source):
         def on_subscribe(observer, scheduler):
-            state = MuxState(data_type=type(seed))
+            state = None
 
             def on_next(i):
+                nonlocal state
+                print(i)
                 if type(i) is rs.OnNextMux:
                     try:
-                        if not state.is_set(i.key):
+                        value = i.store.get_state(state, i.key)
+                        if value is MuxState.STATE_NOTSET:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
-                        else:
-                            value = state.get(i.key)
                         acc = accumulator(value, i.item)
-                        state.set(i.key, acc)
+                        i.store.set_state(state, i.key, acc)
                         if reduce is False:
-                            observer.on_next(rs.OnNextMux(i.key, acc))
+                            observer.on_next(rs.OnNextMux(i.key, acc, i.store))
                     except Exception as e:
-                        observer.on_next(rs.OnErrorMux(i.key, e))
+                        observer.on_next(rs.OnErrorMux(i.key, e, i.store))
                 elif type(i) is rs.OnCreateMux:
-                    state.add_key(i.key)
+                    print(state)
+                    i.store.add_key(state, i.key)
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:
                     if reduce is True:
-                        if not state.is_set(i.key):
+                        value = i.store.get_state(state, i.key)
+                        if value is MuxState.STATE_NOTSET:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
-                        else:
-                            value = state.get(i.key)
-                        observer.on_next(rs.OnNextMux(i.key, value))
+                        observer.on_next(rs.OnNextMux(i.key, value, i.store))
                     observer.on_next(i)
-                    state.del_key(i.key)
-                elif type(i) is rs.OnErrorMux:
+                    i.store.del_key(state, i.key)
+                elif type(i) is rs.OnErrorMux:                    
                     observer.on_next(i)
-                    state.del_key(i.key)
+                    i.store.del_key(state, i.key)
+                elif type(i) is rs.state.ProbeStateTopology:                                        
+                    state = i.topology.create_state(name=next_id(), data_type=type(seed))
                 else:
                     observer.on_error(TypeError("scan: unknow item type: {}".format(type(i))))
 
-            def on_completed():
-                if reduce is True:
-                    for key, value, is_set in state.iterate():
-                        if not is_set:
-                            value = seed() if callable(seed) else copy.deepcopy(seed)
-                        observer.on_next(rs.OnNextMux(key, value))
-                        observer.on_next(rs.OnCompletedMux(key))
-                state.clear()
+            def on_completed():                
+                #if reduce is True:
+                #    for key, value, is_set in i.store.iterate_state(state):
+                #        if not is_set:
+                #            value = seed() if callable(seed) else copy.deepcopy(seed)
+                #        observer.on_next(rs.OnNextMux(key, value))
+                #        observer.on_next(rs.OnCompletedMux(key))
+                #state.clear()
                 observer.on_completed()
 
             return source.subscribe(

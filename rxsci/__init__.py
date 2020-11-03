@@ -16,3 +16,4 @@ from .mux import (
 import rxsci.data as data
 import rxsci.math as math
 import rxsci.operators as ops
+import rxsci.state as state
