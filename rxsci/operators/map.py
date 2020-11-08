@@ -9,9 +9,9 @@ def map_mux(mapper):
                 if type(i) is rs.OnNextMux:
                     try:
                         ii = mapper(i.item)
-                        observer.on_next(rs.OnNextMux(i.key, ii))
+                        observer.on_next(i._replace(item=ii))
                     except Exception as e:
-                        observer.on_next(rs.OnErrorMux(i.key, e))
+                        observer.on_next(rs.OnErrorMux(i.key, e, i.store))
                 else:
                     observer.on_next(i)
 
