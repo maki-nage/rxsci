@@ -12,7 +12,7 @@ def filter_mux(predicate):
                         if emit is True:
                             observer.on_next(i)
                     except Exception as e:
-                        observer.on_next(rs.OnErrorMux(i.key, e))
+                        observer.on_next(rs.OnErrorMux(i.key, e, i.store))
                 else:
                     observer.on_next(i)
 
