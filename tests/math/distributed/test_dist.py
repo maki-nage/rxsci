@@ -63,9 +63,13 @@ def test_describe_mux():
     ])
 
     actual_result = []
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.math.dist.update(reduce=True),
+        rs.state.with_store(
+            store,
+            rs.math.dist.update(reduce=True),
+        ),
         rs.math.dist.describe(),
     ).subscribe(on_next=actual_result.append)
 

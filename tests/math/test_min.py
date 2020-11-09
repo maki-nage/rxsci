@@ -77,18 +77,23 @@ def test_min_mux_reduce():
     ]
     actual_result = []
 
+
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.math.min(reduce=True)
+        rs.state.with_store(
+            store,
+            rs.math.min(reduce=True)
+        ),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 6),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1 ,None), store),
+        rs.OnCreateMux((2, None), store),
+        rs.OnNextMux((1, None), 2, store),
+        rs.OnCompletedMux((1, None), store),
+        rs.OnNextMux((2, None), 6, store),
+        rs.OnCompletedMux((2, None), store),
     ]
 
 
@@ -101,16 +106,20 @@ def test_min_mux_empty_reduce():
     ]
     actual_result = []
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.math.min(reduce=True),
+        rs.state.with_store(
+            store,
+            rs.math.min(reduce=True),
+        ),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), None),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), None),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1 ,None), store),
+        rs.OnCreateMux((2, None), store),
+        rs.OnNextMux((1, None), None, store),
+        rs.OnCompletedMux((1, None), store),
+        rs.OnNextMux((2, None), None, store),
+        rs.OnCompletedMux((2, None), store),
     ]

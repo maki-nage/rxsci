@@ -45,16 +45,20 @@ def test_variance_mux():
 
     actual_result = []
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.math.formal.variance(reduce=True),
+        rs.state.with_store(
+            store,
+            rs.math.formal.variance(reduce=True),
+        ),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), approx(np.var(s1))),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), approx(np.var(s2))),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1 ,None), store),
+        rs.OnCreateMux((2, None), store),
+        rs.OnNextMux((1, None), approx(np.var(s1)), store),
+        rs.OnCompletedMux((1, None), store),
+        rs.OnNextMux((2, None), approx(np.var(s2)), store),
+        rs.OnCompletedMux((2, None), store),
     ]
