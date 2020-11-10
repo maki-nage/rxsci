@@ -5,12 +5,13 @@ ProbeStateTopology = namedtuple('ProbeStateTopology', ['topology'])
 ProbeStateTopology.__doc__ = "Event sent to probe for stateful operators"
 ProbeStateTopology.topology.__doc__ = "The state topology object to fill"
 
-StateDef = namedtuple('StateDef', ['name', 'data_type'])
+StateDef = namedtuple('StateDef', ['name', 'data_type', 'default_value'])
 
 class StateTopology(object):
     def __init__(self):
         self.states = []
         self.mappers = []
+        self.ids = {}
 
     def create_mapper(self, name):
         """A mapper is a non-indexable state. Mappers are used in group_by
@@ -21,8 +22,11 @@ class StateTopology(object):
         self.mappers.append(name)
         return len(self.mappers) - 1
 
-    def create_state(self, name, data_type):
-        print(name)
-        print(data_type)
-        self.states.append(StateDef(name, data_type))
+    def create_state(self, name, data_type, default_value=None):
+        if name in self.ids:
+            self.ids[name] += 1
+        else:
+            self.ids[name] = 0
+        unique_name = '{}-{}'.format(name, self.ids[name])
+        self.states.append(StateDef(unique_name, data_type, default_value))
         return len(self.states) - 1

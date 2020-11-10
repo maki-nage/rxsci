@@ -18,9 +18,11 @@ class MemoryStore(object):
     """
     #__slots__ = 'state', 'keys'
 
-    def __init__(self, name=None, data_type='obj'):
+    def __init__(self, name=None, data_type='obj', default_value=None):
         if data_type is int:
             self.create_values = functools.partial(array, 'q')
+        elif data_type == 'uint':
+            self.create_values = functools.partial(array, 'Q')
         elif data_type is float:
             self.create_values = functools.partial(array, 'd')
         elif data_type is bool:
@@ -29,6 +31,7 @@ class MemoryStore(object):
             self.create_values = list
         self.values = self.create_values()
         self.state = array('B')
+        self.default_value = default_value
         self.keys = []
 
     def add_key(self, key):
@@ -40,6 +43,9 @@ class MemoryStore(object):
                 self.keys.append(MuxState.STATE_CLEARED)
         self.state[key[0]] = MuxState.STATE_NOTSET
         self.keys[key[0]] = key
+        if self.default_value is not None:
+            print("set value {} on {}".format(self.default_value, key))
+            self.set(key, self.default_value)
 
     def del_key(self, key):
         self.state[key[0]] = MuxState.STATE_CLEARED

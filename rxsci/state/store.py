@@ -6,7 +6,11 @@ class Store(object):
         """
         self.states = []
         for state in topology.states:
-            self.states.append(store_factory(name=state.name, data_type=state.data_type))
+            self.states.append(store_factory(
+                name=state.name, 
+                data_type=state.data_type,
+                default_value=state.default_value
+            ))
 
         print(self.states)
 
