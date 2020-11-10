@@ -16,58 +16,63 @@ def roll_mux(window, stride):
 
     def _roll(source):
         def subscribe(observer, scheduler=None):
-            state_n = array('Q')
-            state_w = array('q')
+            state_n = None
+            state_w = None
 
             def on_next(i):
+                nonlocal state_n
+                nonlocal state_w
                 if isinstance(i, rs.OnNextMux):
-                    n = state_n[i.key[0]]
+                    n = i.store.get_state(state_n, i.key)
 
                     if (n % stride) == 0:
                         offset = (n // stride) % density
                         index = i.key[0] * density + offset
-                        state_w[index] = n
-                        observer.on_next(rs.OnCreateMux((index, i.key)))
+                        i.store.set_state(state_w, (index, i.key), n)
+                        observer.on_next(rs.OnCreateMux((index, i.key), i.store))
 
                     for offset in range(density):
                         index = i.key[0] * density + offset
-                        if state_w[index] != -1:
-                            observer.on_next(rs.OnNextMux((index, i.key), i.item))
-                            count = n - state_w[index] + 1
+                        w_value = i.store.get_state(state_w, (index, i.key))
+                        if w_value != -1:
+                            observer.on_next(i._replace(key=(index, i.key)))                            
+                            count = n - w_value + 1
                             if count == window:
-                                state_w[index] = -1
-                                observer.on_next(rs.OnCompletedMux((index, i.key)))
+                                i.store.set_state(state_w, (index, i.key), -1)
+                                observer.on_next(rs.OnCompletedMux((index, i.key), i.store))
 
-                    state_n[i.key[0]] += 1
+                    n_value = i.store.get_state(state_n, i.key)
+                    i.store.set_state(state_n, i.key, n_value+1)
 
                 elif isinstance(i, rs.OnCreateMux):
-                    n_append_count = (i.key[0]+1) - len(state_n)
-                    w_append_count = (i.key[0]+1) * density - len(state_w)
-                    if n_append_count > 0:
-                        for _ in range(n_append_count):
-                            state_n.append(0)
-                    if w_append_count > 0:
-                        for _ in range(w_append_count):
-                            state_w.append(-1)
+                    i.store.add_key(state_n, (i.key[0], i.key))
+                    for offset in range(density):
+                        i.store.add_key(state_w, (i.key[0]+offset, i.key))
                     outer_observer.on_next(i)
-                elif isinstance(i, rs.OnCompletedMux):
+                elif isinstance(i, rs.OnCompletedMux):                    
                     kindex = i.key[0]
-                    state_n[kindex] = 0
+                    i.store.set_state(state_n, (kindex, i.key), 0)
                     for offset in range(density):
                         index = i.key[0] * density + offset
-                        if state_w[index] != -1:
-                            observer.on_next(rs.OnCompletedMux((index, i.key)))
-                        state_w[index] = -1
+                        if i.store.get_state(state_w, (index, i.key)) != -1:
+                            observer.on_next(i._replace(key=(index, i.key)))
+                            i.store.set_state(state_w, (index, i.key), -1)
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
                     kindex = i.key[0]
-                    state_n[kindex] = 0
+                    i.store.set_state(state_n, (kindex, i.key), 0)
                     for offset in range(density):
                         index = i.key[0] * density + offset
-                        if state_w[index] != -1:
-                            observer.on_next(rs.OnErrordMux((index, i.key), i.error))
-                        state_w[index] = -1
+                        if i.store.get_state(state_w, (index, i.key)) != -1:
+                            observer.on_next(i._replace(key=(index, i.key)))
+                            i.store.set_state(state_w, (index, i.key), -1)
                     outer_observer.on_next(i)
+                elif type(i) is rs.state.ProbeStateTopology:                                        
+                    state_n = i.topology.create_state(name="roll", data_type='uint', default_value=0)
+                    state_w = i.topology.create_state(name="roll", data_type=int, default_value=-1)
+                else:
+                    observer.on_error(TypeError("scan: unknow item type: {}".format(type(i))))
+
 
             return source.subscribe(
                 on_next=on_next,
