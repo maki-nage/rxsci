@@ -47,7 +47,7 @@ def roll_mux(window, stride):
                 elif isinstance(i, rs.OnCreateMux):
                     i.store.add_key(state_n, (i.key[0], i.key))
                     for offset in range(density):
-                        i.store.add_key(state_w, (i.key[0]+offset, i.key))
+                        i.store.add_key(state_w, (i.key[0]*density+offset, i.key))
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnCompletedMux):                    
                     kindex = i.key[0]
@@ -70,9 +70,9 @@ def roll_mux(window, stride):
                 elif type(i) is rs.state.ProbeStateTopology:                                        
                     state_n = i.topology.create_state(name="roll", data_type='uint', default_value=0)
                     state_w = i.topology.create_state(name="roll", data_type=int, default_value=-1)
+                    observer.on_next(i)
                 else:
-                    observer.on_error(TypeError("scan: unknow item type: {}".format(type(i))))
-
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

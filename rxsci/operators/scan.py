@@ -48,8 +48,9 @@ def scan_mux(accumulator, seed, reduce):
                     i.store.del_key(state, i.key)
                 elif type(i) is rs.state.ProbeStateTopology:                                        
                     state = i.topology.create_state(name=next_id(), data_type=type(seed))
+                    observer.on_next(i)
                 else:
-                    observer.on_error(TypeError("scan: unknow item type: {}".format(type(i))))
+                    observer.on_next(i)
 
             def on_completed():                
                 #if reduce is True:

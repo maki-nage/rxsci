@@ -3,67 +3,54 @@ import rx
 from rx.subject import Subject
 import rxsci as rs
 from .multiplex import demux_mux_observable
-
-
-
-def new_index(next_index, free_slots):
-    if len(free_slots) > 0:
-        index = free_slots.pop()
-        return index, next_index, free_slots
-    else:
-        index = next_index
-        return index, next_index+1, free_slots
-
-
-def del_index(free_slots, index):
-    free_slots.append(index)
-    return free_slots
+from rxsci.mux.state import MuxState
 
 
 def group_by_mux(key_mapper):
     outer_observer = Subject()
     def _group_by(source):
         def on_subscribe(observer, scheduler):
-            next_index = 0
-            free_slots = array('Q')
-            state = {}
+            state = None
 
             def on_next(i):
-                nonlocal next_index
-                if type(i) is rs.OnNextMux:
-                    key1 = i.key
-                    key2 = key_mapper(i.item)
+                nonlocal state
 
-                    if key1 not in state:
-                        state[key1] = {}
-                        index, next_index, _ = new_index(next_index, free_slots)
-                        state[key1][key2] = index
-                        observer.on_next(rs.OnCreateMux((index, i.key)))
-                    elif key2 not in state[key1]:
-                        index, next_index, _ = new_index(next_index, free_slots)
-                        state[key1][key2] = index
-                        observer.on_next(rs.OnCreateMux((index, i.key)))
-                    else:
-                        index = state[key1][key2]
-                    observer.on_next(rs.OnNextMux((index, i.key), i.item))
+                if type(i) is rs.OnNextMux:
+                    key = i.key
+                    map_key = key_mapper(i.item)
+
+                    index = i.store.get_map(state, key, map_key)
+                    if index is MuxState.STATE_NOTSET:
+                        index = i.store.add_map(state, key, map_key)                        
+                        observer.on_next(rs.OnCreateMux((index, i.key), store=i.store))
+                    observer.on_next(i._replace(key=(index, i.key)))
+
                 elif type(i) is rs.OnCreateMux:
+                    i.store.add_key(state, i.key)
                     outer_observer.on_next(i)
+
                 elif type(i) is rs.OnCompletedMux:
-                    for k in state[i.key]:
-                        index = state[i.key][k]
-                        observer.on_next(rs.OnCompletedMux((index, i.key)))
-                        del_index(free_slots, index)
-                    del state[i.key]
+                    for k in i.store.iterate_map(state, i.key):
+                        index = i.store.get_map(state, i.key, k)
+                        observer.on_next(i._replace(key=(index, i.key)))
+                        i.store.del_map(state, i.key, k)
+                    i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
+                    
                 elif type(i) is rs.OnErrorMux:
-                    for k in state[i.key]:
-                        index = state[i.key][k]
-                        observer.on_next(rs.OnErrorMux((index, i.key), i.error))
-                        del_index(free_slots, index)
-                    del state[i.key]
+                    for k in i.store.iterate_map(state, i.key):
+                        index = i.store.get_map(state, i.key, k)
+                        observer.on_next(i._replace(key=(index, i.key)))
+                        i.store.del_map(state, i.key, k)
+                    i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
+
+                elif type(i) is rs.state.ProbeStateTopology:                                        
+                    state = i.topology.create_mapper(name="groupby")
+                    observer.on_next(i)
+
                 else:
-                    observer.on_next(TypeError("group_by: unknow item type: {}".format(type(i))))
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

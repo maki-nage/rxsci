@@ -29,6 +29,18 @@ class Store(object):
     def iterate(self, state):
         return self.states[state].iterate()
 
+    def add_map(self, state, key, map_key):
+        return self.states[state].add_map(key, map_key)
+
+    def del_map(self, state, key, map_key):
+        return self.states[state].del_map(key, map_key)
+
+    def get_map(self, state, key, map_key):
+        return self.states[state].get_map(key, map_key)
+
+    def iterate_map(self, state, key):
+        return self.states[state].iterate_map(key)
+
 
 class StoreManager(object):
     def __init__(self, store_factory):
@@ -42,30 +54,6 @@ class StoreManager(object):
 
     def set_topology(self, topology):
         self.topology = topology
-
-
-    def set_mapper(self, mapper, key, value):
-        """Sets value of key in mapper
-
-        Args:
-            mapper: A mapper id from topology
-            key: A unique key for this mapper
-            value: value to set
-        """
-        return
-
-    def get_mapper(self, mapper, key):
-        """Retrieves value of key in mapper
-
-        Args:
-            mapper: A mapper id from topology
-            key: A unique key for this mapper
-
-        Returns:
-            value of key.
-        """
-        return
-
 
     def get_store(self):
         if self.active_partition is None:
@@ -111,6 +99,22 @@ class StoreManager(object):
     def iterate_state(self, state):
         store = self.get_store()
         return store.iterate(state)
+
+    def add_map(self, state, key, map_key):
+        store = self.get_store()
+        return store.add_map(state, key, map_key)
+
+    def del_map(self, state, key, map_key):
+        store = self.get_store()
+        return store.del_map(state, key, map_key)
+
+    def get_map(self, state, key, map_key):
+        store = self.get_store()
+        return store.get_map(state, key, map_key)
+
+    def iterate_map(self, state, key):
+        store = self.get_store()
+        return store.iterate_map(state, key)
 
     def on_partitions_revoked(self, revoked):
         return

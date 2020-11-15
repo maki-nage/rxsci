@@ -71,7 +71,8 @@ def test_roll_with_stride():
         ),
     ).subscribe(on_next)
 
-    assert mux_actual_result == [
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == [
         rs.OnCreateMux((0, (0,)), store),
         rs.OnNextMux((0, (0,)), 1, store),
         rs.OnNextMux((0, (0,)), 2, store),

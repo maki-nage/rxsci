@@ -57,6 +57,8 @@ def distinct(key_mapper=None):
                     del hashset[x.key]
                     observer.on_next(x)
                     return
+                else:
+                    observer.on_next(x)
 
                 i = x.item if mux else x
                 key = i

@@ -2,6 +2,21 @@ import functools
 from array import array
 from rxsci.mux.state import MuxState
 
+
+def new_index(next_index, free_slots):
+    if len(free_slots) > 0:
+        index = free_slots.pop()
+        return index, next_index, free_slots
+    else:
+        index = next_index
+        return index, next_index+1, free_slots
+
+
+def del_index(free_slots, index):
+    free_slots.append(index)
+    return free_slots
+
+
 class MemoryStore(object):
     """Manages a Memory store
 
@@ -18,6 +33,7 @@ class MemoryStore(object):
     """
     #__slots__ = 'state', 'keys'
 
+
     def __init__(self, name=None, data_type='obj', default_value=None):
         if data_type is int:
             self.create_values = functools.partial(array, 'q')
@@ -29,8 +45,13 @@ class MemoryStore(object):
             self.create_values = functools.partial(array, 'B')
         else:
             self.create_values = list
+
+        self.is_mapper = data_type == 'mapper'
+        if self.is_mapper is True:
+            self.next_index = 0
+            self.free_slots = array('Q')
         self.values = self.create_values()
-        self.state = array('B')
+        self.state = array('B')    
         self.default_value = default_value
         self.keys = []
 
@@ -39,17 +60,18 @@ class MemoryStore(object):
         if append_count > 0:
             for _ in range(append_count):
                 self.values.append(0)
-                self.state.append(MuxState.STATE_CLEARED)
-                self.keys.append(MuxState.STATE_CLEARED)
-        self.state[key[0]] = MuxState.STATE_NOTSET
+                self.state.append(MuxState.STATE_CLEARED.value())
+                self.keys.append(MuxState.STATE_CLEARED.value())
+        self.state[key[0]] = MuxState.STATE_NOTSET.value()
         self.keys[key[0]] = key
-        if self.default_value is not None:
-            print("set value {} on {}".format(self.default_value, key))
+        if self.is_mapper:
+            self.set(key, {})
+        elif self.default_value is not None:
             self.set(key, self.default_value)
 
     def del_key(self, key):
-        self.state[key[0]] = MuxState.STATE_CLEARED
-        self.keys[key[0]] = MuxState.STATE_CLEARED
+        self.state[key[0]] = MuxState.STATE_CLEARED.value()
+        self.keys[key[0]] = MuxState.STATE_CLEARED.value()
 
     def clear(self):
         self.values = self.create_values()
@@ -57,32 +79,56 @@ class MemoryStore(object):
         self.keys.clear()
 
     def is_cleared(self, key):
-        if self.state[key[0]] == MuxState.STATE_CLEARED:
+        if self.state[key[0]] == MuxState.STATE_CLEARED.value():
             return True
         return False
 
     def get(self, key):
         #if self.state[key[0]] == MuxState.STATE_CLEARED
         #    return MuxState.STATE_CLEARED
-        if self.state[key[0]] == MuxState.STATE_NOTSET:
-            return MuxState.STATE_NOTSET
-        return self.values[key[0]]
+        try:
+            if self.state[key[0]] == MuxState.STATE_NOTSET.value():
+                return MuxState.STATE_NOTSET
+            return self.values[key[0]]
+        except Exception as e:
+            import traceback
+            traceback.print_stack()
+            exit(-1)
 
     def set(self, key, value):
         self.keys[key[0]] = key
-        self.state[key[0]] = MuxState.STATE_SET
+        self.state[key[0]] = MuxState.STATE_SET.value()
         self.values[key[0]] = value
 
     def is_set(self, key):
-        if self.state[key[0]] == MuxState.STATE_SET:
+        if self.state[key[0]] == MuxState.STATE_SET.value():
             return True
         return False
 
     def iterate(self):
         for index in range(len(self.keys)):
-            if self.state[index] is not MuxState.STATE_CLEARED:
+            if self.state[index] is not MuxState.STATE_CLEARED.value():
                 yield (
                     self.keys[index],
                     self.values[index],
-                    self.state[index] == MuxState.STATE_SET,
+                    self.state[index] == MuxState.STATE_SET.value(),
                 )
+
+    def add_map(self, key, map_key):
+        index, self.next_index, self.free_slots = new_index(self.next_index, self.free_slots)
+        self.values[key[0]][map_key] = index
+        return index
+
+    def get_map(self, key, map_key):
+        if not map_key in self.values[key[0]]:
+            return MuxState.STATE_NOTSET
+        return self.values[key[0]][map_key]
+
+    def del_map(self, key, map_key):
+        if not map_key in self.values[key[0]]:
+            return MuxState.STATE_NOTSET
+        return self.values[key[0]][map_key]
+
+    def iterate_map(self, key):
+        for map_key in self.values[key[0]]:
+            yield map_key

@@ -10,7 +10,6 @@ StateDef = namedtuple('StateDef', ['name', 'data_type', 'default_value'])
 class StateTopology(object):
     def __init__(self):
         self.states = []
-        self.mappers = []
         self.ids = {}
 
     def create_mapper(self, name):
@@ -19,8 +18,7 @@ class StateTopology(object):
         stored on persistent storage if no other states are used in the
         applcation.
         """
-        self.mappers.append(name)
-        return len(self.mappers) - 1
+        return self.create_state(name, data_type='mapper')
 
     def create_state(self, name, data_type, default_value=None):
         if name in self.ids:
