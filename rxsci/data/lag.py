@@ -38,7 +38,7 @@ def _lag1(source):
                 state.del_key(i.key)
                 observer.on_next(i)
             else:
-                observer.on_error(TypeError("lag1: unknow item type: {}".format(type(i))))
+                observer.on_next(i)
 
         return source.subscribe(
             on_next=on_next,

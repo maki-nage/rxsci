@@ -22,12 +22,16 @@ def test_tee_map_roll_sum():
     ]
 
     actual_result = []
+    actual_error = []
 
     def on_next(i):
         actual_result.append(i)
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
-        rs.ops.multiplex(rx.pipe(
+        rs.state.with_store(
+            store,
+            rx.pipe(
             rs.ops.group_by(lambda i: i.group, rx.pipe(
                 rs.data.roll(window=3, stride=2, pipeline=rx.pipe(
                     rs.ops.tee_map(
@@ -45,8 +49,12 @@ def test_tee_map_roll_sum():
         )),
     ).subscribe(
         on_next=on_next,
-        on_error=lambda e: print(e))
+        on_error=actual_error.append)
 
+    if len(actual_error) > 0:
+        import traceback
+        traceback.print_tb(actual_error[0].__traceback__)
+    assert len(actual_error) == 0
     assert actual_result == [
         (3.0, 3003.0),
         (6.0, 30006.0),

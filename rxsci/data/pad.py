@@ -21,7 +21,7 @@ def pad_start_mux(size, value):
                     observer.on_next(i)
                     state.del_key(i.key)
                 else:
-                    observer.on_error(TypeError("pad_start: unknow item type: {}".format(type(i))))
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

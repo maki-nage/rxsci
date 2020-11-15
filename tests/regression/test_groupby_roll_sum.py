@@ -27,22 +27,26 @@ def test_groupby_roll_sum():
     def on_next(i):
         actual_result.append(i)
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
-        rs.ops.multiplex(rx.pipe(
-            rs.ops.group_by(lambda i: i[0], rx.pipe(
-                rs.data.roll(window=3, stride=2, pipeline=rx.pipe(
-                    rs.ops.tee_map(
-                        rx.pipe(
-                            rs.ops.map(lambda i: i[0]),
+        rs.state.with_store(
+            store,
+            rx.pipe(
+                rs.ops.group_by(lambda i: i[0], rx.pipe(
+                    rs.data.roll(window=3, stride=2, pipeline=rx.pipe(
+                        rs.ops.tee_map(
+                            rx.pipe(
+                                rs.ops.map(lambda i: i[0]),
+                            ),
+                            rx.pipe(
+                                rs.ops.map(lambda i: i[1]),
+                                rs.math.sum(reduce=True),
+                            )
                         ),
-                        rx.pipe(
-                            rs.ops.map(lambda i: i[1]),
-                            rs.math.sum(reduce=True),
-                        )
-                    ),
-                )),
-            ))
-        )),
+                    )),
+                ))
+            )
+        ),
     ).subscribe(
         on_next=on_next,
         on_error=lambda e: print(e))

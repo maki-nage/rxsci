@@ -29,7 +29,7 @@ def _process_many(*args, connectable, zip, combine):
                 if i == n-1:
                     observer.on_next(x)
                 return
-            elif isinstance(x, rs.OnErrorMux):
+            elif not isinstance(x, rs.OnNextMux):
                 observer.on_next(x)
                 return
 

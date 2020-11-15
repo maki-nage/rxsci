@@ -1,6 +1,6 @@
 import functools
 from array import array
-
+from rxsci.internal.utils import StateNotSet, StateSet, StateCleared
 
 class MuxState(object):
     """Manages a MuxObservable state
@@ -17,9 +17,9 @@ class MuxState(object):
     level of the key (i.e. key[0]).
     """
     #__slots__ = 'state', 'keys'
-    STATE_NOTSET = 0
-    STATE_SET = 1
-    STATE_CLEARED = 2
+    STATE_NOTSET = StateNotSet()
+    STATE_SET = StateSet()
+    STATE_CLEARED = StateCleared()
 
     def __init__(self, data_type='obj'):
         if data_type is int:

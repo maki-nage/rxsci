@@ -21,7 +21,7 @@ def start_with_mux(padding):
                     observer.on_next(i)
                     state.del_key(i.key)
                 else:
-                    observer.on_error(TypeError("start_with: unknow item type: {}".format(type(i))))
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

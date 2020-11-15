@@ -84,6 +84,8 @@ def split_mux(predicate):
                 elif isinstance(i, rs.OnErrorMux):
                     observer.on_next(rs.OnErrordMux((i.key[0], i.key), i.error))
                     outer_observer.on_next(i)
+                else:
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

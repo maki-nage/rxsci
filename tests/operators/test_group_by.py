@@ -13,13 +13,16 @@ def test_group_by():
     def on_completed():
         actual_completed.append(True)
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
-        rs.ops.multiplex(rx.pipe(            
-            rs.ops.group_by(
-                lambda i: i,
-                rx.pipe(
-                    ops.do_action(mux_actual_result.append),
-                ),
+        rs.state.with_store(
+            store,
+            rx.pipe(            
+                rs.ops.group_by(
+                    lambda i: i,
+                    rx.pipe(
+                        ops.do_action(mux_actual_result.append),
+                    ),
             ))
         ),
     ).subscribe(
@@ -32,12 +35,12 @@ def test_group_by():
     assert actual_completed == [True]
     assert actual_result == source
     assert mux_actual_result == [
-        rs.OnCreateMux((0 ,(0,))),
-        rs.OnNextMux((0, (0,)), 1),
-        rs.OnCreateMux((1, (0,))),
-        rs.OnNextMux((1, (0,)), 2),
-        rs.OnNextMux((1, (0,)), 2),
-        rs.OnNextMux((0, (0,)), 1),
-        rs.OnCompletedMux((0, (0,))),
-        rs.OnCompletedMux((1, (0,))),
+        rs.OnCreateMux((0 ,(0,)), store),
+        rs.OnNextMux((0, (0,)), 1, store),
+        rs.OnCreateMux((1, (0,)), store),
+        rs.OnNextMux((1, (0,)), 2, store),
+        rs.OnNextMux((1, (0,)), 2, store),
+        rs.OnNextMux((0, (0,)), 1, store),
+        rs.OnCompletedMux((0, (0,)), store),
+        rs.OnCompletedMux((1, (0,)), store),
     ]
