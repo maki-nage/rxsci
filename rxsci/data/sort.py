@@ -21,7 +21,7 @@ def sort(key=lambda i: i):
     '''
     def _sort(source):
         return source.pipe(
-            rs.ops.to_list(),
+            rs.data.to_list(),
             rs.ops.map(lambda i: sorted(i, key=key)),
             rs.data.to_deque(extend=True),
         )
