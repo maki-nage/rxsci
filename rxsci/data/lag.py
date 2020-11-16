@@ -6,36 +6,26 @@ from rxsci.mux.state import MuxState
 
 def _lag1(source):
     def on_subscribe(observer, scheduler):
-        last = None
+        state = None
 
         def on_next(i):
-            nonlocal last
-            if last is not None:
-                observer.on_next((last, i))
-            last = i
-
-        return source.subscribe(
-            on_next=on_next,
-            on_completed=observer.on_completed,
-            on_error=observer.on_error,
-            scheduler=scheduler)
-
-    def on_subscribe_mux(observer, scheduler):
-        state = MuxState()
-
-        def on_next(i):
+            nonlocal state
             if type(i) is rs.OnNextMux:
-                ii = (
-                    state.get(i.key) if state.is_set(i.key) else i.item,
-                    i.item
-                )
-                state.set(i.key, i.item)
-                observer.on_next(rs.OnNextMux(i.key, ii))
+                iprev = i.store.get_state(state, i.key)
+                if iprev is MuxState.STATE_NOTSET:
+                    iprev = i.item
+
+                ii = (iprev, i.item)
+                i.store.set_state(state, i.key, i.item)
+                observer.on_next(i._replace(item=ii))
             elif type(i) is rs.OnCreateMux:
-                state.add_key(i.key)
+                i.store.add_key(state, i.key)
                 observer.on_next(i)
             elif type(i) is rs.OnCompletedMux or type(i) is rs.OnErrorMux:
-                state.del_key(i.key)
+                i.store.del_key(state, i.key)
+                observer.on_next(i)
+            elif type(i) is rs.state.ProbeStateTopology:
+                state = i.topology.create_state(name='lag1', data_type='obj')
                 observer.on_next(i)
             else:
                 observer.on_next(i)
@@ -46,24 +36,29 @@ def _lag1(source):
             on_error=observer.on_error,
             scheduler=scheduler)
 
-    if isinstance(source, rs.MuxObservable):
-        return rs.MuxObservable(on_subscribe_mux)
-    else:
-        return rx.create(on_subscribe)
+    return rs.MuxObservable(on_subscribe)
 
 
-def lag(size=1):
+def lag(size=1, data_type='obj'):
     '''Buffers a lag of size on source items
+
+        .. marble::
+            :alt: lag1
+
+            -0---1---2-----3----|
+            [       lag(1)      ]
+            -0,0-0,1-1,2---2,3--|
 
         .. marble::
             :alt: lag
 
-            -0--1---2-----3-----|
+            -0---1---2-----3----|
             [       lag(2)      ]
-            --------0,2---1,3---|
+            -0,0-0,1-0,2---1,3--|
 
     Args:
         size: [Optional] size of the lag.
+        data_type: [Optional] the type of the lag data.
 
     Returns:
         An observable where each item is a tuple of (lag, current) items. On
@@ -71,46 +66,35 @@ def lag(size=1):
     '''
     def _lag(source):
         def on_subscribe(observer, scheduler):
-            buffer = deque()
+            state = None
 
             def on_next(i):
-                buffer.append(i)
-                observer.on_next((buffer[0], i))
-                if len(buffer) > size:
-                    buffer.popleft()
+                nonlocal state
 
-            def on_completed():
-                buffer.clear()
-                observer.on_completed()
-
-            return source.subscribe(
-                on_next=on_next,
-                on_completed=on_completed,
-                on_error=observer.on_error,
-                scheduler=scheduler,
-            )
-
-        def on_subscribe_mux(observer, scheduler):
-            buffer = {}
-
-            def on_next(i):
                 if isinstance(i, rs.OnNextMux):
-                    q = buffer[i.key]
+                    q = i.store.get_state(state, i.key)
                     q.append(i.item)
-                    observer.on_next(rs.OnNextMux(i.key, (q[0], i.item)))
+                    observer.on_next(i._replace(item=(q[0], i.item)))
                     if len(q) > size:
                         q.popleft()
 
                 elif isinstance(i, rs.OnCreateMux):
-                    buffer[i.key] = deque()
+                    i.store.add_key(state, i.key)
+                    i.store.set_state(state, i.key, deque())
                     observer.on_next(i)
+
                 elif isinstance(i, rs.OnCompletedMux) \
                 or isinstance(i, rs.OnErrorMux):
-                    del buffer[i.key]
+                    i.store.del_key(state, i.key)
+                    observer.on_next(i)
+
+                elif type(i) is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name='scan', data_type='obj')
+                    observer.on_next(i)
+                else:
                     observer.on_next(i)
 
             def on_completed():
-                buffer.clear()
                 observer.on_completed()
 
             return source.subscribe(
@@ -120,10 +104,7 @@ def lag(size=1):
                 scheduler=scheduler,
             )
 
-        if isinstance(source, rs.MuxObservable):
-            return rx.create(on_subscribe_mux)
-        else:
-            return rx.create(on_subscribe)
+        return rs.MuxObservable(on_subscribe)
 
     if size == 1:
         return _lag1

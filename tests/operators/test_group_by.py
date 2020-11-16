@@ -34,7 +34,9 @@ def test_group_by():
     assert actual_error == []
     assert actual_completed == [True]
     assert actual_result == source
-    assert mux_actual_result == [
+
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == [        
         rs.OnCreateMux((0 ,(0,)), store),
         rs.OnNextMux((0, (0,)), 1, store),
         rs.OnCreateMux((1, (0,)), store),

@@ -4,13 +4,6 @@ import rxsci as rs
 import rx.operators as ops
 from rxsci.mux.state import MuxState
 
-index = 0
-def next_id(): 
-    global index
-    nid = 'scan-{}'.format(index)
-    index += 1
-    return nid
-
 
 def scan_mux(accumulator, seed, reduce):
     def _scan(source):
@@ -32,7 +25,6 @@ def scan_mux(accumulator, seed, reduce):
                     except Exception as e:
                         observer.on_next(rs.OnErrorMux(i.key, e, i.store))
                 elif type(i) is rs.OnCreateMux:
-                    print(state)
                     i.store.add_key(state, i.key)
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:
@@ -46,8 +38,8 @@ def scan_mux(accumulator, seed, reduce):
                 elif type(i) is rs.OnErrorMux:                    
                     observer.on_next(i)
                     i.store.del_key(state, i.key)
-                elif type(i) is rs.state.ProbeStateTopology:                                        
-                    state = i.topology.create_state(name=next_id(), data_type=type(seed))
+                elif type(i) is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name='scan', data_type=type(seed))
                     observer.on_next(i)
                 else:
                     observer.on_next(i)
