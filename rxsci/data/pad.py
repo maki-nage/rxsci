@@ -1,25 +1,35 @@
 import rxsci as rs
+from rxsci.mux.state import MuxState
 
 
 def pad_start_mux(size, value):
     def _pad_start_mux(source):
         def on_subscribe(observer, scheduler):
-            state = rs.mux.MuxState(bool)
+            state = None
 
             def on_next(i):
+                nonlocal state
+
                 if type(i) is rs.OnNextMux:
-                    if not state.is_set(i.key):
-                        state.set(i.key, True)
+                    v = i.store.get_state(state, i.key)
+                    if v is MuxState.STATE_NOTSET:
+                        i.store.set_state(state, i.key, True)
                         v = value if value is not None else i.item
                         for _ in range(size):
-                            observer.on_next(rs.OnNextMux(i.key, v))
+                            observer.on_next(i._replace(item=v))
                     observer.on_next(i)
+
                 elif type(i) is rs.OnCreateMux:
-                    state.add_key(i.key)
+                    i.store.add_key(state, i.key)
                     observer.on_next(i)
+
                 elif type(i) is rs.OnCompletedMux or type(i) is rs.OnErrorMux:
+                    i.store.del_key(state, i.key)
+                    observer.on_next(i)                    
+
+                elif type(i) is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name='pad_start', data_type=bool)
                     observer.on_next(i)
-                    state.del_key(i.key)
                 else:
                     observer.on_next(i)
 
@@ -64,7 +74,7 @@ def pad_start(size, value=None):
         if isinstance(source, rs.MuxObservable):
             return pad_start_mux(size, value)(source)
         else:
-            raise NotImplementedError
+            raise NotImplementedError('This operator only supports MuxObservable sources')
 
     return _pad_start
 
@@ -72,27 +82,38 @@ def pad_start(size, value=None):
 def pad_end_mux(size, value):
     def _pad_end_mux(source):
         def on_subscribe(observer, scheduler):
-            state = rs.mux.MuxState()
+            state = None
 
             def on_next(i):
+                nonlocal state
+
                 if type(i) is rs.OnNextMux:
-                    state.set(i.key, i.item)
+                    i.store.set_state(state, i.key, i.item)
                     observer.on_next(i)
+
                 elif type(i) is rs.OnCreateMux:
-                    state.add_key(i.key)
+                    i.store.add_key(state, i.key)
                     observer.on_next(i)
+
                 elif type(i) is rs.OnCompletedMux:
-                    if state.is_set(i.key):
-                        v = value if value is not None else state.get(i.key)
+                    v = i.store.get_state(state, i.key)
+                    if v is not MuxState.STATE_NOTSET:
+                        if value is not None:
+                            v = value
                         for _ in range(size):
-                            observer.on_next(rs.OnNextMux(i.key, v))
+                            observer.on_next(rs.OnNextMux(i.key, v, i.store))
                     observer.on_next(i)
-                    state.del_key(i.key)
+                    i.store.del_key(state, i.key)
+
                 elif type(i) is rs.OnErrorMux:
+                    i.store.del_key(state, i.key)
+                    observer.on_next(i)                    
+
+                elif type(i) is rs.state.ProbeStateTopology:                    
+                    state = i.topology.create_state(name='pad_end', data_type='obj')
                     observer.on_next(i)
-                    state.del_key(i.key)
                 else:
-                    observer.on_error(TypeError("pad_end: unknow item type: {}".format(type(i))))
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,
