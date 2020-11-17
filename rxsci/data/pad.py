@@ -109,7 +109,7 @@ def pad_end_mux(size, value):
                     i.store.del_key(state, i.key)
                     observer.on_next(i)                    
 
-                elif type(i) is rs.state.ProbeStateTopology:                    
+                elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='pad_end', data_type='obj')
                     observer.on_next(i)
                 else:
