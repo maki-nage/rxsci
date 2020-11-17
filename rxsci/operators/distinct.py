@@ -42,45 +42,48 @@ def distinct(key_mapper=None):
         sequence.
     """
     def _distinct(source):
-        mux = True if isinstance(source, rs.MuxObservable) else False
-
         def on_subscribe(observer, scheduler=None):
-            hashset = {} if mux else set()
+            state = None
 
             def on_next(x):
-                if isinstance(x, rs.OnCreateMux):
-                    hashset[x.key] = set()
+                nonlocal state
+
+                if type(x) is rs.OnNextMux:
+                    i = x.item
+                    key = i
+
+                    if key_mapper:
+                        try:
+                            key = key_mapper(i)
+                        except Exception as ex:
+                            observer.on_error(ex)
+                            return
+
+                    _state = x.store.get_state(state, x.key)
+                    if key not in _state:
+                        _state.add(key)
+                        observer.on_next(x)
+                elif type(x) is rs.OnCreateMux:
+                    x.store.add_key(state, x.key)
+                    x.store.set_state(state, x.key, set())
                     observer.on_next(x)
-                    return
-                elif isinstance(x, rs.OnCompletedMux) \
-                or isinstance(x, rs.OnErrorMux):
-                    del hashset[x.key]
+
+                elif type(x) in [rs.OnCompletedMux, rs.OnErrorMux]:
+                    x.store.del_key(state, x.key)
                     observer.on_next(x)
-                    return
+
+                elif type(x) is rs.state.ProbeStateTopology:                                        
+                    state = x.topology.create_state(name="distinct", data_type='set')
+                    observer.on_next(x)
                 else:
                     observer.on_next(x)
 
-                i = x.item if mux else x
-                key = i
-
-                if key_mapper:
-                    try:
-                        key = key_mapper(i)
-                    except Exception as ex:
-                        observer.on_error(ex)
-                        return
-
-                state = hashset[x.key] if mux else hashset
-                if key not in state:
-                    state.add(key)
-                    observer.on_next(x)
             return source.subscribe_(
                 on_next,
                 observer.on_error,
                 observer.on_completed,
                 scheduler)
-        if mux is True:
-            return rs.MuxObservable(on_subscribe)
-        else:
-            return rx.create(on_subscribe)
+
+        return rs.MuxObservable(on_subscribe)
+
     return _distinct
