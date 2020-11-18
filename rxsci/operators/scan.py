@@ -12,7 +12,7 @@ def scan_mux(accumulator, seed, reduce):
 
             def on_next(i):
                 nonlocal state
-                print(i)
+
                 if type(i) is rs.OnNextMux:
                     try:
                         value = i.store.get_state(state, i.key)

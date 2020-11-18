@@ -10,8 +10,8 @@ random.seed(42)
 
 Item = namedtuple('Item', ['k1', 'k2', 'k3', 'data'])
 
-dataset_size = 50000000
-#dataset_size = 1000000
+#dataset_size = 50000000
+dataset_size = 1000000
 k1_range = 100000
 k2_range = 30
 k3_range = 10
@@ -28,7 +28,7 @@ def dataset(count):
 source = dataset(dataset_size)
 
 rx.from_(source).pipe(
-    rs.ops.multiplex(rx.pipe(
+    rs.state.with_memory_store(rx.pipe(
         rs.ops.group_by(lambda i: i.k1, rx.pipe(
             rs.ops.group_by(lambda i: i.k2, rx.pipe(                        
                 rs.data.roll(5, 5, rx.pipe(
@@ -38,10 +38,14 @@ rx.from_(source).pipe(
         )),
     )),
     ops.count(),
-).subscribe(
+).run()
+
+'''
+subscribe(
     on_next=lambda i: print(i),
     on_error=lambda e: print(e),
 )
+'''
 
 print("done!")
 time.sleep(5.0)
