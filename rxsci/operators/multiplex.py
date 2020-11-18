@@ -52,7 +52,7 @@ def demux_mux_observable(outer_group):
         def on_subscribe(observer, scheduler):
             def on_next(i):
                 if type(i) is rs.OnNextMux:
-                    observer.on_next(rs.OnNextMux(i.key[1], i.item))
+                    observer.on_next(i._replace(key=i.key[1]))
                 '''
                 elif type(i) is rs.OnCreateMux:
                     observer.on_next(rs.OnCreateMux(i.key[1]))

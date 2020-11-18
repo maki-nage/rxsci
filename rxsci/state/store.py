@@ -12,8 +12,6 @@ class Store(object):
                 default_value=state.default_value
             ))
 
-        print(self.states)
-
     def add_key(self, state, key):
         return self.states[state].add_key(key)
 

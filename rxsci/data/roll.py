@@ -84,40 +84,42 @@ def roll_mux(window, stride):
 
     def _roll_count(source):
         def subscribe(observer, scheduler=None):
-            state = array('Q')
+            state = None
 
             def on_next(i):
-                if isinstance(i, rs.OnNextMux):
-                    count = state[i.key[0]]
+                nonlocal state
+
+                if type(i) is rs.OnNextMux:
+                    count = i.store.get_state(state, i.key)
                     if count == 0:
-                        observer.on_next(rs.OnCreateMux((0, i.key)))
+                        observer.on_next(rs.OnCreateMux((0, i.key), i.store))
 
                     count += 1
-                    observer.on_next(rs.OnNextMux((0, i.key), i.item))
+                    observer.on_next(i._replace(key=(0, i.key)))
 
                     if count == window:
-                        state[i.key[0]] = 0
-                        observer.on_next(rs.OnCompletedMux((0, i.key)))
+                        i.store.set_state(state, i.key, 0)
+                        observer.on_next(rs.OnCompletedMux((0, i.key), i.store))
                     else:
-                        state[i.key[0]] += 1
+                        i.store.set_state(state, i.key, count)
 
-                elif isinstance(i, rs.OnCreateMux):
-                    append_count = (i.key[0]+1) - len(state)
-                    if append_count > 0:
-                        for _ in range(append_count):
-                            state.append(0)
+                elif type(i) is rs.OnCreateMux:
+                    i.store.add_key(state, i.key)
+                    outer_observer.on_next(i)
 
+                elif type(i) in [rs.OnCompletedMux, rs.OnErrorMux]:
+                    count = i.store.get_state(state, i.key)
+                    if count > 0:
+                        observer.on_next(i._replace(key=(0, i.key)))
+                    i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
-                elif isinstance(i, rs.OnCompletedMux):
-                    if state[i.key[0]] > 0:
-                        observer.on_next(rs.OnCompletedMux((0, i.key)))
-                    del state[i.key[0]]
-                    outer_observer.on_next(i)
-                elif isinstance(i, rs.OnErrorMux):
-                    if state[i.key[0]] > 0:
-                        observer.on_next(rs.OnErrorMux((0, i.key), i.error))
-                    del state[i.key[0]]
-                    outer_observer.on_next(i)
+
+                elif type(i) is rs.state.ProbeStateTopology:                                        
+                    state = i.topology.create_state(name="roll", data_type='uint', default_value=0)
+                    observer.on_next(i)
+                else:
+                    observer.on_next(i)
+
 
             return source.subscribe(
                 on_next=on_next,

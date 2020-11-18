@@ -86,14 +86,9 @@ class MemoryStore(object):
     def get(self, key):
         #if self.state[key[0]] == MuxState.STATE_CLEARED
         #    return MuxState.STATE_CLEARED
-        try:
-            if self.state[key[0]] == MuxState.STATE_NOTSET.value():
-                return MuxState.STATE_NOTSET
-            return self.values[key[0]]
-        except Exception as e:
-            import traceback
-            traceback.print_stack()
-            exit(-1)
+        if self.state[key[0]] == MuxState.STATE_NOTSET.value():
+            return MuxState.STATE_NOTSET
+        return self.values[key[0]]
 
     def set(self, key, value):
         self.keys[key[0]] = key

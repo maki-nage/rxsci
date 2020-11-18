@@ -20,25 +20,30 @@ def test_roll():
     def on_next(i):
         actual_result.append(i)
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.roll(window=3, stride=3, pipeline=rx.pipe(
-            ops.do_action(mux_actual_result.append),
-        )),
+        rs.state.with_store(
+            store,
+            rs.data.roll(window=3, stride=3, pipeline=rx.pipe(
+                ops.do_action(mux_actual_result.append),
+            )),
+        ),
     ).subscribe(on_next)
 
     assert actual_result == source
-    assert mux_actual_result == [
-        rs.OnCreateMux((0, (1,))),
-        rs.OnNextMux((0, (1,)), 1),
-        rs.OnNextMux((0, (1,)), 2),
-        rs.OnNextMux((0, (1,)), 3),        
-        rs.OnCompletedMux((0, (1,))),
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == [
+        rs.OnCreateMux((0, (1,)), store),
+        rs.OnNextMux((0, (1,)), 1, store),
+        rs.OnNextMux((0, (1,)), 2, store),
+        rs.OnNextMux((0, (1,)), 3, store),
+        rs.OnCompletedMux((0, (1,)), store),
 
-        rs.OnCreateMux((0, (1,))),
-        rs.OnNextMux((0, (1,)), 4),
-        rs.OnNextMux((0, (1,)), 5),
-        rs.OnCompletedMux((0, (1,))),
+        rs.OnCreateMux((0, (1,)), store),
+        rs.OnNextMux((0, (1,)), 4, store),
+        rs.OnNextMux((0, (1,)), 5, store),
+        rs.OnCompletedMux((0, (1,)), store),
     ]
 
 
@@ -110,30 +115,35 @@ def test_roll_identity():
     def on_next(i):
         actual_result.append(i)
 
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.data.roll(1, 1, rx.pipe(
-            ops.do_action(mux_actual_result.append),
-        )),
+        rs.state.with_store(
+            store,
+            rs.data.roll(1, 1, pipeline=rx.pipe(
+                ops.do_action(mux_actual_result.append),
+            )),
+        ),
     ).subscribe(on_next)
 
     assert actual_result == source
-    assert mux_actual_result == [
-        rs.OnCreateMux((0, (1,))),
-        rs.OnNextMux((0, (1,)), 1),
-        rs.OnCompletedMux((0, (1,))),
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == [
+        rs.OnCreateMux((0, (1,)), store),
+        rs.OnNextMux((0, (1,)), 1, store),
+        rs.OnCompletedMux((0, (1,)), store),
 
-        rs.OnCreateMux((0, (1,))),
-        rs.OnNextMux((0, (1,)), 2),
-        rs.OnCompletedMux((0, (1,))),
+        rs.OnCreateMux((0, (1,)), store),
+        rs.OnNextMux((0, (1,)), 2, store),
+        rs.OnCompletedMux((0, (1,)), store),
 
-        rs.OnCreateMux((0, (1,))),
-        rs.OnNextMux((0, (1,)), 3),
-        rs.OnCompletedMux((0, (1,))),
+        rs.OnCreateMux((0, (1,)), store),
+        rs.OnNextMux((0, (1,)), 3, store),
+        rs.OnCompletedMux((0, (1,)), store),
 
-        rs.OnCreateMux((0, (1,))),
-        rs.OnNextMux((0, (1,)), 4),
-        rs.OnCompletedMux((0, (1,))),
+        rs.OnCreateMux((0, (1,)), store),
+        rs.OnNextMux((0, (1,)), 4, store),
+        rs.OnCompletedMux((0, (1,)), store),
     ]
 
 
