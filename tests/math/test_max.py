@@ -94,11 +94,9 @@ def test_max_mux():
     def on_completed():
         actual_completed.append(True)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rs.math.max(),
         ),
     ).subscribe(
@@ -111,15 +109,15 @@ def test_max_mux():
     assert actual_completed == [True]
     try:
         assert actual_result == [
-            rs.OnCreateMux((1, None), store),
-            rs.OnNextMux((1, None), 4, store),
-            rs.OnCreateMux((2, None), store),
-            rs.OnNextMux((2, None), 8, store),
-            rs.OnNextMux((2, None), 8, store),
-            rs.OnNextMux((1, None), 10, store),
-            rs.OnNextMux((1, None), 10, store),
-            rs.OnCompletedMux((1, None), store),
-            rs.OnCompletedMux((2, None), store),
+            rs.OnCreateMux((1, None)),
+            rs.OnNextMux((1, None), 4),
+            rs.OnCreateMux((2, None)),
+            rs.OnNextMux((2, None), 8),
+            rs.OnNextMux((2, None), 8),
+            rs.OnNextMux((1, None), 10),
+            rs.OnNextMux((1, None), 10),
+            rs.OnCompletedMux((1, None)),
+            rs.OnCompletedMux((2, None)),
         ]
     except Exception as e:
         import traceback
@@ -145,11 +143,9 @@ def test_max_mux_reduce():
     def on_completed():
         actual_completed.append(True)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rs.math.max(reduce=True),
         ),
     ).subscribe(
@@ -161,12 +157,12 @@ def test_max_mux_reduce():
     assert actual_error == []
     assert actual_completed == [True]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None), store),
-        rs.OnCreateMux((2, None), store),
-        rs.OnNextMux((1, None), 10, store),
-        rs.OnCompletedMux((1, None), store),
-        rs.OnNextMux((2, None), 8, store),
-        rs.OnCompletedMux((2, None), store),
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), 10),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), 8),
+        rs.OnCompletedMux((2, None)),
     ]
 
 
@@ -184,11 +180,9 @@ def test_max_mux_empty_reduce():
     def on_completed():
         actual_completed.append(True)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rs.math.max(reduce=True),
         ),
     ).subscribe(
@@ -200,10 +194,10 @@ def test_max_mux_empty_reduce():
     assert actual_error == []
     assert actual_completed == [True]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None), store),
-        rs.OnCreateMux((2, None), store),
-        rs.OnNextMux((1, None), None, store),
-        rs.OnCompletedMux((1, None), store),
-        rs.OnNextMux((2, None), None, store),
-        rs.OnCompletedMux((2, None), store),
+        rs.OnCreateMux((1 ,None)),
+        rs.OnCreateMux((2, None)),
+        rs.OnNextMux((1, None), None),
+        rs.OnCompletedMux((1, None)),
+        rs.OnNextMux((2, None), None),
+        rs.OnCompletedMux((2, None)),
     ]
