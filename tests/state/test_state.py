@@ -36,5 +36,10 @@ def test_probe_topology():
     assert actual_result == [1, 2, 3, 4]
     assert type(actual_store_result[0]) == ProbeStateTopology
     assert actual_store_result[1:] == [
-        
+        rs.OnCreateMux((0,), store),
+        rs.OnNextMux((0,), 1, store),
+        rs.OnNextMux((0,), 2, store),
+        rs.OnNextMux((0,), 3, store),
+        rs.OnNextMux((0,), 4, store),
+        rs.OnCompletedMux((0,), store),
     ]

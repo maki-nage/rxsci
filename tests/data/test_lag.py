@@ -38,22 +38,20 @@ def test_lag1_mux():
     ]
     actual_result = []
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rs.data.lag(1),
         ),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
-        rs.OnCreateMux((1 ,None), store),
-        rs.OnNextMux((1, None), (1,1), store),
-        rs.OnNextMux((1, None), (1,2), store),
-        rs.OnNextMux((1, None), (2,3), store),
-        rs.OnNextMux((1, None), (3,4), store),
-        rs.OnCompletedMux((1, None), store),
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), (1,1)),
+        rs.OnNextMux((1, None), (1,2)),
+        rs.OnNextMux((1, None), (2,3)),
+        rs.OnNextMux((1, None), (3,4)),
+        rs.OnCompletedMux((1, None)),
     ]
 
 
@@ -94,23 +92,21 @@ def test_lag_mux():
     ]
     actual_result = []
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rs.data.lag(2),
         ),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
-        rs.OnCreateMux((1 ,None), store),
-        rs.OnNextMux((1, None), (1, 1), store),
-        rs.OnNextMux((1, None), (1, 2), store),
-        rs.OnNextMux((1, None), (1, 3), store),
-        rs.OnNextMux((1, None), (2, 4), store),
-        rs.OnNextMux((1, None), (3, 5), store),
-        rs.OnNextMux((1, None), (4, 6), store),
-        rs.OnCompletedMux((1, None), store),
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), (1, 1)),
+        rs.OnNextMux((1, None), (1, 2)),
+        rs.OnNextMux((1, None), (1, 3)),
+        rs.OnNextMux((1, None), (2, 4)),
+        rs.OnNextMux((1, None), (3, 5)),
+        rs.OnNextMux((1, None), (4, 6)),
+        rs.OnCompletedMux((1, None)),
     ]
 

@@ -31,11 +31,9 @@ def test_to_list_mux():
         rs.OnCompletedMux((2,)),
     ]
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rs.data.to_list(),
         ),
     ).subscribe(
@@ -43,10 +41,10 @@ def test_to_list_mux():
     )
 
     assert actual_result == [
-        rs.OnCreateMux((1,), store),
-        rs.OnCreateMux((2,), store),
-        rs.OnNextMux((1,), [1, 2, 3, 4], store),
-        rs.OnCompletedMux((1,), store),
-        rs.OnNextMux((2,), [10, 11, 12], store),
-        rs.OnCompletedMux((2,), store),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), [1, 2, 3, 4]),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), [10, 11, 12]),
+        rs.OnCompletedMux((2,)),
     ]
