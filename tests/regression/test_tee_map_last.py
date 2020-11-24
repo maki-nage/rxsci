@@ -15,9 +15,11 @@ def test_completion():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.ops.tee_map(
-            rs.ops.first(),
-            rs.ops.last(),
+        rs.state.with_memory_store(
+            rs.ops.tee_map(
+                rs.ops.first(),
+                rs.ops.last(),
+            ),
         ),
     ).subscribe(
         on_next=actual_result.append,

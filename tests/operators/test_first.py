@@ -23,7 +23,9 @@ def test_first_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.ops.first(),
+        rs.state.with_memory_store(
+            rs.ops.first(),
+        ),       
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
