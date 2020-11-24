@@ -3,6 +3,8 @@ from rx.subject import Subject
 import rxsci as rs
 from rxsci.operators.multiplex import demux_mux_observable
 
+from rxsci.mux.state import MuxState
+
 
 def split_obs(predicate):
     ''' Split an observable based on a predicate criteria.
@@ -54,36 +56,42 @@ def split_mux(predicate):
 
     def _split(source):
         def on_subscribe(observer, scheduler):
-            state = []
+            state = None
 
             def on_next(i):
-                if isinstance(i, rs.OnNextMux):
+                nonlocal state
+
+                if type(i) is rs.OnNextMux:
                     new_predicate = predicate(i.item)
-                    current_predicate = state[i.key[0]]
-                    if current_predicate is None:
+                    current_predicate = i.store.get_state(state, i.key)
+                    if current_predicate is MuxState.STATE_NOTSET:
                         current_predicate = new_predicate
-                        state[i.key[0]] = current_predicate
-                        observer.on_next(rs.OnCreateMux((i.key[0], i.key)))
+                        i.store.set_state(state, i.key, current_predicate)
+                        observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
                     if new_predicate != current_predicate:
-                        state[i.key[0]] = new_predicate
-                        observer.on_next(rs.OnCompletedMux((i.key[0], i.key)))
-                        observer.on_next(rs.OnCreateMux((i.key[0], i.key)))
+                        i.store.set_state(state, i.key, new_predicate)
+                        observer.on_next(rs.OnCompletedMux((i.key[0], i.key), i.store))
+                        observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
-                    observer.on_next(rs.OnNextMux((i.key[0], i.key), i.item))
-                elif isinstance(i, rs.OnCreateMux):
-                    append_count = i.key[0] + 1 - len(state)
-                    if append_count > 0:
-                        for _ in range(append_count):
-                            state.append(None)
-                    state[i.key[0]] = None
+                    observer.on_next(i._replace(key=(i.key[0], i.key)))
+
+                elif type(i) is rs.OnCreateMux:
+                    i.store.add_key(state, i.key)
                     outer_observer.on_next(i)
+
                 elif isinstance(i, rs.OnCompletedMux):
-                    observer.on_next(rs.OnCompletedMux((i.key[0], i.key)))
+                    observer.on_next(i._replace(key=(i.key[0], i.key)))
                     outer_observer.on_next(i)
-                elif isinstance(i, rs.OnErrorMux):
-                    observer.on_next(rs.OnErrordMux((i.key[0], i.key), i.error))
+
+                elif type(i) is rs.OnErrorMux:
+                    observer.on_next(i._replace(key=(i.key[0], i.key)))
                     outer_observer.on_next(i)
+
+                elif type(i) is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name='split', data_type='obj')
+                    observer.on_next(i)
+
                 else:
                     observer.on_next(i)
 
