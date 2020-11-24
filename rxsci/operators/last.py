@@ -27,7 +27,7 @@ def last_mux():
                     observer.on_next(rs.OnErrorMux(i.key, i.error))
                     state[i.key[0]] = NotSet
                 else:
-                    observer.on_next(TypeError("first: unknow item type: {}".format(type(i))))
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

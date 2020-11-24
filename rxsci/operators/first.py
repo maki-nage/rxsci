@@ -5,26 +5,25 @@ import rx.operators as ops
 def first_mux():
     def _first(source):
         def on_subscribe(observer, scheduler):
-            state = []
+            state = None
 
             def on_next(i):
+                nonlocal state
+
                 if type(i) is rs.OnNextMux:
-                    if state[i.key[0]] is False:
+                    value = i.store.get_state(state, i.key)
+                    print(value)
+                    if value is False:
                         observer.on_next(i)
-                        state[i.key[0]] = True
+                        i.store.set_state(state, i.key, True)
+
                 elif type(i) is rs.OnCreateMux:
-                    append_count = (i.key[0]+1) - len(state)
-                    if append_count > 0:
-                        for _ in range(append_count):
-                            state.append(None)
-                    state[i.key[0]] = False
+                    i.store.add_key(state, i.key)
                     observer.on_next(i)
-                elif type(i) is rs.OnCompletedMux:
+
+                elif type(i) is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name='first', data_type=bool, default_value=False)
                     observer.on_next(i)
-                    state[i.key[0]] = None
-                elif type(i) is rs.OnErrorMux:
-                    observer.on_next(rs.OnErrorMux(i.key, i.error))
-                    state[i.key[0]] = None
                 else:
                     observer.on_next(i)
 

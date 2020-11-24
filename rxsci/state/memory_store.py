@@ -53,6 +53,7 @@ class MemoryStore(object):
         self.values = self.create_values()
         self.state = array('B')    
         self.default_value = default_value
+        self.data_type = data_type
         self.keys = []
 
     def add_key(self, key):
@@ -88,7 +89,10 @@ class MemoryStore(object):
         #    return MuxState.STATE_CLEARED
         if self.state[key[0]] == MuxState.STATE_NOTSET.value():
             return MuxState.STATE_NOTSET
-        return self.values[key[0]]
+        value = self.values[key[0]]
+        if self.data_type is bool:
+            value = bool(value)
+        return value
 
     def set(self, key, value):
         self.keys[key[0]] = key
