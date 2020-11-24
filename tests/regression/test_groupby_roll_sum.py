@@ -27,10 +27,8 @@ def test_groupby_roll_sum():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
-        rs.state.with_store(
-            store,
+        rs.state.with_memory_store(
             rx.pipe(
                 rs.ops.group_by(lambda i: i[0], rx.pipe(
                     rs.data.roll(window=3, stride=2, pipeline=rx.pipe(
