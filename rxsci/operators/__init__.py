@@ -2,6 +2,7 @@ from .assert_ import assert_, assert_1
 from .count import count
 from .distinct import distinct
 from .distinct_until_changed import distinct_until_changed
+from .do_action import do_action
 from .filter import filter
 from .first import first
 from .group_by import group_by
