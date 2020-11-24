@@ -1,8 +1,7 @@
-from collections import namedtuple
 from timeit import default_timer as timer
 import rx
+import rxsci as rs
 
-ProgressState = namedtuple('ProgressState', ['counter', 'countdown', 'prev_time'])
 
 def progress(name, threshold, measure_throughput=True):
     '''Prints the progress on item processing
