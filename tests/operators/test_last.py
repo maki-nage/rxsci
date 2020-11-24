@@ -23,7 +23,9 @@ def test_last_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.ops.last(),
+        rs.state.with_memory_store(
+            rs.ops.last(),
+        ),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
@@ -58,7 +60,9 @@ def test_last_mux_empty():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.ops.last(),
+        rs.state.with_memory_store(
+            rs.ops.last(),
+        ),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,
