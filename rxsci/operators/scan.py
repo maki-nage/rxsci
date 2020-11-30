@@ -44,7 +44,7 @@ def scan_mux(accumulator, seed, reduce):
                 else:
                     observer.on_next(i)
 
-            def on_completed():                
+            def on_completed():
                 #if reduce is True:
                 #    for key, value, is_set in i.store.iterate_state(state):
                 #        if not is_set:
