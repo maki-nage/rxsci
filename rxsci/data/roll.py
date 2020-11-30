@@ -92,14 +92,14 @@ def roll_mux(window, stride):
                 if type(i) is rs.OnNextMux:
                     count = i.store.get_state(state, i.key)
                     if count == 0:
-                        observer.on_next(rs.OnCreateMux((0, i.key), i.store))
+                        observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
                     count += 1
-                    observer.on_next(i._replace(key=(0, i.key)))
+                    observer.on_next(i._replace(key=(i.key[0], i.key)))
 
                     if count == window:
                         i.store.set_state(state, i.key, 0)
-                        observer.on_next(rs.OnCompletedMux((0, i.key), i.store))
+                        observer.on_next(rs.OnCompletedMux((i.key[0], i.key), i.store))
                     else:
                         i.store.set_state(state, i.key, count)
 
@@ -110,16 +110,15 @@ def roll_mux(window, stride):
                 elif type(i) in [rs.OnCompletedMux, rs.OnErrorMux]:
                     count = i.store.get_state(state, i.key)
                     if count > 0:
-                        observer.on_next(i._replace(key=(0, i.key)))
+                        observer.on_next(i._replace(key=(i.key[0], i.key)))
                     i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
 
-                elif type(i) is rs.state.ProbeStateTopology:                                        
+                elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name="roll", data_type='uint', default_value=0)
                     observer.on_next(i)
                 else:
                     observer.on_next(i)
-
 
             return source.subscribe(
                 on_next=on_next,

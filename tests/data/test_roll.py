@@ -34,16 +34,16 @@ def test_roll():
     assert actual_result == source
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((0, (1,)), store),
-        rs.OnNextMux((0, (1,)), 1, store),
-        rs.OnNextMux((0, (1,)), 2, store),
-        rs.OnNextMux((0, (1,)), 3, store),
-        rs.OnCompletedMux((0, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), 1, store),
+        rs.OnNextMux((1, (1,)), 2, store),
+        rs.OnNextMux((1, (1,)), 3, store),
+        rs.OnCompletedMux((1, (1,)), store),
 
-        rs.OnCreateMux((0, (1,)), store),
-        rs.OnNextMux((0, (1,)), 4, store),
-        rs.OnNextMux((0, (1,)), 5, store),
-        rs.OnCompletedMux((0, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), 4, store),
+        rs.OnNextMux((1, (1,)), 5, store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
 
 
@@ -129,21 +129,21 @@ def test_roll_identity():
     assert actual_result == source
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((0, (1,)), store),
-        rs.OnNextMux((0, (1,)), 1, store),
-        rs.OnCompletedMux((0, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), 1, store),
+        rs.OnCompletedMux((1, (1,)), store),
 
-        rs.OnCreateMux((0, (1,)), store),
-        rs.OnNextMux((0, (1,)), 2, store),
-        rs.OnCompletedMux((0, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), 2, store),
+        rs.OnCompletedMux((1, (1,)), store),
 
-        rs.OnCreateMux((0, (1,)), store),
-        rs.OnNextMux((0, (1,)), 3, store),
-        rs.OnCompletedMux((0, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), 3, store),
+        rs.OnCompletedMux((1, (1,)), store),
 
-        rs.OnCreateMux((0, (1,)), store),
-        rs.OnNextMux((0, (1,)), 4, store),
-        rs.OnCompletedMux((0, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), 4, store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
 
 

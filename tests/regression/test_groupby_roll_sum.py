@@ -59,3 +59,19 @@ def test_groupby_roll_sum():
         ('a', 19.0),
         ('b', 50.0),
     ]
+
+
+def test_group_by_roll_sum2():
+    source = [1, 2, 3, 4, 5, 6, 7, 8]
+    actual_result = []
+    rx.from_(source).pipe(
+        rs.state.with_memory_store(rx.pipe(
+            rs.ops.group_by(lambda i: i % 2, pipeline=rx.pipe(
+                rs.data.roll(window=2, stride=2, pipeline=rx.pipe(
+                    rs.math.sum(reduce=True),
+                )),
+            )),
+        )),
+    ).subscribe(on_next=actual_result.append)
+
+    assert actual_result == [4, 6, 12, 14]
