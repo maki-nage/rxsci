@@ -84,14 +84,14 @@ def test_tee_map_combine():
 
 def test_tee_map_mux():
     source = [
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCreateMux((2, )),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCompletedMux((1, )),
+        rs.OnCompletedMux((2, )),
     ]
     actual_result = []
     actual_error = []
@@ -113,27 +113,27 @@ def test_tee_map_mux():
 
     assert actual_error == []
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), (2, 1)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), (4, 2)),
-        rs.OnNextMux((2, None), (4, 2)),
-        rs.OnNextMux((1, None), (2, 1)),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1 ,)),
+        rs.OnNextMux((1, ), (2, 1)),
+        rs.OnCreateMux((2, )),
+        rs.OnNextMux((2, ), (4, 2)),
+        rs.OnNextMux((2, ), (4, 2)),
+        rs.OnNextMux((1, ), (2, 1)),
+        rs.OnCompletedMux((1, )),
+        rs.OnCompletedMux((2, )),
     ]
 
 
 def test_tee_map_mux_merge():
     source = [
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCreateMux((2, )),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCompletedMux((1, )),
+        rs.OnCompletedMux((2, )),
     ]
     actual_result = []
     actual_error = []
@@ -156,31 +156,31 @@ def test_tee_map_mux_merge():
 
     assert actual_error == []
     assert actual_result == [
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 4),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 4),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 2),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCreateMux((2, )),
+        rs.OnNextMux((2, ), 4),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((2, ), 4),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((1, ), 2),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCompletedMux((1, )),
+        rs.OnCompletedMux((2, )),
     ]
 
 
 def test_tee_map_mux_combine_latest():
     source = [
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 3),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 1),
+        rs.OnCreateMux((2, )),
+        rs.OnNextMux((2, ), 2),
+        rs.OnNextMux((2, ), 3),
+        rs.OnNextMux((1, ), 2),
+        rs.OnCompletedMux((1, )),
+        rs.OnCompletedMux((2, )),
     ]
     actual_result = []
     actual_error = []
@@ -204,14 +204,96 @@ def test_tee_map_mux_combine_latest():
 
     assert actual_error == []
     assert actual_result == [
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), (2, None)),
-        rs.OnNextMux((1, None), (2, 1)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), (4, None)),
-        rs.OnNextMux((2, None), (6, None)),
-        rs.OnNextMux((2, None), (6, 3)),
-        rs.OnNextMux((1, None), (4, 1)),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), (2, None)),
+        rs.OnNextMux((1, ), (2, 1)),
+        rs.OnCreateMux((2, )),
+        rs.OnNextMux((2, ), (4, None)),
+        rs.OnNextMux((2, ), (6, None)),
+        rs.OnNextMux((2, ), (6, 3)),
+        rs.OnNextMux((1, ), (4, 1)),
+        rs.OnCompletedMux((1, )),
+        rs.OnCompletedMux((2, )),
     ]
+
+
+def test_tee_map_mux_combine_latest_2():
+    source = [
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 1),
+        rs.OnNextMux((1, ), 2),
+        rs.OnCompletedMux((1, )),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 10),
+        rs.OnNextMux((1, ), 20),
+        rs.OnCompletedMux((1, )),
+    ]
+    actual_result = []
+    actual_error = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.ops.tee_map(
+            rs.ops.map(lambda i: i*2),
+            rs.ops.map(lambda i: i),
+            join='combine_latest',
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert actual_result == [
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), (2, None)),
+        rs.OnNextMux((1, ), (2, 1)),
+        rs.OnNextMux((1, ), (4, 1)),
+        rs.OnNextMux((1, ), (4, 2)),
+        rs.OnCompletedMux((1, )),
+
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), (20, None)),
+        rs.OnNextMux((1, ), (20, 10)),
+        rs.OnNextMux((1, ), (40, 10)),
+        rs.OnNextMux((1, ), (40, 20)),
+        rs.OnCompletedMux((1, )),
+    ]
+
+def test_tee_map_mux_combine_latest_empty():
+    source = [
+        rs.OnCreateMux((1, )),
+        rs.OnCompletedMux((1, )),
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), 10),
+        rs.OnNextMux((1, ), 20),
+        rs.OnCompletedMux((1, )),
+    ]
+    actual_result = []
+    actual_error = []
+
+    rx.from_(source).pipe(
+        rs.cast_as_mux_observable(),
+        rs.ops.tee_map(
+            rs.ops.map(lambda i: i*2),
+            rs.ops.map(lambda i: i),
+            join='combine_latest',
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert actual_result == [
+        rs.OnCreateMux((1, )),
+        rs.OnCompletedMux((1, )),
+
+        rs.OnCreateMux((1, )),
+        rs.OnNextMux((1, ), (20, None)),
+        rs.OnNextMux((1, ), (20, 10)),
+        rs.OnNextMux((1, ), (40, 10)),
+        rs.OnNextMux((1, ), (40, 20)),
+        rs.OnCompletedMux((1, )),
+    ]
+
