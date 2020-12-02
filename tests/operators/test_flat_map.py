@@ -2,29 +2,29 @@ import rx
 import rxsci as rs
 
 
-def test_desctucture_list():
+def test_flat_map_list():
     source = [1, 2, 3, 4]
 
     actual_result = []
     rx.just(source).pipe(
-        rs.ops.destructure(),
+        rs.ops.flat_map(),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [1,2,3,4]
 
 
-def test_desctucture_tuple():
+def test_flat_map_tuple():
     source = (1, 2, 3, 4)
 
     actual_result = []
     rx.just(source).pipe(
-        rs.ops.destructure(),
+        rs.ops.flat_map(),
     ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [1,2,3,4]
 
 
-def test_desctucture_mux():
+def test_flat_map_mux():
     source = [
         rs.OnCreateMux((1 ,)),
         rs.OnNextMux((1, ), [1, 2, 3, 4]),
@@ -42,7 +42,7 @@ def test_desctucture_mux():
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
-        rs.ops.destructure(),
+        rs.ops.flat_map(),
     ).subscribe(
         on_next=actual_result.append,
         on_completed=on_completed,

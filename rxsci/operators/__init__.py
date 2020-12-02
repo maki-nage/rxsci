@@ -1,6 +1,6 @@
 from .assert_ import assert_, assert_1
 from .count import count
-from .destructure import destructure
+from .flat_map import flat_map
 from .distinct import distinct
 from .distinct_until_changed import distinct_until_changed
 from .filter import filter
