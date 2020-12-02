@@ -3,8 +3,8 @@ import rx
 import rx.operators as ops
 
 
-def destructure_mux():
-    def _destructure(source):
+def flat_map_mux():
+    def _flat_map(source):
         def on_subscribe(observer, scheduler):
             def on_next(i):
                 if type(i) is rs.OnNextMux:                    
@@ -21,14 +21,14 @@ def destructure_mux():
             )
 
         return rs.MuxObservable(on_subscribe)
-    return _destructure
+    return _flat_map
 
 
-def destructure():
-    def _destructure(source):
+def flat_map():
+    def _flat_map(source):
         if isinstance(source, rs.MuxObservable):
-            return destructure_mux()(source)
+            return flat_map_mux()(source)
         else:
             return ops.flat_map(lambda i: rx.from_(i))(source)
 
-    return _destructure
+    return _flat_map
