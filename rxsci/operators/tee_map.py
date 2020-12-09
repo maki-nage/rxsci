@@ -29,10 +29,10 @@ def _process_many(*args, connectable, zip, combine):
             elif isinstance(x, rs.OnCompletedMux):
                 if i == n-1:
                     observer.on_next(x)
-                if zip is True or combine is True:
-                    base_index = x.key[0] * n
-                    queue[base_index+i] = None
-                    has_next[base_index+i] = False
+                    if zip is True or combine is True:
+                        base_index = x.key[0] * n
+                        queue[base_index+i] = None
+                        has_next[base_index+i] = False
                 return
 
             elif not isinstance(x, rs.OnNextMux):
