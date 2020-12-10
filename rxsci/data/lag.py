@@ -1,7 +1,6 @@
 from collections import deque
 import rx
 import rxsci as rs
-from rxsci.mux.state import MuxState
 
 
 def _lag1(source):
@@ -12,7 +11,7 @@ def _lag1(source):
             nonlocal state
             if type(i) is rs.OnNextMux:
                 iprev = i.store.get_state(state, i.key)
-                if iprev is MuxState.STATE_NOTSET:
+                if iprev is rs.state.markers.STATE_NOTSET:
                     iprev = i.item
 
                 ii = (iprev, i.item)

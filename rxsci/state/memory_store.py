@@ -1,6 +1,6 @@
 import functools
 from array import array
-from rxsci.mux.state import MuxState
+import rxsci as rs
 
 
 def new_index(next_index, free_slots):
@@ -61,9 +61,9 @@ class MemoryStore(object):
         if append_count > 0:
             for _ in range(append_count):
                 self.values.append(0)
-                self.state.append(MuxState.STATE_CLEARED.value())
-                self.keys.append(MuxState.STATE_CLEARED.value())
-        self.state[key[0]] = MuxState.STATE_NOTSET.value()
+                self.state.append(rs.state.markers.STATE_CLEARED.value())
+                self.keys.append(rs.state.markers.STATE_CLEARED.value())
+        self.state[key[0]] = rs.state.markers.STATE_NOTSET.value()
         self.keys[key[0]] = key
         if self.is_mapper:
             self.set(key, {})
@@ -71,8 +71,8 @@ class MemoryStore(object):
             self.set(key, self.default_value)
 
     def del_key(self, key):
-        self.state[key[0]] = MuxState.STATE_CLEARED.value()
-        self.keys[key[0]] = MuxState.STATE_CLEARED.value()
+        self.state[key[0]] = rs.state.markers.STATE_CLEARED.value()
+        self.keys[key[0]] = rs.state.markers.STATE_CLEARED.value()
 
     def clear(self):
         self.values = self.create_values()
@@ -80,15 +80,15 @@ class MemoryStore(object):
         self.keys.clear()
 
     def is_cleared(self, key):
-        if self.state[key[0]] == MuxState.STATE_CLEARED.value():
+        if self.state[key[0]] == rs.state.markers.STATE_CLEARED.value():
             return True
         return False
 
     def get(self, key):
-        #if self.state[key[0]] == MuxState.STATE_CLEARED
-        #    return MuxState.STATE_CLEARED
-        if self.state[key[0]] == MuxState.STATE_NOTSET.value():
-            return MuxState.STATE_NOTSET
+        #if self.state[key[0]] == rs.state.markers.STATE_CLEARED
+        #    return rs.state.markers.STATE_CLEARED
+        if self.state[key[0]] == rs.state.markers.STATE_NOTSET.value():
+            return rs.state.markers.STATE_NOTSET
         value = self.values[key[0]]
         if self.data_type is bool:
             value = bool(value)
@@ -96,21 +96,21 @@ class MemoryStore(object):
 
     def set(self, key, value):
         self.keys[key[0]] = key
-        self.state[key[0]] = MuxState.STATE_SET.value()
+        self.state[key[0]] = rs.state.markers.STATE_SET.value()
         self.values[key[0]] = value
 
     def is_set(self, key):
-        if self.state[key[0]] == MuxState.STATE_SET.value():
+        if self.state[key[0]] == rs.state.markers.STATE_SET.value():
             return True
         return False
 
     def iterate(self):
         for index in range(len(self.keys)):
-            if self.state[index] is not MuxState.STATE_CLEARED.value():
+            if self.state[index] is not rs.state.markers.STATE_CLEARED.value():
                 yield (
                     self.keys[index],
                     self.values[index],
-                    self.state[index] == MuxState.STATE_SET.value(),
+                    self.state[index] == rs.state.markers.STATE_SET.value(),
                 )
 
     def add_map(self, key, map_key):
@@ -120,12 +120,12 @@ class MemoryStore(object):
 
     def get_map(self, key, map_key):
         if not map_key in self.values[key[0]]:
-            return MuxState.STATE_NOTSET
+            return rs.state.markers.STATE_NOTSET
         return self.values[key[0]][map_key]
 
     def del_map(self, key, map_key):
         if not map_key in self.values[key[0]]:
-            return MuxState.STATE_NOTSET
+            return rs.state.markers.STATE_NOTSET
         return self.values[key[0]][map_key]
 
     def iterate_map(self, key):

@@ -1,6 +1,5 @@
 import rxsci as rs
 import rx.operators as ops
-from rxsci.mux.state import MuxState
 
 
 def start_with(padding):
@@ -15,7 +14,7 @@ def start_with(padding):
 
                 if type(i) is rs.OnNextMux:
                     s = i.store.get_state(state, i.key)
-                    if s is MuxState.STATE_NOTSET:
+                    if s is rs.state.markers.STATE_NOTSET:
                         i.store.set_state(state, i.key, True)
                         for p in padding:
                             observer.on_next(i._replace(item=p))

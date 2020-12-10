@@ -1,6 +1,5 @@
 import rxsci as rs
 import rx.operators as ops
-from rxsci.mux.state import MuxState
 
 
 def last_mux():
@@ -20,7 +19,7 @@ def last_mux():
 
                 elif type(i) is rs.OnCompletedMux:
                     value = i.store.get_state(state, i.key)
-                    if value is not MuxState.STATE_NOTSET:
+                    if value is not rs.state.markers.STATE_NOTSET:
                         observer.on_next(rs.OnNextMux(i.key, value, i.store))
                     observer.on_next(i)
                     i.store.del_key(state, i.key)

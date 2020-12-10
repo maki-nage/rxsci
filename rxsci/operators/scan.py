@@ -2,7 +2,6 @@ import copy
 import rx
 import rxsci as rs
 import rx.operators as ops
-from rxsci.mux.state import MuxState
 
 
 def scan_mux(accumulator, seed, reduce):
@@ -16,7 +15,7 @@ def scan_mux(accumulator, seed, reduce):
                 if type(i) is rs.OnNextMux:
                     try:
                         value = i.store.get_state(state, i.key)
-                        if value is MuxState.STATE_NOTSET:
+                        if value is rs.state.markers.STATE_NOTSET:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
                         acc = accumulator(value, i.item)
                         i.store.set_state(state, i.key, acc)
@@ -30,7 +29,7 @@ def scan_mux(accumulator, seed, reduce):
                 elif type(i) is rs.OnCompletedMux:
                     if reduce is True:
                         value = i.store.get_state(state, i.key)
-                        if value is MuxState.STATE_NOTSET:
+                        if value is rs.state.markers.STATE_NOTSET:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
                         observer.on_next(rs.OnNextMux(i.key, value, i.store))
                     observer.on_next(i)
