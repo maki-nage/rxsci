@@ -3,8 +3,6 @@ from rx.subject import Subject
 import rxsci as rs
 from rxsci.operators.multiplex import demux_mux_observable
 
-from rxsci.mux.state import MuxState
-
 
 def split_obs(predicate):
     ''' Split an observable based on a predicate criteria.
@@ -64,7 +62,7 @@ def split_mux(predicate):
                 if type(i) is rs.OnNextMux:
                     new_predicate = predicate(i.item)
                     current_predicate = i.store.get_state(state, i.key)
-                    if current_predicate is MuxState.STATE_NOTSET:
+                    if current_predicate is rs.state.markers.STATE_NOTSET:
                         current_predicate = new_predicate
                         i.store.set_state(state, i.key, current_predicate)
                         observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))

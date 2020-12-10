@@ -3,7 +3,6 @@ import rx
 from rx.subject import Subject
 import rxsci as rs
 from .multiplex import demux_mux_observable
-from rxsci.mux.state import MuxState
 
 
 def group_by_mux(key_mapper):
@@ -20,8 +19,8 @@ def group_by_mux(key_mapper):
                     map_key = key_mapper(i.item)
 
                     index = i.store.get_map(state, key, map_key)
-                    if index is MuxState.STATE_NOTSET:
-                        index = i.store.add_map(state, key, map_key)                        
+                    if index is rs.state.markers.STATE_NOTSET:
+                        index = i.store.add_map(state, key, map_key)
                         observer.on_next(rs.OnCreateMux((index, i.key), store=i.store))
                     observer.on_next(i._replace(key=(index, i.key)))
 
@@ -45,7 +44,7 @@ def group_by_mux(key_mapper):
                     i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
 
-                elif type(i) is rs.state.ProbeStateTopology:                                        
+                elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_mapper(name="groupby")
                     observer.on_next(i)
 

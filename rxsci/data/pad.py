@@ -1,5 +1,4 @@
 import rxsci as rs
-from rxsci.mux.state import MuxState
 
 
 def pad_start_mux(size, value):
@@ -12,7 +11,7 @@ def pad_start_mux(size, value):
 
                 if type(i) is rs.OnNextMux:
                     v = i.store.get_state(state, i.key)
-                    if v is MuxState.STATE_NOTSET:
+                    if v is rs.state.markers.STATE_NOTSET:
                         i.store.set_state(state, i.key, True)
                         v = value if value is not None else i.item
                         for _ in range(size):
@@ -97,7 +96,7 @@ def pad_end_mux(size, value):
 
                 elif type(i) is rs.OnCompletedMux:
                     v = i.store.get_state(state, i.key)
-                    if v is not MuxState.STATE_NOTSET:
+                    if v is not rs.state.markers.STATE_NOTSET:
                         if value is not None:
                             v = value
                         for _ in range(size):
