@@ -84,10 +84,10 @@ def merge_escape_parts(parts, separator):
     try:
         merged_parts = []
         agg = None
-        for t in parts:            
-            if len(t) > 0 and t[0] == '"' and t[-1] == '"' and agg is None:
+        for t in parts:
+            if len(t) > 0 and t[0] == '"' and t[-1] == '"' and t[-2] != '\\' and agg is None:
                 merged_parts.append(t)
-            elif len(t) > 0 and t[-1] == '"' and agg is not None:
+            elif len(t) > 0 and t[-1] == '"' and t[-2] != '\\' and agg is not None:
                 agg.append(t)
                 merged_parts.append(separator.join(agg))
                 agg = None

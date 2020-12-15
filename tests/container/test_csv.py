@@ -75,13 +75,15 @@ def test_load_quoted():
         '2,"\\"brown fox\\""',
         '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^\"[^BƆm^A^Q^]#lx"',
         '4,""',
+        '5,"\\"a\\",b"',
     ]), [csv.load(parser)])
 
-    assert len(actual_data) == 4
+    assert len(actual_data) == 5
     assert actual_data[0] == (1, 'the, quick')
     assert actual_data[1] == (2, '"brown fox"')
     assert actual_data[2] == (3, 'a"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^"[^BƆm^A^Q^]#lx')
     assert actual_data[3] == (4, '')
+    assert actual_data[4] == (5, '"a",b')
 
 
 def test_load_error():
