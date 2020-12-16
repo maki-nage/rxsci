@@ -8,16 +8,16 @@ def do_action_mux(on_next=None, on_error=None, on_completed=None, on_create=None
             def _on_next(i):
                 if type(i) is rs.OnNextMux:
                     if on_next is not None:
-                        on_next(i)
+                        on_next(i.item)
                 elif type(i) is rs.OnErrorMux:
                     if on_error is not None:
-                        on_error(i)
+                        on_error(i.error)
                 elif type(i) is rs.OnCompletedMux:
                     if on_completed is not None:
-                        on_completed(i)
+                        on_completed(i.key)
                 elif type(i) is rs.OnCreateMux:
                     if on_create is not None:
-                        on_create(i)
+                        on_create(i.key)
 
                 observer.on_next(i)
 
