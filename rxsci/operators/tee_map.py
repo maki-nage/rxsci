@@ -51,7 +51,7 @@ def _process_many(*args, connectable, zip, combine):
                         try:
                             _queue = queue[base_index:base_index+n]
                             res = tuple(_queue)
-                            res = rs.OnNextMux(x.key, res)
+                            res = rs.OnNextMux(x.key, res, x.store)
                             for index in range(n):
                                 has_next[base_index+index] = False
                         except Exception as ex:  # pylint: disable=broad-except
@@ -63,7 +63,7 @@ def _process_many(*args, connectable, zip, combine):
                     try:
                         _queue = queue[base_index:base_index+n]
                         res = tuple(_queue)
-                        res = rs.OnNextMux(x.key, res)
+                        res = rs.OnNextMux(x.key, res, x.store)
                     except Exception as ex:  # pylint: disable=broad-except
                         observer.on_error(ex)
                         return
