@@ -7,18 +7,21 @@ import rxsci.container.csv as csv
 
 def process(source, pipeline=None):
     actual_data = []
+    actual_error = []
 
     if pipeline is not None:
         source.pipe(*pipeline).subscribe(
             on_next=actual_data.append,
-            on_error=lambda e: print(e)
+            on_error=actual_error.append,
         )
     else:
         source.subscribe(
             on_next=actual_data.append,
-            on_error=lambda e: print(e)
+            on_error=actual_error.append,
         )
 
+    if len(actual_error) > 0:
+        raise actual_error[0]
     return actual_data
 
 
@@ -76,14 +79,18 @@ def test_load_quoted():
         '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^\"[^BƆm^A^Q^]#lx"',
         '4,""',
         '5,"\\"a\\",b"',
+        '6,",ab"',
+        '7,","',
     ]), [csv.load(parser)])
 
-    assert len(actual_data) == 5
+    assert len(actual_data) == 7
     assert actual_data[0] == (1, 'the, quick')
     assert actual_data[1] == (2, '"brown fox"')
     assert actual_data[2] == (3, 'a"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^"[^BƆm^A^Q^]#lx')
     assert actual_data[3] == (4, '')
     assert actual_data[4] == (5, '"a",b')
+    assert actual_data[5] == (6, ',ab')
+    assert actual_data[6] == (7, ',')
 
 
 def test_load_error():
