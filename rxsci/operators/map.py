@@ -27,6 +27,24 @@ def map_mux(mapper):
 
 
 def map(mapper):
+    """Projects each element of an observable into a new form.
+
+    .. marble::
+        :alt: map
+        ---1---2---3---4--->
+        [   map(i: i*2)    ]
+        ---2---4---6---8--->
+
+    Source:
+        An Observable or a MuxObservable
+
+    Args:
+        mapper: A transform function to apply to each source element.
+
+    Returns:
+        An observable emitting the result of invoking the transform function on
+        each source items.
+    """
     def _map(source):
         if isinstance(source, rs.MuxObservable):
             return map_mux(mapper)(source)
