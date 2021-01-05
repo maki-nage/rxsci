@@ -4,6 +4,24 @@ import rx.operators as ops
 
 def start_with(padding):
     """Prepends some items to an Observable
+
+    .. marble::
+        :alt: start_with
+
+        --1------2--3--4----|
+        [start_with([0,10]) ]
+        --0-10-1-2--3--4----|
+
+    Source:
+        A MuxObservable
+
+    Args:
+        mapper: A transform function to invoke with unpacked elements
+            as arguments.
+
+    Returns:
+        An Observable emitting the items of the source Observable, preceded by
+        the values of padding.
     """
     def _start_with(source):
         def on_subscribe(observer, scheduler):
