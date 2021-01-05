@@ -21,6 +21,10 @@ def first_mux():
                     i.store.add_key(state, i.key)
                     observer.on_next(i)
 
+                elif type(i) is rs.OnCompletedMux:
+                    observer.on_next(i)
+                    i.store.del_key(state, i.key)
+
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='first', data_type=bool, default_value=False)
                     observer.on_next(i)
