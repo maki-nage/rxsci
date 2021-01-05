@@ -12,13 +12,14 @@ def with_latest_from(*sources):
 
     .. marble::
         :alt: with_latest_from
+
           --1--2----3----4-|
         --a-------b---c--d---|
         [ with_latest_from() ]
         ----1,a-2,a-3,b--4,d-|
 
     Examples:
-        >>> rs.ops.with_latest_from(obs1
+        >>> rs.ops.with_latest_from(obs1)
 
     Source:
         An Observable.

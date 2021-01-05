@@ -47,6 +47,7 @@ def first():
 
     .. marble::
         :alt: first
+
         ---1---2---3---4----|
         [      first()      ]
         -------2-|
