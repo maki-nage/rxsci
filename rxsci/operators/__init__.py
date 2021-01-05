@@ -16,5 +16,6 @@ from .progress import progress
 from .starmap import starmap
 from .start_with import start_with
 from .scan import scan
+from .take import take
 from .tee_map import tee_map
 from .with_latest_from import with_latest_from
