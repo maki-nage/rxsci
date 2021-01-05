@@ -118,27 +118,36 @@ def assert_1(predicate, name="", error=ValueError):
                 scheduler=scheduler)
 
         def on_subscribe_mux(observer, scheduler):
-            last = {}
+            state = None
 
             def on_next(i):
+                nonlocal state
                 if isinstance(i, rs.OnNextMux):
-                    _last = last[i.key]
-                    if _last is not None:
-                        if predicate(_last, i.item) is True:
+                    value = i.store.get_state(state, i.key)
+                    if value is not rs.state.markers.STATE_NOTSET:
+                        if predicate(value, i.item) is True:
                             observer.on_next(rs.OnNextMux(i.key, i))
                         else:
-                            observer.on_error(error("assert {} failed on: {}-{}".format(name, last, i.item)))
+                            observer.on_error(error("assert {} failed on: {}-{}".format(name, value, i.item)))
                     else:
                         observer.on_next(rs.OnNextMux(i.key, i))
 
-                    last[i.key] = i.item
+                    i.store.set_state(state, i.key, i.item)
 
                 elif isinstance(i, rs.OnCreateMux):
-                    last[i.key] = None
+                    i.store.add_key(state, i.key)
                     observer.on_next(i)
+
                 elif isinstance(i, rs.OnCompletedMux) \
                 or isinstance(i, rs.OnErrorMux):
-                    del last[i.key]
+                    i.store.del_key(state, i.key)
+                    observer.on_next(i)
+
+                elif type(i) is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name='assert1', data_type='obj')
+                    observer.on_next(i)
+
+                else:
                     observer.on_next(i)
 
             return source.subscribe(
@@ -153,60 +162,3 @@ def assert_1(predicate, name="", error=ValueError):
             return rx.create(on_subscribe)
 
     return _assert_1
-
-
-"""
-def assert_1(predicate, name="", error=ValueError):
-    '''Ensure that predicate evaluates to True for all pairs of item / previous item
-
-    If any of the lag1 pair on the source observable evaluates to False, then
-    error is emitted on the on_error handler.
-
-    Args:
-        predicate: A function to evaluate each item.
-        name: [Optional] A firendly name to display with the error.
-        error: [Optional] The error to emit when predicate evaluates to False.
-
-    Returns:
-        An observable returning the source items, and completing on error if
-        any source pair evaluates to False.
-    '''
-    def _assert_mux(mapper):
-        def __assert(source):
-            def on_subscribe(observer, scheduler):
-                last = None
-                def on_next(i):
-                    if type(i) is rs.OnNextMux:
-                        try:
-                            ii = mapper(i.item)
-                            observer.on_next(rs.OnNextMux(i.key, ii))
-                        except Exception as e:
-                            observer.on_next(rs.OnErrorMux(i.key, e))
-                    elif type(i) is rs.OnCompletedMux:
-                    else:
-                        observer.on_next(i)
-                )
-
-                return source.subscribe(
-                    on_next=on_next,
-                    on_completed=observer.on_completed,
-                    on_error=observer.on_error,
-                    scheduler=scheduler
-                )
-
-            return rs.MuxObservable(on_subscribe)
-        return __assert
-
-
-    def _assert(i):
-        print(i)
-        if predicate(i[0], i[1]) is True:
-            return i[0]
-        
-        raise error("assert {} failed on: {}-{}".format(name, i[0], i[1]))
-
-    return rx.pipe(
-        rs.data.lag1(),
-        rs.ops.map(_assert),
-    )
-"""
