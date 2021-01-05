@@ -43,7 +43,7 @@ def first_mux():
 
 
 def first():
- """Emits the first element of an observable
+    """Emits the first element of an observable
 
     .. marble::
         :alt: first

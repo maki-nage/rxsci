@@ -47,6 +47,21 @@ def last_mux():
 
 
 def last():
+    """Emits the last element of an observable
+
+    .. marble::
+        :alt: last
+        ---1---2---3---4--|
+        [      last()       ]
+        ------------------4-|
+
+    Source:
+        An Observable or a MuxObservable
+
+    Returns:
+        An observable emitting the last item from the source
+        observable.
+    """
     def _last(source):
         if isinstance(source, rs.MuxObservable):
             return last_mux()(source)
