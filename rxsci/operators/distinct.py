@@ -21,13 +21,6 @@ def distinct(key_mapper=None):
     implementation does not allow to specify a comparer: The key must be
     hashable.
 
-
-    Examples:
-        >>> data = range(200000, 0, -1)
-        >>> rx.from_(data).pipe(
-        >>>     ops.distinct(),
-        >>> )
-
     Source:
         An Observable or a MuxObservable
 

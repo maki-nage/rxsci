@@ -9,7 +9,7 @@ def start_with(padding):
         :alt: start_with
 
         --1------2--3--4----|
-        [start_with([0,10]) ]
+        [start_with((0,10)) ]
         --0-10-1-2--3--4----|
 
     Source:

@@ -78,7 +78,7 @@ def scan(accumulator, seed, reduce=False):
         -1--3--6--10-15-21-|
 
     Examples:
-        >>> rs.operators.scan(lambda acc, i: acc + i, seed=0, reduce=False)
+        >>> rs.ops.scan(lambda acc, i: acc + i, seed=0, reduce=False)
 
     Args:
         accumulator: A function called on each item, that accumulates

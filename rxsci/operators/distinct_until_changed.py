@@ -8,6 +8,7 @@ def distinct_until_changed(key_mapper=None):
 
     .. marble::
         :alt: distinct_until_changed
+
         -0-1-1-2-3-1-2-2-3-|
         [    distinct()    ]
         -0-1---2-3-1-2---3-|
