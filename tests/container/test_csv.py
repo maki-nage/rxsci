@@ -1,5 +1,6 @@
 from collections import namedtuple
 import tempfile
+import pytest
 import rx
 import rx.operators as ops
 import rxsci.container.csv as csv
@@ -42,6 +43,36 @@ def test_parser():
     assert len(actual_data) == 2
     assert actual_data[0] == (42, 'the', True)
     assert actual_data[1] == (7, 'quick', False)
+
+
+def test_parser_empty_numbers():
+    parser = csv.create_line_parser(
+        dtype=[
+            ("foo", "int"),
+            ("bar", "float"),
+        ]
+    )
+
+    actual_data = process(rx.from_([
+        ",",
+    ]), [ops.map(parser)])
+
+    assert len(actual_data) == 1
+    assert actual_data[0] == (None, None)
+
+
+def test_parser_invalid_numbers():
+    parser = csv.create_line_parser(
+        dtype=[
+            ("foo", "int"),
+            ("bar", "float"),
+        ]
+    )
+
+    with pytest.raises(ValueError):
+        process(rx.from_([
+            "as,ds",
+        ]), [ops.map(parser)])
 
 
 def test_load():
@@ -141,6 +172,7 @@ def test_load_ignore_error():
         error = e
 
     source = rx.from_([
+        "a,the,True",
         "42,the,True",
         "07",
     ])

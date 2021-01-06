@@ -18,6 +18,8 @@ def parse_iso_date(i):
 
 
 def parse_int(i):
+    if len(i) == 0:
+        return None
     return int(i)
 
 
@@ -26,6 +28,8 @@ def parse_float(i):
 
 
 def parse_decimal(ii):
+    if len(ii) == 0:
+        return None
     try:
         s = ii.split(".")
         i = int(s[0])
@@ -174,28 +178,30 @@ def create_line_parser(dtype, none_values=[], separator=",",
         #return parts
 
     def parse_line(line):
-        parts = split(line, separator)
-        if len(parts) != columns_len:
-            parts = merge_escape_parts(parts, separator)
+        try:
+            parts = split(line, separator)
             if len(parts) != columns_len:
-                error = "invalid number of columns: expected {}, found {} on: {}".format(
-                    columns_len, len(parts), line)
-                if ignore_error is True:
-                    print("{}, \nignoring this line".format(error))
-                    return None
-                else:
+                parts = merge_escape_parts(parts, separator)
+                if len(parts) != columns_len:
+                    error = "invalid number of columns: expected {}, found {} on: {}".format(
+                        columns_len, len(parts), line)
                     raise ValueError(error)
 
-        for index, i in enumerate(parts):
-            if len(i) > 0 and i[0] == '"' and i[-1] == '"':
-                #i = i.strip('"')                
-                i = i[1:-1]
-                i = i.replace('\\"', '"')                
-            if i in none_values:
-                parts[index] = None
-            else:
-                parts[index] = parse_column(index, i)
+            for index, i in enumerate(parts):
+                if len(i) > 0 and i[0] == '"' and i[-1] == '"':
+                    i = i[1:-1]
+                    i = i.replace('\\"', '"')
+                if i in none_values:
+                    parts[index] = None
+                else:
+                    parts[index] = parse_column(index, i)
 
+        except Exception as e:
+            if ignore_error is True:
+                print("{}, \nignoring this line".format(e))
+                return None
+            else:
+                raise e
         #return item(*parsed_parts)
         return Item(*parts)
         #return parts
