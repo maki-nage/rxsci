@@ -7,9 +7,10 @@ Operators
    :maxdepth: 3
    :name: operators
 
+   Base <operators_other>
    Math <operators_math>   
    Container <operators_container>
    Data <operators_data>
    IO <operators_io>   
    Framing <operators_framing>
-   Other <operators_other>
+   State <operators_state>   

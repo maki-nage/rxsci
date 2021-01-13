@@ -1,6 +1,6 @@
 .. _operators_other:
 
-Other Operators
+Base Operators
 ================
 
 .. automodule:: rxsci.ops
