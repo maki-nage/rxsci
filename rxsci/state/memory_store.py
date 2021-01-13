@@ -18,7 +18,7 @@ def del_index(free_slots, index):
 
 
 class MemoryStore(object):
-    """Manages a Memory store
+    """A Memory state store
 
     Statefull MuxObervable operators need to maintain one state per key. Keys
     have to be indexables, i.e. index into a table/array. This allows fast

@@ -48,7 +48,7 @@ def drop_probe_state_topology():
 
 
 def with_store(store, pipeline):
-    '''Use store to manage stateful operations
+    '''Use a state store to manage stateful operations
 
     Args:
         store: A Store object.
@@ -70,6 +70,11 @@ def with_store(store, pipeline):
 
 
 def with_memory_store(pipeline):
+    '''Use a memory state store to manage stateful operations
+
+    Args:
+        pipeline: A computation graph where the state is stored in memory.
+    '''
     return with_store(
         rs.state.StoreManager(store_factory=rs.state.MemoryStore),
         pipeline
