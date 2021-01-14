@@ -4,6 +4,8 @@ import rxsci as rs
 def fill_none(value):
     '''Replaces None values with value
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: fill_none
 
@@ -18,7 +20,7 @@ def fill_none(value):
         An observable where None items are replaced with value.
     '''
 
-    def __fill_none(i):
+    def _fill_none(i):
         if isinstance(i, tuple):  # we mandate namedtuple
             fields = {}
             for field in i._fields:
@@ -33,9 +35,4 @@ def fill_none(value):
         else:
             return value if i is None else i
 
-    def _fill_none(source):
-        return source.pipe(
-            rs.ops.map(__fill_none),
-        )
-
-    return _fill_none
+    return rs.ops.map(_fill_none)

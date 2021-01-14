@@ -5,6 +5,8 @@ import rxsci as rs
 def mean(key_mapper=lambda i: i, reduce=False):
     '''Averages the items emitted in the source observable
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: mean
 

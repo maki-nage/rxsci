@@ -11,6 +11,8 @@ def stddev(key_mapper=lambda i: i, reduce=False):
     computation. Use the rxsci.math.stddev operator to compute standard
     deviation on a large observable.
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the standard deviation.

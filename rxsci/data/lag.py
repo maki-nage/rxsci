@@ -26,7 +26,10 @@ def _lag1(source):
             elif type(i) is rs.state.ProbeStateTopology:
                 state = i.topology.create_state(name='lag1', data_type='obj')
                 observer.on_next(i)
+
             else:
+                if state is None:
+                    observer.on_error(ValueError("No state configured in lag operator. A state store operator is probably missing in the graph"))
                 observer.on_next(i)
 
         return source.subscribe(
@@ -40,6 +43,8 @@ def _lag1(source):
 
 def lag(size=1, data_type='obj'):
     '''Buffers a lag of size on source items
+
+    The source must be a MuxObservable.
 
         .. marble::
             :alt: lag1
@@ -90,7 +95,10 @@ def lag(size=1, data_type='obj'):
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='scan', data_type='obj')
                     observer.on_next(i)
+
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in lag operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
             def on_completed():

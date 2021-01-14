@@ -7,6 +7,8 @@ def to_array(typecode):
     ''' flattens list items to an array and publishes them when the source
     observable completes.
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         typecode: The type of data to use in the array
     '''

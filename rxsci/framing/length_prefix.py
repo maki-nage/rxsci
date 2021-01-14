@@ -6,6 +6,8 @@ from rx.scheduler import ImmediateScheduler
 
 def frame(prefix_size=4, byteorder='little'):
     ''' Frames an Observable of byte items to a len prefixed streaming format
+
+    The source must be an Observable.
     '''
 
     def _frame(source):
@@ -27,6 +29,8 @@ def frame(prefix_size=4, byteorder='little'):
 
 def unframe(prefix_size=4, byteorder='little'):
     ''' unframe a Observable of bytes from a len prefixed streaming format
+
+    The source must be an Observable.
     '''
 
     def _unframe(source):
@@ -63,23 +67,3 @@ def unframe(prefix_size=4, byteorder='little'):
         return rx.create(on_subscribe)
 
     return _unframe
-
-
-"""
-def unframe():
-    ''' unframe a Observable of text to lines
-    '''
-    def _unframe(source):
-        def accumulate(acc, i):
-            lines = i.split('\n')
-            lines[0] = acc[0] + lines[0]
-            return (lines[-1] or '', lines[0:-1])
-
-        return source.pipe(
-            ops.scan(accumulate, seed=('', None)),
-            ops.filter(lambda i: i[1] is not None),
-            ops.flat_map(lambda i: rx.from_(i[1], scheduler=ImmediateScheduler())),
-        )
-
-    return _unframe
-"""

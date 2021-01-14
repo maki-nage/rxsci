@@ -36,3 +36,15 @@ def test_start_with():
         rs.OnNextMux((1,), 5),
         rs.OnCompletedMux((1,)),
     ]
+
+
+def test_start_with_without_store():
+    actual_error = []
+
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.ops.start_with([0, -1])
+    ).subscribe(
+        on_error=actual_error.append,
+    )
+
+    assert type(actual_error[0]) is ValueError

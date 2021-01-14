@@ -5,15 +5,14 @@ import rx.operators as ops
 def start_with(padding):
     """Prepends some items to an Observable
 
+    The source must be a MuxObservable.
+
     .. marble::
         :alt: start_with
 
         --1------2--3--4----|
         [start_with((0,10)) ]
         --0-10-1-2--3--4----|
-
-    Source:
-        A MuxObservable
 
     Args:
         mapper: A transform function to invoke with unpacked elements
@@ -51,6 +50,8 @@ def start_with(padding):
                     observer.on_next(i)
 
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in start_with operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
 

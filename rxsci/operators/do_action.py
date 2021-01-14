@@ -45,8 +45,7 @@ def do_action_mux(on_next=None, on_error=None, on_completed=None, on_create=None
 def do_action(on_next=None, on_error=None, on_completed=None, on_create=None):
     """Executes an function on reception of selected events
 
-    Source:
-        An Observable or a MuxObservable
+    The source can be an Observable or a MuxObservable.
 
     Args:
         on_next: [Optional] function to execute on item reception

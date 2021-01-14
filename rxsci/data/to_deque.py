@@ -10,6 +10,8 @@ def to_deque(extend=False):
     the deque are pop as they are emitted. This is useful when working on
     batch data since it allows to dereference items as they are processed.
 
+    The source must be an Observable.
+
     Args:
         extend: [Optional] When set to true, the deque is extended for each
             item received. The default behavior is to append items to the deque.

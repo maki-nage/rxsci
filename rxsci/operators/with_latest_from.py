@@ -8,7 +8,9 @@ def with_latest_from(*sources):
     """Merges the specified observables into one observable sequence by
     creating a tuple only when the source observable sequence produces an
     element. The source observable is subscribed once at least one item has
-    been received on each additional source.
+    been received on each other sources.
+
+    The source must be an Observable.
 
     .. marble::
         :alt: with_latest_from
@@ -20,9 +22,6 @@ def with_latest_from(*sources):
 
     Examples:
         >>> rs.ops.with_latest_from(obs1)
-
-    Source:
-        An Observable.
 
     Args:
         sources: Sequence of observables.

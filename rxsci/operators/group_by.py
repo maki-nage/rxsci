@@ -7,6 +7,7 @@ from .multiplex import demux_mux_observable
 
 def group_by_mux(key_mapper):
     outer_observer = Subject()
+
     def _group_by(source):
         def on_subscribe(observer, scheduler):
             state = None
@@ -35,7 +36,7 @@ def group_by_mux(key_mapper):
                         i.store.del_map(state, i.key, k)
                     i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
-                    
+
                 elif type(i) is rs.OnErrorMux:
                     for k in i.store.iterate_map(state, i.key):
                         index = i.store.get_map(state, i.key, k)
@@ -49,6 +50,8 @@ def group_by_mux(key_mapper):
                     observer.on_next(i)
 
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in group_by operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
             return source.subscribe(
@@ -65,6 +68,8 @@ def group_by_mux(key_mapper):
 def group_by(key_mapper, pipeline):
     """Groups items of according to a key mapper
 
+    The source must be a MuxObservable.
+
     .. marble::
         :alt: group_by
 
@@ -80,9 +85,6 @@ def group_by(key_mapper, pipeline):
     Args:
         key_mapper: A function to extract the key from each item
         pipeline: The Rx pipe to execute on each group.
-
-    Source:
-        A MuxObservable.
 
     Returns:
         A MuxObservable with one observable per group.

@@ -9,6 +9,8 @@ def distinct(key_mapper=None):
     this operator should be considered carefully due to the maintenance
     of an internal lookup structure which can grow large.
 
+    The source must be a MuxObservable.
+
     .. marble::
         :alt: distinct
 
@@ -20,9 +22,6 @@ def distinct(key_mapper=None):
     better performance thanks to the usage of sets. Meanwhile this
     implementation does not allow to specify a comparer: The key must be
     hashable.
-
-    Source:
-        An Observable or a MuxObservable
 
     Args:
         key_mapper: [Optional]  A function to compute the comparison
@@ -69,6 +68,8 @@ def distinct(key_mapper=None):
                     state = x.topology.create_state(name="distinct", data_type='set')
                     observer.on_next(x)
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in distinct operator. A state store operator is probably missing in the graph"))
                     observer.on_next(x)
 
             return source.subscribe_(

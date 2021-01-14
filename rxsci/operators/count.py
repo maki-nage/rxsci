@@ -4,6 +4,8 @@ from .scan import scan
 def count(reduce=False):
     """Counts the number of items emitted in the source Observable.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: count
 

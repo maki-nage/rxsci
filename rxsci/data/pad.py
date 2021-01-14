@@ -24,12 +24,15 @@ def pad_start_mux(size, value):
 
                 elif type(i) is rs.OnCompletedMux or type(i) is rs.OnErrorMux:
                     i.store.del_key(state, i.key)
-                    observer.on_next(i)                    
+                    observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='pad_start', data_type=bool)
                     observer.on_next(i)
+
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in pad_start operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
             return source.subscribe(
@@ -47,6 +50,8 @@ def pad_start(size, value=None):
 
     Prepends a unique value several times on the source observable.
 
+    The source must be a MuxObservable.
+
     .. marble::
         :alt: pad_start
 
@@ -59,23 +64,16 @@ def pad_start(size, value=None):
         value: [Optional] The value of each prepended items. If no value it
                 set, then the value of the first item is used.
 
-    Source:
-        A MuxObservable
-
     Returns:
         The source observable with size items prepended.
 
+    Raises:
+        ValueError if size is negative
     """
     if size < 0:
         raise ValueError("pad_start: size must be positive")
 
-    def _pad_start(source):
-        if isinstance(source, rs.MuxObservable):
-            return pad_start_mux(size, value)(source)
-        else:
-            raise NotImplementedError('This operator only supports MuxObservable sources')
-
-    return _pad_start
+    return pad_start_mux(size, value)
 
 
 def pad_end_mux(size, value):
@@ -111,7 +109,10 @@ def pad_end_mux(size, value):
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='pad_end', data_type='obj')
                     observer.on_next(i)
+
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in pad_end operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
             return source.subscribe(
@@ -129,6 +130,8 @@ def pad_end(size, value=None):
 
     Appends a unique value several times to the source observable.
 
+    The source must be a MuxObservable.
+
     .. marble::
         :alt: pad_end
 
@@ -141,20 +144,13 @@ def pad_end(size, value=None):
         value: [Optional] The value of each appended items. If no value it
                 set, then the value of the last item is used.
 
-    Source:
-        A MuxObservable
-
     Returns:
         The source observable with size items appended.
 
+    Raises:
+        ValueError if size is negative
     """
     if size < 0:
         raise ValueError("pad_end: size must be positive")
 
-    def _pad_end(source):
-        if isinstance(source, rs.MuxObservable):
-            return pad_end_mux(size, value)(source)
-        else:
-            raise NotImplementedError
-
-    return _pad_end
+    return pad_end_mux(size, value)

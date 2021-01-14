@@ -13,6 +13,8 @@ def sort(key=lambda i: i):
     observable before sorting them. It can be used ONLY on BATCH source, and
     consumes a lot of memory.
 
+    The source must be an Observable.
+
     Args:
         key: [Optional] function used to extract the sorting key on each item.
 

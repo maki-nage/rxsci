@@ -3,7 +3,18 @@ import rx.operators as ops
 import rxsci as rs
 
 
-def test_pad_empty():
+def test_pad_start_without_store():
+    actual_error = []
+
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.data.pad_start(size=3, value=0),
+    ).subscribe(
+        on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError
+
+
+def test_pad_start_empty():
     actual_result = []
     source = [
         rs.OnCreateMux((1,)),
@@ -90,6 +101,16 @@ def test_pad_start_no_value():
         rs.OnNextMux((1,), 5),
         rs.OnCompletedMux((1,)),
     ]
+
+
+def test_pad_end_without_store():
+    actual_error = []
+
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.data.pad_end(size=3, value=0),
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError
 
 
 def test_pad_end_empty():

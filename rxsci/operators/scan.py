@@ -70,6 +70,8 @@ def scan(accumulator, seed, reduce=False):
     Applies an accumulator function over an observable sequence and
     returns each intermediate result.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: scan
 

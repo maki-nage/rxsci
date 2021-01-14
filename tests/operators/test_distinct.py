@@ -6,16 +6,25 @@ def test_distinct():
     source = [1, 2, 3, 4, 1, 3, 10]
     actual_result = []
 
-    def on_next(i):
-        actual_result.append(i)
-
     rx.from_(source).pipe(
         rs.state.with_memory_store(
             rs.ops.distinct(),
         ),
-    ).subscribe(on_next)
+    ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [1, 2, 3, 4, 10]
+
+
+def test_distinct_without_store():
+    source = [1, 2, 3, 4, 1, 3, 10]
+    actual_error = []
+
+
+    rx.from_(source).pipe(
+        rs.ops.distinct(),
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError
 
 
 def test_distinct_with_key():
@@ -30,14 +39,11 @@ def test_distinct_with_key():
     ]
     actual_result = []
 
-    def on_next(i):
-        actual_result.append(i)
-
     rx.from_(source).pipe(
         rs.state.with_memory_store(
             rs.ops.distinct(lambda i: (i[0], i[1])),
         ),
-    ).subscribe(on_next)
+    ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
         (1, "foo", 1),
@@ -61,15 +67,12 @@ def test_distinct_mux():
     ]
     actual_result = []
 
-    def on_next(i):
-        actual_result.append(i)
-
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_memory_store(
             rs.ops.distinct(),
         ),
-    ).subscribe(on_next)
+    ).subscribe(on_next=actual_result.append)
 
     assert actual_result == [
         rs.OnCreateMux((1,)),

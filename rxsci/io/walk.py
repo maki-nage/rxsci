@@ -8,6 +8,8 @@ def walk(top, recursive=True):
     Returns an observable emitting the files present in top directory and
     sub-directories.
 
+    The source must be an Observable.
+
     Args:
         top: The directory to walk
     Returns:

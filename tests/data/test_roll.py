@@ -147,4 +147,23 @@ def test_roll_identity():
     ]
 
 
+def test_roll_count_without_store():
+    actual_error = []
 
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.data.roll(window=3, stride=3, pipeline=rx.pipe(
+        )),
+    ).subscribe(on_error=actual_error.append,)
+
+    assert type(actual_error[0]) is ValueError
+
+
+def test_roll_without_store():
+    actual_error = []
+
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.data.roll(window=3, stride=2, pipeline=rx.pipe(
+        )),
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError

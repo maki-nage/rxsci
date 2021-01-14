@@ -31,6 +31,8 @@ def filter(predicate):
     """Filters the items of an observable sequence based on a
     predicate.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: filter
 
@@ -44,9 +46,6 @@ def filter(predicate):
     Args:
         predicate: A function to test each source item for a
             condition.
-
-    Source:
-        An Observable or a MuxObservable.
 
     Returns:
         An observable that emits items from the

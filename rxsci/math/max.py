@@ -5,6 +5,8 @@ import rxsci as rs
 def max(key_mapper=lambda i: i, reduce=False):
     '''Returns the maximum value emitted in the source observable.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: max
 
@@ -15,7 +17,7 @@ def max(key_mapper=lambda i: i, reduce=False):
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the max.
-        reduce: [Optional] Emit an item for each source item when reduce is 
+        reduce: [Optional] Emit an item for each source item when reduce is
             False, otherwise emits a single item on completion.
 
     Returns:

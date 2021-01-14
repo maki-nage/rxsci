@@ -5,6 +5,8 @@ from rx.scheduler import ImmediateScheduler
 
 def frame():
     ''' Frames a Observable of text item to lines
+
+    The source must be an Observable.
     '''
     def _frame(source):
         def on_subscribe(observer, scheduler):
@@ -25,6 +27,8 @@ def frame():
 
 def unframe():
     ''' Unframes a Observable of text to lines
+
+    The source must be an Observable.
     '''
     def _unframe(source):
         def on_subscribe(observer, scheduler):

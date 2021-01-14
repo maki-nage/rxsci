@@ -41,13 +41,15 @@ def cache(field=None):
     operator can save memory on graphs that buffer some items, with many
     identical values.
 
+    The source must be an Observable.
+
     Args:
-        field: [Optional] cache the provided field is set. Otherwise the 
+        field: [Optional] cache the provided field is set. Otherwise the
                 whole item is cached. When field is set, this field value
                 must be accessible via the getattr function.
 
     Returns:
-        An Observable returning the same items than the source observable, but 
+        An Observable returning the same items than the source observable, but
         with cached values.
     '''
     def _cache(source):

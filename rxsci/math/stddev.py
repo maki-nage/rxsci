@@ -12,6 +12,8 @@ def stddev(key_mapper=lambda i: i, reduce=False):
     Use this operator instead of rxsci.formal.stddev when there are more than
     1000 items in the source observable.
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the variance.

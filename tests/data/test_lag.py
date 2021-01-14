@@ -27,6 +27,28 @@ def test_lag1():
     assert actual_result == expected_result
 
 
+def test_lag_without_store():
+    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    actual_error = []
+
+    rx.from_(source).pipe(
+        rs.data.lag(3),
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError
+
+
+def test_lag1_without_store():
+    source = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    actual_error = []
+
+    rx.from_(source).pipe(
+        rs.data.lag(1),
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError
+
+
 def test_lag1_mux():
     source = [
         rs.OnCreateMux((1 ,None)),

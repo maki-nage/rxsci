@@ -61,6 +61,8 @@ def read(file, mode='r', size=None, encoding=None, transport_params=None):
 def write(file, mode=None, encoding=None, transport_params=None):
     ''' Writes the content of a file
 
+    The source must be an Observable.
+
     Args:
         file: the path of the file to read
         mode: how the file must be opened. either 'r' to read text or 'rb' to

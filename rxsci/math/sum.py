@@ -5,10 +5,12 @@ import rxsci as rs
 def sum(key_mapper=lambda i: i, reduce=False):
     '''Sums the items emitted in the source observable
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the sum.
-        reduce: [Optional] Emit an item for each source item when reduce is 
+        reduce: [Optional] Emit an item for each source item when reduce is
             False, otherwise emits a single item on completion.
 
     Returns:

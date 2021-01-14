@@ -45,15 +45,14 @@ def first_mux():
 def first():
     """Emits the first element of an observable
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: first
 
         ---1---2---3---4----|
         [      first()      ]
         -------2-|
-
-    Source:
-        An Observable or a MuxObservable
 
     Returns:
         An observable emitting the first item from the source

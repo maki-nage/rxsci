@@ -8,6 +8,8 @@ import distogram
 def update(bin_count=100, weighted_diff=False, reduce=False):
     '''Updates the distribution by adding source items to it
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         bin_count: [Optional] number of bins to use.
         weighted_diff: [Optional] Applies log weight to bin computation. This
@@ -32,6 +34,8 @@ def merge():
     The source observable must contain items that are a collection of
     Distogram object. These are typically the result of a zip operation.
 
+    The source can be an Observable or a MuxObservable.
+
     Returns:
         An Observable of Distogram objects.
     '''
@@ -42,6 +46,8 @@ def merge():
 
 def min():
     '''Returns the minimum value of the distribution.
+
+    The source can be an Observable or a MuxObservable.
 
     Returns:
         An observable emitting the minimum value of each source items.
@@ -54,6 +60,8 @@ def min():
 def max():
     '''Returns the maximum value of the distribution.
 
+    The source can be an Observable or a MuxObservable.
+
     Returns:
         An observable emitting the maximum value of each source items.
     '''
@@ -64,6 +72,8 @@ def max():
 
 def mean():
     '''Returns the average value of the distribution.
+
+    The source can be an Observable or a MuxObservable.
 
     Returns:
         An observable emitting the mean value of each source items.
@@ -76,6 +86,8 @@ def mean():
 def variance():
     '''Returns the variance value of the distribution.
 
+    The source can be an Observable or a MuxObservable.
+
     Returns:
         An observable emitting the variance of each source items.
     '''
@@ -87,6 +99,8 @@ def variance():
 def stddev():
     '''Returns the standard deviation of the distribution.
 
+    The source can be an Observable or a MuxObservable.
+
     Returns:
         An observable emitting the standard deviation of each source items.
     '''
@@ -97,6 +111,8 @@ def stddev():
 
 def quantile(value):
     '''Returns a quantile value of the distribution.
+
+    The source can be an Observable or a MuxObservable.
 
     Args:
         value: The quantile value to compute, between 0 and 1.
@@ -120,6 +136,8 @@ def describe(quantiles=[0.25, 0.5, 0.75]):
     * mean
     * standard deviation
     * The quantiles provided as argument
+
+    The source can be an Observable or a MuxObservable.
 
     Args:
         quantiles: [Optional] A list of quantiles to compute.
@@ -152,6 +170,8 @@ def histogram(bin_count=100):
 
     The histogram in in the form of a list of tuples, where each tuple is in
     the form (bin value, element count).
+
+    The source can be an Observable or a MuxObservable.
 
     Args:
         bin_count: [Optional] Number of bins to use in the histogram.

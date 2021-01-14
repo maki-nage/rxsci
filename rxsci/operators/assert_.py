@@ -85,6 +85,8 @@ def assert_1(predicate, name="", error=ValueError):
     If any of the lag1 pair on the source observable evaluates to False, then
     error is emitted on the on_error handler.
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         predicate: A function to evaluate each item.
         name: [Optional] A firendly name to display with the error.

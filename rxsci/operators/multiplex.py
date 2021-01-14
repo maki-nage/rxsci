@@ -88,14 +88,15 @@ def demux_mux_observable(outer_group):
 def multiplex(pipeline):
     '''Transforms an Observable to a MuxObservable
 
-    All operations done in pipeline operate on MuxObservable.
+    All operations done in pipeline then operate on a MuxObservable.
+    The source must be an Observable.
 
     Args:
         pipeline: The pipeline that will process the multiplexed items.
 
     Returns:
         An Observable where the source items have been multiplexed to a
-        MuxObservable, then processed by the pipeline transorfations, and
+        MuxObservable, then processed by the pipeline transformations, and
         finally de-multiplexed to an Observable.
     '''
     return rx.pipe(

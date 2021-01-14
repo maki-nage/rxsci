@@ -5,6 +5,8 @@ import rxsci as rs
 def min(key_mapper=lambda i: i, reduce=False):
     '''Returns the minimum value emitted in the source observable.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: min
 
@@ -15,7 +17,7 @@ def min(key_mapper=lambda i: i, reduce=False):
     Args:
         key_mapper: [Optional] a function called on each item before computing
             the min.
-        reduce: [Optional] Emit an item for each source item when reduce is 
+        reduce: [Optional] Emit an item for each source item when reduce is
             False, otherwise emits a single item on completion.
 
     Returns:

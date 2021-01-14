@@ -67,11 +67,14 @@ def roll_mux(window, stride):
                             observer.on_next(i._replace(key=(index, i.key)))
                             i.store.set_state(state_w, (index, i.key), -1)
                     outer_observer.on_next(i)
-                elif type(i) is rs.state.ProbeStateTopology:                                        
+                elif type(i) is rs.state.ProbeStateTopology:
                     state_n = i.topology.create_state(name="roll", data_type='uint', default_value=0)
                     state_w = i.topology.create_state(name="roll", data_type=int, default_value=-1)
                     observer.on_next(i)
+
                 else:
+                    if state_n is None:
+                        observer.on_error(ValueError("No state configured in roll operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
             return source.subscribe(
@@ -118,6 +121,8 @@ def roll_mux(window, stride):
                     state = i.topology.create_state(name="roll", data_type='uint', default_value=0)
                     observer.on_next(i)
                 else:
+                    if state is None:
+                        observer.on_error(ValueError("No state configured in roll operator. A state store operator is probably missing in the graph"))
                     observer.on_next(i)
 
             return source.subscribe(
@@ -138,6 +143,8 @@ def roll(window, stride, pipeline):
     """Projects each element of an observable sequence into zero or more
     windows which are produced based on element window information.
 
+    The source must be a MuxObservable.
+
     .. marble::
         :alt: roll
 
@@ -157,9 +164,6 @@ def roll(window, stride, pipeline):
         stride: Number of elements to step between creation of
             consecutive windows.
         pipeline: The Rx pipe to execute on each window.
-
-    Source:
-        A MuxObservable.
 
     Returns:
         An observable sequence of windows.

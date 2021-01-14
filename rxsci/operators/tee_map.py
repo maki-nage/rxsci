@@ -138,6 +138,8 @@ def tee_map(*args, join='zip'):
     observable. This operator allows to do multiple processing on the same
     source, and combine the results as a single tuple object.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: tee_map
 
@@ -159,9 +161,6 @@ def tee_map(*args, join='zip'):
             together. If set to 'merge' items are emitted by tee map as they are
             emitted by each arg pipeline. If set to 'combine_latest', then
             the last value of each processing are combined.
-
-    Source:
-        An Observable or a MuxObservable
 
     Returns:
         An observable containing tuples of the items emitted by each branch of

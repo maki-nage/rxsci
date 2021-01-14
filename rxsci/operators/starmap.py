@@ -10,6 +10,8 @@ def starmap(mapper):
     the mapper function with star applied unpacked items as
     positional arguments.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: starmap
 
@@ -19,9 +21,6 @@ def starmap(mapper):
 
     Example:
         >>> rs.ops.starmap(lambda x, y: x + y)
-
-    Source:
-        An Observable or a MuxObservable
 
     Args:
         mapper: A transform function to invoke with unpacked elements

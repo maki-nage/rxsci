@@ -8,9 +8,11 @@ def progress(name, threshold, measure_throughput=True):
 
     Prints the number of items that have been processed every threshold items.
 
+    The source can be an Observable or a MuxObservable.
+
     Args:
         name: Name associated to this progress.
-        threshold: Period of display for the progress.
+        threshold: Period of display for the progress, in unit of item count.
 
     Returns:
         The source observable.

@@ -62,3 +62,13 @@ def test_split():
         rs.OnCompletedMux((1, (1, None)), store),
     ]
     assert actual_result == source
+
+
+def test_split_without_store():
+    actual_error = []
+
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.data.split(lambda i: i[-1], rx.pipe()),
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError

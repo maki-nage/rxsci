@@ -128,6 +128,10 @@ def create_line_parser(dtype, none_values=[], separator=",",
         ignore_error: [Optional] when set to True, any line that does not
             match the provided number of columns raise an error an stop
             the parsing. When set to False, error lines are skipped.
+
+    Returns:
+        A Parsing function, that can parse text lines as specified in the
+        parameters.
     '''
     Item, columns = create_schema_factory(dtype, schema_name)
     columns_parser = [type_parser(i[1]) for index, i in enumerate(dtype)]
@@ -217,6 +221,7 @@ def load(parse_line, skip=0):
     ''' Loads a csv observable.
 
     The source observable must emit one csv row per item
+    The source must be an Observable.
 
     Args:
         parse_line: A line parser, e.g. created with create_line_parser
@@ -266,6 +271,7 @@ def dump(header=True, separator=",", newline='\n'):
     ''' dumps an observable to csv.
 
     The source observable must emit one csv row per item
+    The source must be an Observable.
 
     Args:
         header: [Optional] indicates whether a header line must be added.
@@ -319,6 +325,8 @@ def dump_to_file(filename, header=True, separator=",",
                  newline='\n', encoding=None,
                  transport_params=None):
     ''' dumps each item to a csv file.
+
+    The source must be an Observable.
 
     Args:
         filename: Path of the file to read

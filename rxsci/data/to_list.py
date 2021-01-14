@@ -16,6 +16,8 @@ def to_list():
     ''' flattens list items to a list and publish them when the source
     observable completes.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: to_list
 

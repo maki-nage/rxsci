@@ -45,15 +45,14 @@ def take(count):
     """Emits a specified number of items from the start of an
     observable.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: take
 
         -----1--2--3--4----|
         [    take(2)       ]
         -----1--2-|
-
-    Source:
-        An Observable or a MuxObservable
 
     Args:
         count: the number of items to emit

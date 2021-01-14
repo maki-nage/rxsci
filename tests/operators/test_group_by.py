@@ -46,3 +46,17 @@ def test_group_by():
         rs.OnCompletedMux((0, (0,)), store),
         rs.OnCompletedMux((1, (0,)), store),
     ]
+
+
+def test_group_by_without_store():
+    actual_error = []
+
+    rx.from_([1, 2, 3, 4]).pipe(
+        rs.ops.group_by(
+            lambda i: i % 2 == 0,
+            pipeline=rx.pipe(
+            )
+        )
+    ).subscribe(on_error=actual_error.append)
+
+    assert type(actual_error[0]) is ValueError

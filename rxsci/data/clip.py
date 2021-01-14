@@ -4,6 +4,8 @@ import rxsci as rs
 def clip(lower_bound=None, higher_bound=None):
     '''clip values between lower_bound (included) and higher_bound (included)
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: clip
 

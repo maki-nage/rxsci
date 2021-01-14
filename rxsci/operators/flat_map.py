@@ -27,15 +27,14 @@ def flat_map_mux():
 def flat_map():
     """Projects each element of iterable source items as a new item.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: flat_map
 
         --1,2,3-4,5,6-|
         [ flat_map()  ]
         --1-2-3-4-5-6-|
-
-    Sources:
-        An Observable or a MuxObservable
 
     Returns:
         An observable whose items are the result of

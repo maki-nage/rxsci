@@ -6,15 +6,14 @@ def distinct_until_changed(key_mapper=None):
     """Returns an observable sequence that contains only distinct
     contiguous items according to the key_mapper.
 
+    The source can be an Observable or a MuxObservable.
+
     .. marble::
         :alt: distinct_until_changed
 
         -0-1-1-2-3-1-2-2-3-|
-        [    distinct()    ]
+        [distinct_until_changed()]
         -0-1---2-3-1-2---3-|
-
-    Source:
-        An Observable or a MuxObservable
 
     Args:
         key_mapper: [Optional]  A function to compute the comparison
