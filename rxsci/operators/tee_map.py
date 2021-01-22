@@ -54,6 +54,7 @@ def _process_many(*args, connectable, zip, combine):
                             res = rs.OnNextMux(x.key, res, x.store)
                             for index in range(n):
                                 has_next[base_index+index] = False
+                                queue[base_index+index] = None
                         except Exception as ex:  # pylint: disable=broad-except
                             observer.on_error(ex)
                             return
