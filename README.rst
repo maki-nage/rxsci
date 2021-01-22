@@ -11,6 +11,10 @@
     :target: https://github.com/maki-nage/rxsci/actions?query=workflow%3A%22Python+package%22
     :alt: Github WorkFlows
 
+.. image:: https://coveralls.io/repos/github/maki-nage/rxsci/badge.svg?branch=master
+    :target: https://coveralls.io/github/maki-nage/rxsci?branch=master
+    :alt: Code Coverage
+
 .. image:: https://github.com/maki-nage/rxsci/raw/master/asset/apis_read.svg
     :target: https://www.makinage.org/doc/rxsci/latest/index.html
     :alt: Documentation
