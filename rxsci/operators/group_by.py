@@ -33,7 +33,6 @@ def group_by_mux(key_mapper):
                     for k in i.store.iterate_map(state, i.key):
                         index = i.store.get_map(state, i.key, k)
                         observer.on_next(i._replace(key=(index, i.key)))
-                        i.store.del_map(state, i.key, k)
                     i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
 
@@ -48,7 +47,7 @@ def group_by_mux(key_mapper):
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_mapper(name="groupby")
                     observer.on_next(i)
-
+                    outer_observer.on_next(i)
                 else:
                     if state is None:
                         observer.on_error(ValueError("No state configured in group_by operator. A state store operator is probably missing in the graph"))

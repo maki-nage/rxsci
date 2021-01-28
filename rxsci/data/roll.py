@@ -120,6 +120,7 @@ def roll_mux(window, stride):
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name="roll", data_type='uint', default_value=0)
                     observer.on_next(i)
+                    outer_observer.on_next(i)
                 else:
                     if state is None:
                         observer.on_error(ValueError("No state configured in roll operator. A state store operator is probably missing in the graph"))

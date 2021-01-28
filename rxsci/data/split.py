@@ -44,7 +44,7 @@ def split_mux(predicate):
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='split', data_type='obj')
                     observer.on_next(i)
-
+                    outer_observer.on_next(i)
                 else:
                     if state is None:
                         observer.on_error(ValueError("No state configured in split operator. A state store operator is probably missing in the graph"))

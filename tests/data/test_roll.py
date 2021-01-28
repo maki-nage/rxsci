@@ -1,6 +1,7 @@
 import rx
 import rx.operators as ops
 import rxsci as rs
+from ..utils import on_probe_state_topology
 
 
 def test_roll():
@@ -167,3 +168,19 @@ def test_roll_without_store():
     ).subscribe(on_error=actual_error.append)
 
     assert type(actual_error[0]) is ValueError
+
+
+def test_forward_topology_probe():
+    actual_topology_probe = []
+    source = [1, 2, 3, 4]
+
+    rx.from_(source).pipe(
+        rs.state.with_memory_store(
+            rx.pipe(
+                rs.data.roll(1, 1, pipeline=rx.pipe()),
+                on_probe_state_topology(actual_topology_probe.append),
+            )
+        ),
+    ).subscribe()
+
+    assert len(actual_topology_probe) == 1
