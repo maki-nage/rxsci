@@ -14,6 +14,7 @@ from .mux import (
 )
 
 import rxsci.data as data
+import rxsci.error as error
 import rxsci.math as math
 import rxsci.operators as ops
 import rxsci.state as state

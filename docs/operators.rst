@@ -8,6 +8,7 @@ Operators
    :name: operators
 
    Base <operators_other>
+   Error <operators_error>
    Math <operators_math>   
    Container <operators_container>
    Data <operators_data>

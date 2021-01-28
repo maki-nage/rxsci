@@ -10,7 +10,6 @@ def mux_observable():
                 observer.on_next(rs.OnNextMux((0,), i))
 
             def on_error(e):
-                observer.on_next(rs.OnErrorMux((0,), e))
                 observer.on_error(e)
 
             def on_completed():
@@ -35,6 +34,8 @@ def demux_observable():
             def on_next(i):
                 if type(i) is rs.OnNextMux:
                     observer.on_next(i.item)
+                elif type(i) is rs.OnErrorMux:
+                    observer.on_error(i.error)
 
             return source.subscribe(
                 on_next=on_next,
