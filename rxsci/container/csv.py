@@ -137,8 +137,8 @@ def create_line_parser(dtype, none_values=[], separator=",",
     columns_parser = [type_parser(i[1]) for index, i in enumerate(dtype)]
     columns_len = len(columns)
 
-    csv_file = CsvDataFile()
-    reader = csv.reader(csv_file)
+    #csv_file = CsvDataFile()
+    #reader = csv.reader(csv_file)
 
     def parse_column(index, i):
         return columns_parser[index](i)
@@ -146,6 +146,7 @@ def create_line_parser(dtype, none_values=[], separator=",",
     def split(line, separator):
         return line.split(separator)
 
+    """
     def parse_line_as_csv(line):
         csv_file.set_data(line)
         parts = next(reader)
@@ -180,6 +181,7 @@ def create_line_parser(dtype, none_values=[], separator=",",
 
         return Item(*parts)
         #return parts
+    """
 
     def parse_line(line):
         try:
