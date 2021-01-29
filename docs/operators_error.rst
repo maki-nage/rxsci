@@ -4,4 +4,4 @@ Error Operators
 ================
 
 .. automodule:: rxsci.error
-    :members: create_error_router
+    :members: create_error_router, ignore, map
