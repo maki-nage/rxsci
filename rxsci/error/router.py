@@ -35,19 +35,19 @@ def create_error_router():
 
 
     Examples:
-        >>> dead_letter_obs, route_errors = rs.error.create_error_router()
+        >>> errors, route_errors = rs.error.create_error_router()
         >>> data = rx.from_([1, 2, 0, 4]).pipe(
         >>>     rs.ops.multiplex(rx.pipe(
-        >>>         rs.ops.map(lambda i: 1 / i), 
+        >>>         rs.ops.map(lambda i: 1 / i),
         >>>         route_errors(),
         >>>     ))
         >>> )
 
     Returns:
-        A tuple of (Observable, function). Observable is the dead letter
+        A tuple of (Observable, function). Observable is the errors
         observable where all mux errors will be routed to. The function is an
-        operator to used in a pipeline where errors must be routed to the dead
-        letter observable.
+        operator to used in a pipeline where errors are be routed to the errors
+        observable.
     """
     dead_letter_observer = None
 

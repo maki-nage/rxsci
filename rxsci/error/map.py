@@ -12,7 +12,7 @@ def map(mapper):
         -+-----------------|
          +-1--X--2--3--X--4|
         [      map(0)      ]
-        ---1-----2--3--0--4|
+        ---1--0--2--3--0--4|
 
 
     Errors at the Observable layer are still propagated downstream and stop the
@@ -24,7 +24,7 @@ def map(mapper):
         -+----------------*
          +-1--X--2--3--X->
         [      map(0)      ]
-        ---1-----2--3--0--*
+        ---1--0--2--3--0--*
 
 
     Examples:
