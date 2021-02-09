@@ -29,12 +29,12 @@ def assert_mux(predicate, name="", error=ValueError):
                 if type(i) is rs.OnNextMux:
                     try:
                         if predicate(i.item) is True:
-                            observer.on_next(rs.OnNextMux(i.key, i.item))
+                            observer.on_next(i)
                         else:
                             observer.on_error(error("assert {} failed on: {}".format(name, i.item)))
 
                     except Exception as e:
-                        observer.on_next(rs.OnErrorMux(i.key, e))
+                        observer.on_error(e)
                 else:
                     observer.on_next(i)
 
@@ -103,7 +103,6 @@ def assert_1(predicate, name="", error=ValueError):
             def on_next(i):
                 nonlocal last
                 if last is not None:
-                    print(i)
                     if predicate(last, i) is True:
                         observer.on_next(i)
                     else:
@@ -128,11 +127,11 @@ def assert_1(predicate, name="", error=ValueError):
                     value = i.store.get_state(state, i.key)
                     if value is not rs.state.markers.STATE_NOTSET:
                         if predicate(value, i.item) is True:
-                            observer.on_next(rs.OnNextMux(i.key, i))
+                            observer.on_next(i)
                         else:
                             observer.on_error(error("assert {} failed on: {}-{}".format(name, value, i.item)))
                     else:
-                        observer.on_next(rs.OnNextMux(i.key, i))
+                        observer.on_next(i)
 
                     i.store.set_state(state, i.key, i.item)
 
@@ -159,7 +158,7 @@ def assert_1(predicate, name="", error=ValueError):
                 scheduler=scheduler)
 
         if isinstance(source, rs.MuxObservable):
-            return rx.create(on_subscribe_mux)
+            return rs.MuxObservable(on_subscribe_mux)
         else:
             return rx.create(on_subscribe)
 
