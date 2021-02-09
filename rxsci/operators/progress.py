@@ -37,7 +37,7 @@ def progress(name, threshold, measure_throughput=True):
 
         return (i, counter, countdown, prev_time)
 
-    return rx.piep(
+    return rx.pipe(
         rs.ops.scan(_progress, seed=None),
         rs.ops.map(lambda i: i[0]),
     )
