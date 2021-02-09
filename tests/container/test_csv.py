@@ -239,6 +239,33 @@ def test_dump():
     assert actual_data == expected_data
 
 
+def test_dump_to_file():
+    x = namedtuple('x', ['foo', 'bar', 'buz'])
+    source = [
+        x(foo='a', bar=1, buz=True),
+        x(foo='b', bar=2, buz=False),
+        x(foo='ab', bar=42, buz=False),
+        x(foo='cl', bar=None, buz=False),
+        x(foo='cl', bar=[1, '2', "3"], buz=False),
+    ]
+    expected_data = \
+        'foo,bar,buz\n' \
+        '"a",1,True\n' \
+        '"b",2,False\n' \
+        '"ab",42,False\n' \
+        '"cl",,False\n' \
+        '"cl","[1, \'2\', \'3\']",False\n'
+
+    with tempfile.NamedTemporaryFile(mode='w') as f:
+        rx.from_(source).pipe(
+            csv.dump_to_file(f.name, encoding='utf-8'),
+        ).subscribe()
+
+        with open(f.name, 'r') as f1:
+            actual_data = f1.read()
+    assert actual_data == expected_data
+
+
 def test_dump_with_quote():
     x = namedtuple('x', ['foo', 'bar', 'buz'])
     source = [

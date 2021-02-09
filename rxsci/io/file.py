@@ -1,4 +1,6 @@
 import rx
+from rx.scheduler import CurrentThreadScheduler
+from rx.disposable import CompositeDisposable, Disposable
 try:
     from smart_open import open
     #import boto3
@@ -32,28 +34,40 @@ def read(file, mode='r', size=None, encoding=None, transport_params=None):
         An observable where each item is a chunk of data, or the whole
         file if no size has been set.
     '''
-    def on_subscribe(observer, scheduler):
-        try:
-            kwargs = {}
-            if transport_params is not None:
-                kwargs['transport_params'] = {
-                    'resource_kwargs': transport_params,
-                }
-            with open(file, mode, encoding=encoding, **kwargs) as f:
-                if size is None:
-                    data = f.read(size)
-                    observer.on_next(data)
-                    observer.on_completed()
-                else:
-                    data = f.read(size)
-                    while len(data) > 0:
-                        observer.on_next(data)
+    def on_subscribe(observer, scheduler_):
+        disposed = False
+        _scheduler = scheduler_ or CurrentThreadScheduler.singleton()
+
+        def _action(_, __):
+            nonlocal disposed
+
+            try:
+                kwargs = {}
+                if transport_params is not None:
+                    kwargs['transport_params'] = {
+                        'resource_kwargs': transport_params,
+                    }
+                with open(file, mode, encoding=encoding, **kwargs) as f:
+                    if size is None:
                         data = f.read(size)
+                        observer.on_next(data)
+                    else:
+                        data = f.read(size)
+                        while not disposed and len(data) > 0:
+                            observer.on_next(data)
+                            data = f.read(size)
 
-                    observer.on_completed()
+                observer.on_completed()
 
-        except Exception as e:
-            observer.on_error(e)
+            except Exception as e:
+                observer.on_error(e)
+
+        def _dispose():
+            nonlocal disposed
+            disposed = True
+
+        disp = Disposable(_dispose)
+        return CompositeDisposable(_scheduler.schedule(_action), disp)
 
     return rx.create(on_subscribe)
 
