@@ -198,7 +198,7 @@ def test_load_from_file():
     with tempfile.NamedTemporaryFile(mode='w') as f:
         f.write("foo,bar,buzz\n")
         f.write("42,the,True\n")
-        f.write("07,quick,False\n")
+        f.write("07,quick,False")
         f.flush()
 
         actual_data = process(

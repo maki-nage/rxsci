@@ -63,9 +63,10 @@ def test_unframe_incomplete_last_line():
         "blah",
     ])
 
-    assert len(actual_data) == 2
+    assert len(actual_data) == 3
     assert actual_data[0] == 'hello'
     assert actual_data[1] == 'world!'
+    assert actual_data[2] == 'blah'
 
 
 def test_frame_items():

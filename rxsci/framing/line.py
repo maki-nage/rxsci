@@ -26,7 +26,7 @@ def frame():
 
 
 def unframe():
-    ''' Unframes a Observable of text to lines
+    ''' Unframes a Observable of text delimited by new-line
 
     The source must be an Observable.
     '''
@@ -42,9 +42,14 @@ def unframe():
                 for line in lines[0:-1]:
                     observer.on_next(line)
 
+            def on_completed():
+                if len(acc) > 0:
+                    observer.on_next(acc)
+                observer.on_completed()
+
             return source.subscribe(
                 on_next=on_next,
-                on_completed=observer.on_completed,
+                on_completed=on_completed,
                 on_error=observer.on_error
             )
         return rx.create(on_subscribe)
