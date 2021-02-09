@@ -4,8 +4,9 @@
 
 .. |makinage-logo| image:: https://github.com/maki-nage/makinage/raw/master/asset/makinage_logo.png
 
-.. image:: https://badge.fury.io/py/rxsci.svg
-    :target: https://badge.fury.io/py/rxsci
+.. image:: https://img.shields.io/pypi/v/rxsci.svg
+    :target: https://pypi.org/project/rxsci/
+    :alt: PyPI
 
 .. image:: https://github.com/maki-nage/rxsci/workflows/Python%20package/badge.svg
     :target: https://github.com/maki-nage/rxsci/actions?query=workflow%3A%22Python+package%22
