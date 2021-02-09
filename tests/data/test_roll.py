@@ -170,7 +170,7 @@ def test_roll_without_store():
     assert type(actual_error[0]) is ValueError
 
 
-def test_forward_topology_probe():
+def test_forward_topology_probe_1():
     actual_topology_probe = []
     source = [1, 2, 3, 4]
 
@@ -178,6 +178,22 @@ def test_forward_topology_probe():
         rs.state.with_memory_store(
             rx.pipe(
                 rs.data.roll(1, 1, pipeline=rx.pipe()),
+                on_probe_state_topology(actual_topology_probe.append),
+            )
+        ),
+    ).subscribe()
+
+    assert len(actual_topology_probe) == 1
+
+
+def test_forward_topology_probe_2():
+    actual_topology_probe = []
+    source = [1, 2, 3, 4]
+
+    rx.from_(source).pipe(
+        rs.state.with_memory_store(
+            rx.pipe(
+                rs.data.roll(2, 1, pipeline=rx.pipe()),
                 on_probe_state_topology(actual_topology_probe.append),
             )
         ),

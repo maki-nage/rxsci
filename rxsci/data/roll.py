@@ -71,6 +71,7 @@ def roll_mux(window, stride):
                     state_n = i.topology.create_state(name="roll", data_type='uint', default_value=0)
                     state_w = i.topology.create_state(name="roll", data_type=int, default_value=-1)
                     observer.on_next(i)
+                    outer_observer.on_next(i)
 
                 else:
                     if state_n is None:
