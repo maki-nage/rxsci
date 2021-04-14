@@ -1,34 +1,17 @@
 import rx
 from rx.scheduler import CurrentThreadScheduler
 from rx.disposable import CompositeDisposable, Disposable
-try:
-    from smart_open import open
-    #import boto3
-    #import logging
-    #boto3.set_stream_logger('botocore.endpoint', logging.DEBUG)
-
-    #logger = logging.getLogger('smart_open')
-    #logger.setLevel(logging.DEBUG)
-
-    #handler = logging.StreamHandler()
-    #handler.setLevel(logging.DEBUG)
-    #logger.addHandler(handler)
-    #requests_logger.addHandler(handler)
-except Exception:
-    pass
 
 
-def read(file, mode='r', size=None, encoding=None, transport_params=None):
+def read(file, mode='r', size=None, encoding=None):
     ''' Reads the content of a file
 
     Args:
-        file: the path of the file to read
+        file: the path of the file to read, or a file object
         mode: how the file must be opened. either 'r' to read text or 'rb' to
             read binary
         size: [Optional] If set file if read by chunks of this size
         encoding: [Optional] text encoding to use when reading in text mode
-        transport_params: [Optional] When smart-open is used, then this
-            parameter is used to provide additional configuration information
 
     Returns:
         An observable where each item is a chunk of data, or the whole
@@ -41,21 +24,24 @@ def read(file, mode='r', size=None, encoding=None, transport_params=None):
         def _action(_, __):
             nonlocal disposed
 
-            try:
-                kwargs = {}
-                if transport_params is not None:
-                    kwargs['transport_params'] = {
-                        'resource_kwargs': transport_params,
-                    }
-                with open(file, mode, encoding=encoding, **kwargs) as f:
-                    if size is None:
-                        data = f.read(size)
+            def read_data(f):
+                nonlocal disposed
+
+                if size is None:
+                    data = f.read(size)
+                    observer.on_next(data)
+                else:
+                    data = f.read(size)
+                    while not disposed and len(data) > 0:
                         observer.on_next(data)
-                    else:
                         data = f.read(size)
-                        while not disposed and len(data) > 0:
-                            observer.on_next(data)
-                            data = f.read(size)
+
+            try:
+                if type(file) is str:
+                    with open(file, mode, encoding=encoding) as f:
+                        read_data(f)
+                else:
+                    read_data(file)
 
                 observer.on_completed()
 
@@ -72,7 +58,7 @@ def read(file, mode='r', size=None, encoding=None, transport_params=None):
     return rx.create(on_subscribe)
 
 
-def write(file, mode=None, encoding=None, transport_params=None):
+def write(file, mode=None, encoding=None):
     ''' Writes the content of a file
 
     The source must be an Observable.
@@ -83,8 +69,6 @@ def write(file, mode=None, encoding=None, transport_params=None):
             read binary
         size: [Optional] If set file if read by chunks of this size
         encoding: [Optional] text encoding to use when reading in text mode
-        transport_params: [Optional] When smart-open is used, then this
-            parameter is used to provide additional configuration information
 
     Returns:
         An observable where eeach item is a chunk of data, or the while
@@ -94,14 +78,11 @@ def write(file, mode=None, encoding=None, transport_params=None):
 
     def _write(source):
         def on_subscribe(observer, scheduler):
-            kwargs = {}
-            if transport_params is not None:
-                kwargs['transport_params'] = {
-                    'resource_kwargs': transport_params,
-                    'min_part_size': 10 * 1024**2
-                }
             try:
-                f = open(file, mode, encoding=encoding, **kwargs)
+                f = file
+                if type(file) is str:
+                    f = open(file, mode, encoding=encoding)
+
             except Exception as e:
                 observer.on_error(e)
 
@@ -120,6 +101,7 @@ def write(file, mode=None, encoding=None, transport_params=None):
                 on_next=on_next,
                 on_completed=on_completed,
                 on_error=on_error,
+                scheduler=scheduler,
             )
 
         return rx.create(on_subscribe)

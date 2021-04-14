@@ -242,28 +242,23 @@ def load(parse_line, skip=0):
     return _load
 
 
-def load_from_file(filename, parse_line, skip=1, encoding=None,
-                   transport_params=None):
+def load_from_file(filename, parse_line, skip=1, encoding=None):
     ''' Loads a csv file.
 
     This factory loads the provided file and returns its content as an
     observable emitting one item per line.
 
     Args:
-        filename: Path of the file to read
+        filename: Path of the file to read or a file object
         parse_line: A line parser, e.g. created with create_line_parser
         skip: [Optional] Number of lines to skip before parsing
         encoding [Optional] Encoding used to parse the text content
-        transport_params: [Optional] When smart-open is used, then this
-            parameter is used to provide additional configuration information
 
     Returns:
         An observable of namedtuple items, where each key is a csv column
     '''
 
-    return file.read(
-        filename, size=64*1024, encoding=encoding,
-        transport_params=transport_params).pipe(
+    return file.read(filename, size=64*1024, encoding=encoding).pipe(
         line.unframe(),
         load(parse_line, skip=skip),
     )
@@ -324,20 +319,17 @@ def dump(header=True, separator=",", newline='\n'):
 
 
 def dump_to_file(filename, header=True, separator=",",
-                 newline='\n', encoding=None,
-                 transport_params=None):
+                 newline='\n', encoding=None):
     ''' dumps each item to a csv file.
 
     The source must be an Observable.
 
     Args:
-        filename: Path of the file to read
+        filename: Path of the file to read or a file object
         header: [Optional] indicates whether a header line must be added.
         separator: [Optional] Token used to separate each columns.
         newline: [Optional] Character(s) used for end of line.
         encoding [Optional] Encoding used to parse the text content
-        transport_params: [Optional] When smart-open is used, then this
-            parameter is used to provide additional configuration information
 
     Returns:
         An empty observable that completes on success when the source
@@ -345,7 +337,6 @@ def dump_to_file(filename, header=True, separator=",",
         while writing the csv file.
     '''
     def _dump_to_file(source):
-        print("dump transport params: {}".format(transport_params))
         mode = None
         if encoding is not None:
             mode = 'wb'
@@ -355,7 +346,6 @@ def dump_to_file(filename, header=True, separator=",",
             file.write(
                 file=filename,
                 mode=mode,
-                transport_params=transport_params
             ),
         )
 
