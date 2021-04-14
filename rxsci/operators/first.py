@@ -12,7 +12,6 @@ def first_mux():
 
                 if type(i) is rs.OnNextMux:
                     value = i.store.get_state(state, i.key)
-                    print(value)
                     if value is False:
                         observer.on_next(i)
                         i.store.set_state(state, i.key, True)
