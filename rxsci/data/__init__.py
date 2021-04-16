@@ -9,4 +9,5 @@ from .to_list import to_list
 from .roll import roll
 from .sort import sort
 from .split import split
+from .time_split import time_split
 from .train_test_split import train_test_split
