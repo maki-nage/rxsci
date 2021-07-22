@@ -5,6 +5,18 @@ import rx.operators as ops
 try:
     import pandas as pd
 
+    def from_pandas(dataframe):
+        """Creates an observable from a pandas dataframe
+
+        Args:
+            dataframe: A pandas dataframe
+
+        Returns:
+            An observable that emits one nametuple per row in the dataframe.
+        """
+        return rx.from_(dataframe.itertuples(index=False))
+
+
     def to_pandas(columns=None):
         """Converts an observable to a pandas dataframe
 
@@ -27,4 +39,7 @@ try:
 
 except Exception:
     def to_pandas():
+        raise ImportError('Pandas not found. Please install it to use this operator')
+
+    def from_pandas():
         raise ImportError('Pandas not found. Please install it to use this operator')
