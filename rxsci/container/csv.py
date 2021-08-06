@@ -1,3 +1,4 @@
+import typing
 import json
 import csv
 from collections import namedtuple
@@ -46,28 +47,34 @@ def parse_decimal(ii):
 
 
 def type_parser(type_repr):
-    if type_repr in ['int']:
+    if type_repr in ['int', int]:
         return parse_int
-    if type_repr in ['float']:
+    if type_repr in ['float', float]:
         return parse_decimal
         #return parse_float
-    elif type_repr in ['bool']:
+    elif type_repr in ['bool', bool]:
         return lambda i: i == 'True'
     elif type_repr == 'posix_timestamp':
         return lambda i: datetime.fromtimestamp(int(i), tz=timezone.utc)
     elif type_repr == 'iso_datetime':
         return parse_iso_date
-    elif type_repr == 'str':
+    elif type_repr in ['str', str]:
         return lambda i: i
     else:
         raise TypeError("unknown column type: {}".format(type_repr))
 
 
 def create_schema_factory(dtype, schema_name='x'):
-    columns = [t[0] for t in dtype]
-    Item = namedtuple(schema_name, columns)
+    if not isinstance(dtype, list):
+        columns = [f for f in dtype._fields]
+        types = [dtype.__annotations__[f] for f in dtype._fields]
+        Item = dtype
+    else:
+        columns = [t[0] for t in dtype]
+        types = [i[1] for _, i in enumerate(dtype)]
+        Item = namedtuple(schema_name, columns)
     globals()[Item.__name__] = Item
-    return Item, columns
+    return Item, columns, types
 
 
 class CsvDataFile():
@@ -122,7 +129,7 @@ def create_line_parser(dtype, none_values=[], separator=",",
     ''' creates a parser for csv lines
 
     Args:
-        dtype: A list of (name, type) tuples.
+        dtype: A list of (name, type) tuples, or a typing.NamedTuple class.
         none_values: [Optional] Values to consider as None values
         separator: [Optional] Token used to separate each columns
         ignore_error: [Optional] when set to True, any line that does not
@@ -133,8 +140,8 @@ def create_line_parser(dtype, none_values=[], separator=",",
         A Parsing function, that can parse text lines as specified in the
         parameters.
     '''
-    Item, columns = create_schema_factory(dtype, schema_name)
-    columns_parser = [type_parser(i[1]) for index, i in enumerate(dtype)]
+    Item, columns, types = create_schema_factory(dtype, schema_name)
+    columns_parser = [type_parser(t) for t in types]
     columns_len = len(columns)
 
     #csv_file = CsvDataFile()

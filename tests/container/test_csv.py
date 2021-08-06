@@ -1,4 +1,5 @@
 from collections import namedtuple
+import typing
 import tempfile
 import pytest
 import rx
@@ -34,6 +35,24 @@ def test_parser():
             ("buzz", "bool"),
         ]
     )
+
+    actual_data = process(rx.from_([
+        "42,the,True",
+        "07,quick,False",
+    ]), [ops.map(parser)])
+
+    assert len(actual_data) == 2
+    assert actual_data[0] == (42, 'the', True)
+    assert actual_data[1] == (7, 'quick', False)
+
+
+def test_parser_typed():
+    class TestLine(typing.NamedTuple):
+        foo: int
+        bar: str
+        buzz: bool
+
+    parser = csv.create_line_parser(dtype=TestLine)
 
     actual_data = process(rx.from_([
         "42,the,True",
