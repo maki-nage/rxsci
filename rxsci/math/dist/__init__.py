@@ -171,6 +171,8 @@ def histogram(bin_count=100):
     The histogram in in the form of a list of tuples, where each tuple is in
     the form (bin value, element count).
 
+    This operator does not emit items until enough items have been received.
+
     The source can be an Observable or a MuxObservable.
 
     Args:
@@ -180,5 +182,6 @@ def histogram(bin_count=100):
         An observable emitting the histogram of each source items.
     '''
     return rx.pipe(
-        rs.ops.map(lambda i: distogram.histogram(i, ucount=bin_count))
+        rs.ops.map(lambda i: distogram.histogram(i, bin_count=bin_count)),
+        rs.ops.filter(lambda i: i is not None),
     )
