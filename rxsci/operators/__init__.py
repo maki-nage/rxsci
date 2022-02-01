@@ -7,6 +7,7 @@ from .do_action import do_action
 from .filter import filter
 from .first import first
 from .group_by import group_by
+from .identity import identity
 from .last import last
 from .map import map
 from .multiplex import multiplex, demux_mux_observable
