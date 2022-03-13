@@ -100,6 +100,7 @@ def multiplex(pipeline):
         MuxObservable, then processed by the pipeline transformations, and
         finally de-multiplexed to an Observable.
     '''
+    pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
     return rx.pipe(
         mux_observable(),
         pipeline,

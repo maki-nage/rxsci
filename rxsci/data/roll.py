@@ -179,6 +179,7 @@ def roll(window, stride, pipeline):
     if stride <= 0:
         raise ValueError()
 
+    pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
     _roll, outer_obs = roll_mux(window, stride)
 
     return rx.pipe(

@@ -84,6 +84,7 @@ def split(predicate, pipeline):
         criteria.
     '''
     _split, outer_obs = split_mux(predicate)
+    pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
 
     return rx.pipe(
         _split,

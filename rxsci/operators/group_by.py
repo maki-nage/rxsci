@@ -89,7 +89,7 @@ def group_by(key_mapper, pipeline):
         A MuxObservable with one observable per group.
     """
     _group_by, outer_obs = group_by_mux(key_mapper)
-
+    pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
     return rx.pipe(
         _group_by,
         pipeline,

@@ -54,6 +54,7 @@ def with_store(store, pipeline):
         store: A Store object.
         pipeline: A computation graph where state is stored on store.
     '''
+    pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
     def _with_store(source):
         if isinstance(source, rs.MuxObservable):
             return rx.pipe(

@@ -135,6 +135,7 @@ def time_split(
     if pipeline is None:
         raise ValueError('time_split: pipeline cannot be None')
 
+    pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
     _split, outer_obs = time_split_mux(
         time_mapper=time_mapper,
         active_timeout=active_timeout,

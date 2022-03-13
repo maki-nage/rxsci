@@ -179,6 +179,8 @@ def tee_map(*args, join='zip'):
     else:
         raise ValueError("tee_map join argument must be on of zip, merge, combine_latest")
 
+    args = [rx.pipe(*arg) if type(arg) is list else arg for arg in args]
+    print(args)
     def _tee_map(source):
         if isinstance(source, rs.MuxObservable):
             connectable = source.pipe(
