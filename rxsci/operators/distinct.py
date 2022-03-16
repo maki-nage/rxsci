@@ -64,7 +64,7 @@ def distinct(key_mapper=None):
                     x.store.del_key(state, x.key)
                     observer.on_next(x)
 
-                elif type(x) is rs.state.ProbeStateTopology:                                        
+                elif type(x) is rs.state.ProbeStateTopology:
                     state = x.topology.create_state(name="distinct", data_type='set')
                     observer.on_next(x)
                 else:

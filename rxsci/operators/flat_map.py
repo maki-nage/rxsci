@@ -7,9 +7,9 @@ def flat_map_mux():
     def _flat_map(source):
         def on_subscribe(observer, scheduler):
             def on_next(i):
-                if type(i) is rs.OnNextMux:                    
-                        for ii in i.item:
-                            observer.on_next(i._replace(item=ii))
+                if type(i) is rs.OnNextMux:
+                    for ii in i.item:
+                        observer.on_next(i._replace(item=ii))
                 else:
                     observer.on_next(i)
 
