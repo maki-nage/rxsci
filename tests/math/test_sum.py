@@ -81,10 +81,10 @@ def test_sum_completed_on_empty():
 
 def test_sum_mux_completed_on_empty():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_completed = []
     actual_result = []
@@ -101,28 +101,29 @@ def test_sum_mux_completed_on_empty():
     )
 
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 0),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 0),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 0),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 0),
+        rs.OnCompletedMux((2,)),
     ]
 
 
 def test_sum_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 8),
-        rs.OnNextMux((2, None), 6),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 10),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 2),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 8),
+        rs.OnNextMux((2,), 6),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 10),
+        rs.OnNextMux((1,), 4),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
 
     actual_completed = []
@@ -139,11 +140,12 @@ def test_sum_mux():
     )
 
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 19),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 14),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 19),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 14),
+        rs.OnCompletedMux((2,)),
     ]

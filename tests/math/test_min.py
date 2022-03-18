@@ -64,19 +64,18 @@ def test_min_key_mapper():
 
 def test_min_mux_reduce():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 8),
-        rs.OnNextMux((2, None), 6),
-        rs.OnNextMux((1, None), 10),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 4),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 8),
+        rs.OnNextMux((2,), 6),
+        rs.OnNextMux((1,), 10),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_result = []
-
 
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
@@ -85,22 +84,23 @@ def test_min_mux_reduce():
         ),
     ).subscribe(on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 6),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 6),
+        rs.OnCompletedMux((2,)),
     ]
 
 
 def test_min_mux_empty_reduce():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_result = []
 
@@ -111,11 +111,12 @@ def test_min_mux_empty_reduce():
         ),
     ).subscribe(on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), None),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), None),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), None),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), None),
+        rs.OnCompletedMux((2,)),
     ]

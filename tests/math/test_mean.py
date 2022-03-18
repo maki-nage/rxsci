@@ -56,16 +56,16 @@ def test_mean_key_mapper():
 
 def test_mean_mux_key_mapper():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), ('a', 2)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), ('A', 3)),
-        rs.OnNextMux((2, None), ('B', 6)),
-        rs.OnNextMux((1, None), ('b', 3)),
-        rs.OnNextMux((1, None), ('c', 10)),
-        rs.OnNextMux((1, None), ('d', 4)),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), ('a', 2)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), ('A', 3)),
+        rs.OnNextMux((2,), ('B', 6)),
+        rs.OnNextMux((1,), ('b', 3)),
+        rs.OnNextMux((1,), ('c', 10)),
+        rs.OnNextMux((1,), ('d', 4)),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_result = []
 
@@ -79,12 +79,12 @@ def test_mean_mux_key_mapper():
         on_error=lambda e: print(e),
     )
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 4.75),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 4.5),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 4.75),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 4.5),
+        rs.OnCompletedMux((2,)),
     ]
-

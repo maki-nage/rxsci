@@ -6,17 +6,18 @@ from ..utils import on_probe_state_topology
 
 
 def test_time_split():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=1)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=2)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=3)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=4)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=5)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=6)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=10)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=12)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=1), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=2), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=3), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=4), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=5), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=6), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=10), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=12), store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
@@ -24,7 +25,6 @@ def test_time_split():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -41,36 +41,37 @@ def test_time_split():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=1), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=2), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=3), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=4), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=5), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=6), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=10), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=12), store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=1), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=2), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=3), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=4), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=5), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=6), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=10), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=12), store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
 
 
 def test_time_split_no_active_timeout():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=1)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=2)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=3)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=4)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=5)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=6)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=10)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=12)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=1), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=2), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=3), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=4), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=5), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=6), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=10), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=12), store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
@@ -78,7 +79,6 @@ def test_time_split_no_active_timeout():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -94,34 +94,35 @@ def test_time_split_no_active_timeout():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=1), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=2), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=3), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=4), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=5), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=6), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=10), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=12), store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=1), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=2), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=3), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=4), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=5), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=6), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=10), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=12), store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
 
 
 def test_time_split_no_inactive_timeout():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=1)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=2)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=3)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=4)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=5)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=6)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=10)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=12)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=1), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=2), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=3), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=4), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=5), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=6), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=10), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=12), store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
@@ -129,7 +130,6 @@ def test_time_split_no_inactive_timeout():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -145,20 +145,20 @@ def test_time_split_no_inactive_timeout():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=1), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=2), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=3), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=4), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=5), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=6), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=10), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),        
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=12), store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=1), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=2), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=3), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=4), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=5), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=6), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=10), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=12), store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
 
@@ -201,17 +201,18 @@ def test_forward_topology_probe():
 
 
 def test_closing_mapper():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=1)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=2)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=3)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=4)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=5)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=6)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=10)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=12)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=1), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=2), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=3), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=4), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=5), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=6), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=10), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=12), store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
@@ -219,7 +220,6 @@ def test_closing_mapper():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -237,36 +237,37 @@ def test_closing_mapper():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=1), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=2), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=3), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=4), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=5), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=6), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=10), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=12), store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=1), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=2), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=3), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=4), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=5), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=6), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=10), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=12), store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
 
 
 def test_closing_mapper_exclude():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=1)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=2)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=3)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=4)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=5)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=6)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=10)),
-        rs.OnNextMux((1, None), datetime(2020, 1, 2, second=12)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=1), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=2), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=3), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=4), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=5), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=6), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=10), store=store),
+        rs.OnNextMux((1,), datetime(2020, 1, 2, second=12), store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
@@ -274,7 +275,6 @@ def test_closing_mapper_exclude():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -293,19 +293,19 @@ def test_closing_mapper_exclude():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=1), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=2), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=3), store),        
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=4), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=5), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=6), store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=10), store),
-        rs.OnNextMux((1, (1, None)), datetime(2020, 1, 2, second=12), store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=1), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=2), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=3), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=4), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=5), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=6), store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=10), store),
+        rs.OnNextMux((1, (1,)), datetime(2020, 1, 2, second=12), store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source

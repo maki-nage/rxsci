@@ -35,7 +35,7 @@ def drop_probe_state_topology():
         def on_subscribe(observer, scheduler):
             def on_next(i):
                 if type(i) is not ProbeStateTopology:
-                    observer.on_next(i._replace(store=None))
+                    observer.on_next(i)
 
             return source.subscribe(
                 on_next=on_next,

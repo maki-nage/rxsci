@@ -5,24 +5,24 @@ from ..utils import on_probe_state_topology
 
 
 def test_split_obs():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = ["1a", "2a", "3b", "4b", "5c", "6c", "7c", "8d", "9d"]
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), '1a'),
-        rs.OnNextMux((1, None), '2a'),
-        rs.OnNextMux((1, None), '3b'),
-        rs.OnNextMux((1, None), '4b'),
-        rs.OnNextMux((1, None), '5c'),
-        rs.OnNextMux((1, None), '6c'),
-        rs.OnNextMux((1, None), '7c'),
-        rs.OnNextMux((1, None), '8d'),
-        rs.OnNextMux((1, None), '9d'),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), '1a', store=store),
+        rs.OnNextMux((1,), '2a', store=store),
+        rs.OnNextMux((1,), '3b', store=store),
+        rs.OnNextMux((1,), '4b', store=store),
+        rs.OnNextMux((1,), '5c', store=store),
+        rs.OnNextMux((1,), '6c', store=store),
+        rs.OnNextMux((1,), '7c', store=store),
+        rs.OnNextMux((1,), '8d', store=store),
+        rs.OnNextMux((1,), '9d', store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -35,46 +35,46 @@ def test_split_obs():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '1a', store),
-        rs.OnNextMux((1, (1, None)), '2a', store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '3b', store),
-        rs.OnNextMux((1, (1, None)), '4b', store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '5c', store),
-        rs.OnNextMux((1, (1, None)), '6c', store),
-        rs.OnNextMux((1, (1, None)), '7c', store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '8d', store),
-        rs.OnNextMux((1, (1, None)), '9d', store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '1a', store),
+        rs.OnNextMux((1, (1,)), '2a', store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '3b', store),
+        rs.OnNextMux((1, (1,)), '4b', store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '5c', store),
+        rs.OnNextMux((1, (1,)), '6c', store),
+        rs.OnNextMux((1, (1,)), '7c', store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '8d', store),
+        rs.OnNextMux((1, (1,)), '9d', store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
 
 
 def test_split_list():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = ["1a", "2a", "3b", "4b", "5c", "6c", "7c", "8d", "9d"]
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), '1a'),
-        rs.OnNextMux((1, None), '2a'),
-        rs.OnNextMux((1, None), '3b'),
-        rs.OnNextMux((1, None), '4b'),
-        rs.OnNextMux((1, None), '5c'),
-        rs.OnNextMux((1, None), '6c'),
-        rs.OnNextMux((1, None), '7c'),
-        rs.OnNextMux((1, None), '8d'),
-        rs.OnNextMux((1, None), '9d'),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), '1a', store=store),
+        rs.OnNextMux((1,), '2a', store=store),
+        rs.OnNextMux((1,), '3b', store=store),
+        rs.OnNextMux((1,), '4b', store=store),
+        rs.OnNextMux((1,), '5c', store=store),
+        rs.OnNextMux((1,), '6c', store=store),
+        rs.OnNextMux((1,), '7c', store=store),
+        rs.OnNextMux((1,), '8d', store=store),
+        rs.OnNextMux((1,), '9d', store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
     actual_result = []
     mux_actual_result = []
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -87,23 +87,23 @@ def test_split_list():
 
     assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
     assert mux_actual_result[1:] == [
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '1a', store),
-        rs.OnNextMux((1, (1, None)), '2a', store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '3b', store),
-        rs.OnNextMux((1, (1, None)), '4b', store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '5c', store),
-        rs.OnNextMux((1, (1, None)), '6c', store),
-        rs.OnNextMux((1, (1, None)), '7c', store),
-        rs.OnCompletedMux((1, (1, None)), store),
-        rs.OnCreateMux((1, (1, None)), store),
-        rs.OnNextMux((1, (1, None)), '8d', store),
-        rs.OnNextMux((1, (1, None)), '9d', store),
-        rs.OnCompletedMux((1, (1, None)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '1a', store),
+        rs.OnNextMux((1, (1,)), '2a', store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '3b', store),
+        rs.OnNextMux((1, (1,)), '4b', store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '5c', store),
+        rs.OnNextMux((1, (1,)), '6c', store),
+        rs.OnNextMux((1, (1,)), '7c', store),
+        rs.OnCompletedMux((1, (1,)), store),
+        rs.OnCreateMux((1, (1,)), store),
+        rs.OnNextMux((1, (1,)), '8d', store),
+        rs.OnNextMux((1, (1,)), '9d', store),
+        rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
 

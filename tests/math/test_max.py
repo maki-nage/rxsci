@@ -77,15 +77,15 @@ def test_max_key_mapper():
 
 def test_max_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 8),
-        rs.OnNextMux((2, None), 6),
-        rs.OnNextMux((1, None), 10),
-        rs.OnNextMux((1, None), 3),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 4),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 8),
+        rs.OnNextMux((2,), 6),
+        rs.OnNextMux((1,), 10),
+        rs.OnNextMux((1,), 3),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -108,33 +108,35 @@ def test_max_mux():
     assert actual_error == []
     assert actual_completed == [True]
     try:
+        actual_result = [r._replace(store=None) for r in actual_result]
         assert actual_result == [
-            rs.OnCreateMux((1, None)),
-            rs.OnNextMux((1, None), 4),
-            rs.OnCreateMux((2, None)),
-            rs.OnNextMux((2, None), 8),
-            rs.OnNextMux((2, None), 8),
-            rs.OnNextMux((1, None), 10),
-            rs.OnNextMux((1, None), 10),
-            rs.OnCompletedMux((1, None)),
-            rs.OnCompletedMux((2, None)),
+            rs.OnCreateMux((1,)),
+            rs.OnNextMux((1,), 4),
+            rs.OnCreateMux((2,)),
+            rs.OnNextMux((2,), 8),
+            rs.OnNextMux((2,), 8),
+            rs.OnNextMux((1,), 10),
+            rs.OnNextMux((1,), 10),
+            rs.OnCompletedMux((1,)),
+            rs.OnCompletedMux((2,)),
         ]
     except Exception as e:
         import traceback
         traceback.print_tb(e.__traceback__)
         raise e
 
+
 def test_max_mux_reduce():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 8),
-        rs.OnNextMux((2, None), 6),
-        rs.OnNextMux((1, None), 10),
-        rs.OnNextMux((1, None), 3),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 4),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 8),
+        rs.OnNextMux((2,), 6),
+        rs.OnNextMux((1,), 10),
+        rs.OnNextMux((1,), 3),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -156,22 +158,23 @@ def test_max_mux_reduce():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 10),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 8),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 10),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 8),
+        rs.OnCompletedMux((2,)),
     ]
 
 
 def test_max_mux_empty_reduce():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -193,11 +196,12 @@ def test_max_mux_empty_reduce():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), None),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), None),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), None),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), None),
+        rs.OnCompletedMux((2,)),
     ]

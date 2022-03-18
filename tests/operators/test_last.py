@@ -5,14 +5,14 @@ import rxsci as rs
 
 def test_last_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 10),
-        rs.OnNextMux((2, None), 11),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 10),
+        rs.OnNextMux((2,), 11),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -34,13 +34,14 @@ def test_last_mux():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),        
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 2),        
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 11),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 11),
+        rs.OnCompletedMux((2,)),
     ]
 
 
@@ -71,6 +72,7 @@ def test_last_mux_empty():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnCreateMux((2,)),

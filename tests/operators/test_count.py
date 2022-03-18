@@ -5,14 +5,14 @@ import rxsci as rs
 
 def test_count():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 0),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 0),
-        rs.OnNextMux((2, None), 0),
-        rs.OnNextMux((1, None), 0),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 0),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 0),
+        rs.OnNextMux((2,), 0),
+        rs.OnNextMux((1,), 0),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -34,28 +34,29 @@ def test_count():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 1),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 1),
+        rs.OnNextMux((2,), 2),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
 
 
 def test_count_reduce():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 0),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 0),
-        rs.OnNextMux((2, None), 0),
-        rs.OnNextMux((1, None), 0),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 0),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 0),
+        rs.OnNextMux((2,), 0),
+        rs.OnNextMux((1,), 0),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -77,11 +78,12 @@ def test_count_reduce():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnNextMux((2,), 2),
+        rs.OnCompletedMux((2,)),
     ]

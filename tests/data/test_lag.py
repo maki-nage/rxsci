@@ -51,12 +51,12 @@ def test_lag1_without_store():
 
 def test_lag1_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 4),
+        rs.OnCompletedMux((1,)),
     ]
     actual_result = []
 
@@ -67,13 +67,14 @@ def test_lag1_mux():
         ),
     ).subscribe(on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), (1,1)),
-        rs.OnNextMux((1, None), (1,2)),
-        rs.OnNextMux((1, None), (2,3)),
-        rs.OnNextMux((1, None), (3,4)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), (1,1)),
+        rs.OnNextMux((1,), (1,2)),
+        rs.OnNextMux((1,), (2,3)),
+        rs.OnNextMux((1,), (3,4)),
+        rs.OnCompletedMux((1,)),
     ]
 
 
@@ -103,14 +104,14 @@ def test_lag():
 
 def test_lag_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 3),
-        rs.OnNextMux((1, None), 4),
-        rs.OnNextMux((1, None), 5),
-        rs.OnNextMux((1, None), 6),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 3),
+        rs.OnNextMux((1,), 4),
+        rs.OnNextMux((1,), 5),
+        rs.OnNextMux((1,), 6),
+        rs.OnCompletedMux((1,)),
     ]
     actual_result = []
 
@@ -121,14 +122,14 @@ def test_lag_mux():
         ),
     ).subscribe(on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), (1, 1)),
-        rs.OnNextMux((1, None), (1, 2)),
-        rs.OnNextMux((1, None), (1, 3)),
-        rs.OnNextMux((1, None), (2, 4)),
-        rs.OnNextMux((1, None), (3, 5)),
-        rs.OnNextMux((1, None), (4, 6)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), (1, 1)),
+        rs.OnNextMux((1,), (1, 2)),
+        rs.OnNextMux((1,), (1, 3)),
+        rs.OnNextMux((1,), (2, 4)),
+        rs.OnNextMux((1,), (3, 5)),
+        rs.OnNextMux((1,), (4, 6)),
+        rs.OnCompletedMux((1,)),
     ]
-

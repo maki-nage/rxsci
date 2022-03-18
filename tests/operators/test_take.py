@@ -58,6 +58,7 @@ def test_take_mux():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1 ,None)),
         rs.OnNextMux((1, None), 1),

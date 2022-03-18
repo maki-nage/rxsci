@@ -5,14 +5,14 @@ import rxsci as rs
 
 def test_scan_mux():
     source = [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 2),
+        rs.OnNextMux((2,), 2),
+        rs.OnNextMux((1,), 1),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
     actual_error = []
     actual_completed = []
@@ -34,28 +34,29 @@ def test_scan_mux():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),
-        rs.OnNextMux((1, None), 1),
-        rs.OnCreateMux((2, None)),
-        rs.OnNextMux((2, None), 2),
-        rs.OnNextMux((2, None), 4),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((1, None)),
-        rs.OnCompletedMux((2, None)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 1),
+        rs.OnCreateMux((2,)),
+        rs.OnNextMux((2,), 2),
+        rs.OnNextMux((2,), 4),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((1,)),
+        rs.OnCompletedMux((2,)),
     ]
 
 
 def test_scan_mux_reduce():
     source = [
-        rs.OnCreateMux((0 ,None)),
-        rs.OnNextMux((0, None), 1),
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((0, None), 1),
-        rs.OnCompletedMux((0, None)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((0,)),
+        rs.OnNextMux((0,), 1),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((0,), 1),
+        rs.OnCompletedMux((0,)),
+        rs.OnCompletedMux((1,)),
     ]
     actual_error = []
     actual_completed = []
@@ -77,24 +78,25 @@ def test_scan_mux_reduce():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((0 ,None)),
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((0, None), 2),
-        rs.OnCompletedMux((0, None)),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((0,)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((0,), 2),
+        rs.OnCompletedMux((0,)),
+        rs.OnNextMux((1,), 4),
+        rs.OnCompletedMux((1,)),
     ]
 
 
 def test_scan_mux_reduce_empty():
     source = [
-        rs.OnCreateMux((0 ,None)),
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((1, None), 2),
-        rs.OnNextMux((1, None), 2),
-        rs.OnCompletedMux((0, None)),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((0,)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((1,), 2),
+        rs.OnNextMux((1,), 2),
+        rs.OnCompletedMux((0,)),
+        rs.OnCompletedMux((1,)),
     ]
     actual_error = []
     actual_completed = []
@@ -116,20 +118,21 @@ def test_scan_mux_reduce_empty():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((0 ,None)),
-        rs.OnCreateMux((1, None)),
-        rs.OnNextMux((0, None), 0),
-        rs.OnCompletedMux((0, None)),
-        rs.OnNextMux((1, None), 4),
-        rs.OnCompletedMux((1, None)),
+        rs.OnCreateMux((0,)),
+        rs.OnCreateMux((1,)),
+        rs.OnNextMux((0,), 0),
+        rs.OnCompletedMux((0,)),
+        rs.OnNextMux((1,), 4),
+        rs.OnCompletedMux((1,)),
     ]
 
 
 def test_scan_mux_reduce_empty_on_complete():
     source = [
-        rs.OnCreateMux((0 ,None)),
-        rs.OnCompletedMux((0 ,None)),
+        rs.OnCreateMux((0,)),
+        rs.OnCompletedMux((0,)),
     ]
     actual_error = []
     actual_completed = []
@@ -151,8 +154,9 @@ def test_scan_mux_reduce_empty_on_complete():
 
     assert actual_error == []
     assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((0 ,None)),
-        rs.OnNextMux((0, None), 0),
-        rs.OnCompletedMux((0, None)),
+        rs.OnCreateMux((0,)),
+        rs.OnNextMux((0,), 0),
+        rs.OnCompletedMux((0,)),
     ]

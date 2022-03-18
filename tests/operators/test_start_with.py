@@ -23,6 +23,7 @@ def test_start_with():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnNextMux((1,), -3),

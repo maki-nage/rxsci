@@ -26,7 +26,7 @@ def test_completion():
         on_completed=lambda: actual_completed.append(True)
     )
 
-    #assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1 ,None)),        
         rs.OnNextMux((1, None), (1, 2)),        
@@ -34,7 +34,7 @@ def test_completion():
     ]
 
 
-def test_aggragation_completion():
+def test_aggregation_completion():
     source = [
         rs.OnCreateMux((1 ,None)),
         rs.OnNextMux((1, None), 1),
@@ -57,10 +57,10 @@ def test_aggragation_completion():
         on_completed=lambda: actual_completed.append(True)
     )
 
-    #assert actual_completed == [True]
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
-        rs.OnCreateMux((1 ,None)),        
-        rs.OnNextMux((1, None), (2, [1, 2])),        
+        rs.OnCreateMux((1 ,None)),
+        rs.OnNextMux((1, None), (2, [1, 2])),
         rs.OnCompletedMux((1, None)),
     ]
 

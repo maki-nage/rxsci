@@ -72,7 +72,7 @@ def demux_mux_observable(outer_group):
             disposable = CompositeDisposable()
             disposable.add(outer_group.subscribe(
                 on_next=on_next_outer,
-                scheduler=scheduler,                
+                scheduler=scheduler,
             ))
             disposable.add(source.subscribe(
                 on_next=on_next,

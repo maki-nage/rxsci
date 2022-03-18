@@ -66,6 +66,7 @@ def test_distinct_until_changed_mux():
         ),
     ).subscribe(on_next)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnNextMux((1,), 1),

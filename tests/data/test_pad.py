@@ -29,6 +29,7 @@ def test_pad_start_empty():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnCompletedMux((1,)),
@@ -55,6 +56,7 @@ def test_pad_start():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnNextMux((1,), 0),
@@ -89,6 +91,7 @@ def test_pad_start_no_value():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnNextMux((1,), 1),
@@ -128,6 +131,7 @@ def test_pad_end_empty():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnCompletedMux((1,)),
@@ -153,6 +157,7 @@ def test_pad_end():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnNextMux((1,), 1),
@@ -185,6 +190,7 @@ def test_pad_end_no_value():
     ).subscribe(
         on_next=actual_result.append)
 
+    actual_result = [r._replace(store=None) for r in actual_result]
     assert actual_result == [
         rs.OnCreateMux((1,)),
         rs.OnNextMux((1,), 1),

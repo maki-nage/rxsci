@@ -5,14 +5,15 @@ from ..utils import on_probe_state_topology
 
 
 def test_roll():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1,)),
-        rs.OnNextMux((1,), 1),
-        rs.OnNextMux((1,), 2),
-        rs.OnNextMux((1,), 3),
-        rs.OnNextMux((1,), 4),
-        rs.OnNextMux((1,), 5),
-        rs.OnCompletedMux((1,)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), 1, store=store),
+        rs.OnNextMux((1,), 2, store=store),
+        rs.OnNextMux((1,), 3, store=store),
+        rs.OnNextMux((1,), 4, store=store),
+        rs.OnNextMux((1,), 5, store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
 
     actual_result = []
@@ -21,7 +22,6 @@ def test_roll():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -49,15 +49,16 @@ def test_roll():
 
 
 def test_roll_with_stride():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((0 ,)),
-        rs.OnNextMux((0,), 1),
-        rs.OnNextMux((0,), 2),
-        rs.OnNextMux((0,), 3),
-        rs.OnNextMux((0,), 4),
-        rs.OnNextMux((0,), 5),
-        rs.OnNextMux((0,), 6),
-        rs.OnCompletedMux((0,)),
+        rs.OnCreateMux((0,), store=store),
+        rs.OnNextMux((0,), 1, store=store),
+        rs.OnNextMux((0,), 2, store=store),
+        rs.OnNextMux((0,), 3, store=store),
+        rs.OnNextMux((0,), 4, store=store),
+        rs.OnNextMux((0,), 5, store=store),
+        rs.OnNextMux((0,), 6, store=store),
+        rs.OnCompletedMux((0,), store=store),
     ]
 
     actual_result = []
@@ -66,7 +67,6 @@ def test_roll_with_stride():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
@@ -101,13 +101,14 @@ def test_roll_with_stride():
 
 
 def test_roll_identity():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     source = [
-        rs.OnCreateMux((1,)),
-        rs.OnNextMux((1,), 1),
-        rs.OnNextMux((1,), 2),
-        rs.OnNextMux((1,), 3),
-        rs.OnNextMux((1,), 4),
-        rs.OnCompletedMux((1,)),
+        rs.OnCreateMux((1,), store=store),
+        rs.OnNextMux((1,), 1, store=store),
+        rs.OnNextMux((1,), 2, store=store),
+        rs.OnNextMux((1,), 3, store=store),
+        rs.OnNextMux((1,), 4, store=store),
+        rs.OnCompletedMux((1,), store=store),
     ]
 
     actual_result = []
@@ -116,7 +117,6 @@ def test_roll_identity():
     def on_next(i):
         actual_result.append(i)
 
-    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
     rx.from_(source).pipe(
         rs.cast_as_mux_observable(),
         rs.state.with_store(
