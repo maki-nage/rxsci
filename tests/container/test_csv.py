@@ -1,3 +1,4 @@
+import os
 from collections import namedtuple
 import typing
 import tempfile
@@ -275,12 +276,13 @@ def test_dump_to_file():
         '"cl",,False\n' \
         '"cl","[1, \'2\', \'3\']",False\n'
 
-    with tempfile.NamedTemporaryFile(mode='w') as f:
+    with tempfile.TemporaryDirectory() as d:
+        f = os.path.join(d, "test.csv")
         rx.from_(source).pipe(
-            csv.dump_to_file(f.name, encoding='utf-8'),
+            csv.dump_to_file(f, encoding='utf-8'),
         ).subscribe()
 
-        with open(f.name, 'r') as f1:
+        with open(f, 'r') as f1:
             actual_data = f1.read()
     assert actual_data == expected_data
 

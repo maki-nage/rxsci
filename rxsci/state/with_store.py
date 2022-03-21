@@ -75,7 +75,7 @@ def with_store_mux_on_sources(sources, store):
         nonlocal sources
 
         if all([s.observer is not None for s in sources]):
-            raise InternalError("multiple subscriptions in not allowed")
+            raise RuntimeError("multiple subscriptions in not allowed")
 
         source = sources[index]
         source.observer = observer
