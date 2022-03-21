@@ -215,14 +215,17 @@ def test_load_from_file():
         ]
     )
 
-    with tempfile.NamedTemporaryFile(mode='w') as f:
-        f.write("foo,bar,buzz\n")
-        f.write("42,the,True\n")
-        f.write("07,quick,False")
-        f.flush()
+    with tempfile.TemporaryDirectory() as d:
+        f_name = os.path.join(d, "test.csv")
+
+        with open(f_name, mode="w") as f:
+            f.write("foo,bar,buzz\n")
+            f.write("42,the,True\n")
+            f.write("07,quick,False")
+            f.flush()
 
         actual_data = process(
-            csv.load_from_file(f.name, parser),
+            csv.load_from_file(f_name, parser),
             None,
         )
 
