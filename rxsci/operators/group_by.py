@@ -5,15 +5,17 @@ import rxsci as rs
 from .multiplex import demux_mux_observable
 
 
-def group_by_mux(key_mapper):
+def group_by_mux(key_mapper, state_id):
     outer_observer = Subject()
 
     def _group_by(source):
         def on_subscribe(observer, scheduler):
             state = None
+            shared_state = None
 
             def on_next(i):
                 nonlocal state
+                nonlocal shared_state
 
                 if type(i) is rs.OnNextMux:
                     key = i.key
@@ -27,6 +29,8 @@ def group_by_mux(key_mapper):
 
                 elif type(i) is rs.OnCreateMux:
                     i.store.add_key(state, i.key)
+                    if shared_state:
+                        i.store.add_key(shared_state, i.key)
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.OnCompletedMux:
@@ -45,12 +49,22 @@ def group_by_mux(key_mapper):
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:
-                    state = i.topology.create_mapper(name="groupby")
+                    state = i.topology.create_mapper(
+                        name="groupby",
+                    )
+                    if state_id is not None:
+                        shared_state = i.topology.create_mapper(
+                            name="groupby",
+                            state_id=state_id
+                        )
                     observer.on_next(i)
                     outer_observer.on_next(i)
                 else:
                     if state is None:
-                        observer.on_error(ValueError("No state configured in group_by operator. A state store operator is probably missing in the graph"))
+                        observer.on_error(ValueError(
+                            "No state configured in group_by operator."
+                            "A state store operator is probably missing in the graph"
+                        ))
                     observer.on_next(i)
 
             return source.subscribe(
@@ -64,7 +78,7 @@ def group_by_mux(key_mapper):
     return _group_by, outer_observer
 
 
-def group_by(key_mapper, pipeline):
+def group_by(key_mapper, pipeline, state_id=None):
     """Groups items of according to a key mapper
 
     The source must be a MuxObservable.
@@ -78,17 +92,22 @@ def group_by(key_mapper, pipeline):
                +a-----b--c-|
          +1--2-----3-------|
 
+    Several instances of the group_by operator can share the same state by
+    using the same state_id value. This allows some downstream operators to
+    combine observables by key. This is for example used in merge_asof.
+
     Examples:
         >>> rs.ops.group_by(lambda i: i.category, rs.ops.count)
 
     Args:
         key_mapper: A function to extract the key from each item
         pipeline: The Rx pipe to execute on each group.
+        state_id: [Optional] The state identifier to use.
 
     Returns:
         A MuxObservable with one observable per group.
     """
-    _group_by, outer_obs = group_by_mux(key_mapper)
+    _group_by, outer_obs = group_by_mux(key_mapper, state_id)
     pipeline = rx.pipe(*pipeline) if type(pipeline) is list else pipeline
     return rx.pipe(
         _group_by,
