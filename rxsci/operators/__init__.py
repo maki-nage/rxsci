@@ -10,7 +10,7 @@ from .group_by import group_by
 from .identity import identity
 from .last import last
 from .map import map
-from .multiplex import multiplex, mux_observable, demux_mux_observable
+from .multiplex import multiplex, mux_observable, demux_observable, demux_mux_observable
 from .on_subscribe import on_subscribe
 from .pandas import from_pandas, to_pandas
 from .progress import progress
