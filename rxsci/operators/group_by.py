@@ -33,6 +33,7 @@ def group_by_mux(key_mapper):
                     for k in i.store.iterate_map(state, i.key):
                         index = i.store.get_map(state, i.key, k)
                         observer.on_next(i._replace(key=(index, i.key)))
+                        i.store.del_map(state, i.key, k)
                     i.store.del_key(state, i.key)
                     outer_observer.on_next(i)
 

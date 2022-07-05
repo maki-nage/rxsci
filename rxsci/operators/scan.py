@@ -34,7 +34,7 @@ def scan_mux(accumulator, seed, reduce):
                         observer.on_next(rs.OnNextMux(i.key, value, i.store))
                     observer.on_next(i)
                     i.store.del_key(state, i.key)
-                elif type(i) is rs.OnErrorMux:                    
+                elif type(i) is rs.OnErrorMux:
                     observer.on_next(i)
                     i.store.del_key(state, i.key)
                 elif type(i) is rs.state.ProbeStateTopology:

@@ -73,6 +73,7 @@ class MemoryStore(object):
     def del_key(self, key):
         self.state[key[0]] = rs.state.markers.STATE_CLEARED.value()
         self.keys[key[0]] = rs.state.markers.STATE_CLEARED.value()
+        self.values[key[0]] = 0
 
     def clear(self):
         self.values = self.create_values()
