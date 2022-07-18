@@ -125,3 +125,27 @@ def test_forward_topology_probe():
     ).subscribe()
 
     assert len(actual_topology_probe) == 1
+
+
+def test_empty_source():
+    source = []
+    actual_result = []
+    on_completed = []
+    actual_error = []
+
+    rx.from_(source).pipe(
+        rs.state.with_memory_store(
+            rx.pipe(
+                rs.ops.group_by(
+                    lambda i: i % 2 == 0,
+                    pipeline=[]
+                ),
+            )
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=lambda: on_completed.append(True),
+        on_error=actual_error.append,
+    )
+
+    assert actual_result == []

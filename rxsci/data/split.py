@@ -34,11 +34,15 @@ def split_mux(predicate):
                     outer_observer.on_next(i)
 
                 elif isinstance(i, rs.OnCompletedMux):
-                    observer.on_next(i._replace(key=(i.key[0], i.key)))
+                    current_predicate = i.store.get_state(state, i.key)
+                    if current_predicate is not rs.state.markers.STATE_NOTSET:
+                        observer.on_next(i._replace(key=(i.key[0], i.key)))
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.OnErrorMux:
-                    observer.on_next(i._replace(key=(i.key[0], i.key)))
+                    current_predicate = i.store.get_state(state, i.key)
+                    if current_predicate is not rs.state.markers.STATE_NOTSET:
+                        observer.on_next(i._replace(key=(i.key[0], i.key)))
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:

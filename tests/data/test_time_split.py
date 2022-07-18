@@ -309,3 +309,34 @@ def test_closing_mapper_exclude():
         rs.OnCompletedMux((1, (1,)), store),
     ]
     assert actual_result == source
+
+
+def test_time_split_empty_source():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
+    source = []
+    actual_result = []
+    actual_error = []
+    mux_actual_result = []
+
+    rx.from_(source).pipe(
+        rs.state.with_store(
+            store,
+            rs.data.time_split(
+                time_mapper=lambda i: i,
+                active_timeout=timedelta(seconds=5),
+                inactive_timeout=timedelta(seconds=3),
+                closing_mapper=lambda i: i == datetime(2020, 1, 2, second=4),
+                include_closing_item=False,
+                pipeline=rx.pipe(
+                    ops.do_action(mux_actual_result.append),
+            )),
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == []
+    assert actual_result == source

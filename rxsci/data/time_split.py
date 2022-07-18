@@ -64,7 +64,9 @@ def time_split_mux(time_mapper,
                     outer_observer.on_next(i)
 
                 elif type(i) in [rs.OnCompletedMux, rs.OnErrorMux]:
-                    observer.on_next(i._replace(key=(i.key[0], i.key)))
+                    start_timestamp = i.store.get_state(state_start, i.key)
+                    if start_timestamp is not rs.state.markers.STATE_NOTSET:
+                        observer.on_next(i._replace(key=(i.key[0], i.key)))
                     i.store.del_key(state_start, i.key)
                     i.store.del_key(state_last, i.key)
                     outer_observer.on_next(i)

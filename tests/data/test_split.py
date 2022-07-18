@@ -132,3 +132,56 @@ def test_forward_topology_probe():
     ).subscribe()
 
     assert len(actual_topology_probe) == 1
+
+
+def test_split_empty_source():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
+    source = []
+    actual_result = []
+    actual_error = []
+    mux_actual_result = []
+
+    rx.from_(source).pipe(
+        rs.state.with_store(
+            store,
+            rs.data.split(lambda i: i[-1], [
+                ops.do_action(mux_actual_result.append),
+            ]),
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=actual_error.append,
+    )
+
+    assert actual_error == []
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == []
+    assert actual_result == source
+
+
+def test_split_error_on_first_item():
+    store = rs.state.StoreManager(store_factory=rs.state.MemoryStore)
+    source = [0]
+    actual_result = []
+    actual_error = []
+    mux_actual_result = []
+
+    rx.from_(source).pipe(
+        rs.state.with_store(
+            store,
+            pipeline=[
+                rs.ops.map(lambda i: 1/i),
+                rs.data.split(lambda i: i[-1], [
+                    ops.do_action(mux_actual_result.append),
+                ]),
+            ]
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_error=actual_error.append,
+    )
+
+    assert type(actual_error[0]) is ZeroDivisionError
+    assert type(mux_actual_result[0]) is rs.state.ProbeStateTopology
+    assert mux_actual_result[1:] == []
+    assert actual_result == []
