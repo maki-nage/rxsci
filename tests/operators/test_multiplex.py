@@ -71,3 +71,36 @@ def test_multiplex_list():
         rs.OnNextMux((0,), 4),
         rs.OnCompletedMux((0,)),
     ]
+
+
+def test_multiplex_forward_error_on_completion():
+    source = [1, 2, 3, 4]
+    actual_error = []
+    actual_completed = []
+    actual_result = []
+    mux_actual_result = []
+
+    def on_completed():
+        actual_completed.append(True)
+
+    def raise_exception(key):
+        if key is not None:
+            raise ValueError()
+
+    rx.from_(source).pipe(
+        rs.ops.multiplex(
+            [
+                rs.ops.do_action(
+                    on_completed=raise_exception,
+                ),
+            ],
+        ),
+    ).subscribe(
+        on_next=actual_result.append,
+        on_completed=on_completed,
+        on_error=actual_error.append,
+    )
+
+    assert type(actual_error[0]) == ValueError
+    assert actual_completed == []
+    assert actual_result == source

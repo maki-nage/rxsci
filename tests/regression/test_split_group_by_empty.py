@@ -5,6 +5,7 @@ import rxsci as rs
 def test_split_group_by_on_empty_source():
     source = []
     actual_result = []
+    actual_error = []
 
     rx.from_(source).pipe(
         rs.state.with_memory_store(pipeline=[
@@ -18,7 +19,9 @@ def test_split_group_by_on_empty_source():
             ]),
         ])
     ).subscribe(
-        on_next=actual_result.append
+        on_next=actual_result.append,
+        on_error=actual_error.append,
     )
 
+    assert actual_error == []
     assert actual_result == []

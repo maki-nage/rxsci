@@ -13,8 +13,12 @@ def mux_observable():
                 observer.on_error(e)
 
             def on_completed():
-                observer.on_next(rs.OnCompletedMux((0,)))
-                observer.on_completed()
+                try:
+                    observer.on_next(rs.OnCompletedMux((0,)))
+                except Exception as e:
+                    observer.on_error(e)
+                else:
+                    observer.on_completed()
 
             observer.on_next(rs.OnCreateMux((0,)))
             return source.subscribe(
