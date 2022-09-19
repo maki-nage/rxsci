@@ -1,6 +1,6 @@
 __author__ = """Romain Picard"""
 __email__ = 'romain.picard@oakbits.com'
-__version__ = '0.13.3'
+__version__ = '0.14.0'
 
 from enum import Enum
 
