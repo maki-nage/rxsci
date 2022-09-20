@@ -34,6 +34,7 @@ try:
         """
         return rx.pipe(
             ops.to_list(),
+            ops.filter(len),
             ops.map(lambda i: pd.DataFrame(i, columns=i[0]._fields if columns is None else columns))
         )
 
