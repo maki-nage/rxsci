@@ -18,7 +18,8 @@ def frame():
             return source.subscribe(
                 on_next=on_next,
                 on_completed=observer.on_completed,
-                on_error=observer.on_error
+                on_error=observer.on_error,
+                scheduler=scheduler,
             )
         return rx.create(on_subscribe)
 
@@ -50,7 +51,8 @@ def unframe():
             return source.subscribe(
                 on_next=on_next,
                 on_completed=on_completed,
-                on_error=observer.on_error
+                on_error=observer.on_error,
+                scheduler=scheduler,
             )
         return rx.create(on_subscribe)
 

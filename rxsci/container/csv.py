@@ -319,6 +319,7 @@ def dump(header=True, separator=",", newline='\n'):
                 on_next=on_next,
                 on_completed=observer.on_completed,
                 on_error=observer.on_error,
+                scheduler=scheduler,
             )
         return rx.create(on_subscribe)
 
