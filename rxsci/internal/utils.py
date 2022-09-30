@@ -41,3 +41,21 @@ class StateCleared(object):
 
     def value(self):
         return 2
+
+
+def build_tdqm_kwargs(progress):
+    """Generates a kwargs dict for tqdm based on rxsci progress options.
+
+    Args: 
+        progress: Boolean or dict
+
+    Returns:
+        A dict containing tqdm kwargs
+    """
+    tqdm_kwargs = {}
+    if type(progress) is dict:
+        if 'interval' in progress:
+            tqdm_kwargs['mininterval'] = progress['interval']
+            tqdm_kwargs['maxinterval'] = progress['interval']
+
+    return tqdm_kwargs

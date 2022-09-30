@@ -12,15 +12,20 @@ class Item(NamedTuple):
     s1: str
     i2: int
 
-
-def test_from_pandas_base():
+@pytest.mark.parametrize(
+    "progress",
+    [
+        False, True, {'interval': 60}
+    ]
+)
+def test_from_pandas_base(progress):
     data = [
         Item("foo", 1),
         Item("bar", 2),
     ]
 
     df = pd.DataFrame(data)
-    actual_result = rs.ops.from_pandas(df).pipe(
+    actual_result = rs.ops.from_pandas(df, progress=progress).pipe(
         ops.map(lambda i: i.i2),
         ops.sum(),
     ).run()

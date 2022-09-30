@@ -1,19 +1,31 @@
 import rx
 import rx.operators as ops
 
+from rxsci.internal.utils import build_tdqm_kwargs
 
 try:
     import pandas as pd
+    try:
+        from tqdm.auto import tqdm
+    except Exception:
+        pass
 
-    def from_pandas(dataframe):
+    def from_pandas(dataframe, progress=False):
         """Creates an observable from a pandas dataframe
 
         Args:
             dataframe: A pandas dataframe
+            progess: Displays a progressbar while iterating the dataframe
 
         Returns:
             An observable that emits one nametuple per row in the dataframe.
         """
+        if progress:
+            tqdm_kwargs = build_tdqm_kwargs(progress)
+            if 'total' not in tqdm_kwargs:
+                tqdm_kwargs['total']=len(dataframe)
+
+            return rx.from_(tqdm(dataframe.itertuples(index=False), **tqdm_kwargs))
         return rx.from_(dataframe.itertuples(index=False))
 
 
