@@ -5,7 +5,10 @@ import rxsci as rs
 @pytest.mark.parametrize(
     "progress",
     [
-        False, True, {'interval': 60}
+        False, True,
+        {'interval': 60},
+        {'prefix': 'test_from'},
+        {'prefix': 'test_from', 'interval': 60}
     ]
 )
 def test_from_iterable_base(progress):

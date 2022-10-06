@@ -13,6 +13,10 @@ except Exception:
 def from_iterable(iterable, scheduler=None, progress=False):
     """Converts an iterable to an observable.
 
+    When a dict is provided as the progress argument, it accepts these keys:
+    interval: The interval in seconds used to update the progressbar
+    prefix: A prefix displayed at before the progressbar.
+
     Args:
         iterable: A Python iterable
         scheduler: An optional scheduler to schedule the values on.

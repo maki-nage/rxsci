@@ -57,5 +57,7 @@ def build_tdqm_kwargs(progress):
         if 'interval' in progress:
             tqdm_kwargs['mininterval'] = progress['interval']
             tqdm_kwargs['maxinterval'] = progress['interval']
+        if 'prefix' in progress:
+            tqdm_kwargs['desc'] = progress['prefix']
 
     return tqdm_kwargs
