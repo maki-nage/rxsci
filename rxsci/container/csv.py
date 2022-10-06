@@ -274,7 +274,6 @@ def load_from_file(filename, parse_line, skip=1, encoding=None):
 def dump(header=True, separator=",", newline='\n'):
     ''' dumps an observable to csv.
 
-    The source observable must emit one csv row per item
     The source must be an Observable.
 
     Args:
