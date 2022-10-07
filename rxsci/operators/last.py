@@ -55,8 +55,8 @@ def last():
         :alt: last
 
         ---1---2---3---4--|
-        [      last()       ]
-        ------------------4-|
+        [      last()     ]
+        -----------------4|
 
     Returns:
         An observable emitting the last item from the source
