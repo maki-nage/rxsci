@@ -59,5 +59,7 @@ def build_tdqm_kwargs(progress):
             tqdm_kwargs['maxinterval'] = progress['interval']
         if 'prefix' in progress:
             tqdm_kwargs['desc'] = progress['prefix']
+        if 'eol' in progress:
+            tqdm_kwargs['bar_format'] = '{l_bar}{bar}{r_bar}' + progress['eol']
 
     return tqdm_kwargs
