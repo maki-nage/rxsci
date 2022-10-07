@@ -17,7 +17,7 @@ def from_iterable(iterable, scheduler=None, progress=False):
 
     - interval: The interval in seconds used to update the progressbar
     - prefix: A prefix displayed at before the progressbar.
-    - eol: The end of line character to use at the end of the progressbar. Use '\n' to force one line per display step.
+    - eol: The end of line character to use at the end of the progressbar. Use '\\n' to force one line per display step.
 
     Args:
         iterable: A Python iterable
