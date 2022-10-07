@@ -51,7 +51,7 @@ def first():
 
         ---1---2---3---4----|
         [      first()      ]
-        -------2-|
+        ---1-|
 
     Returns:
         An observable emitting the first item from the source
