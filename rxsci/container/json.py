@@ -63,7 +63,7 @@ def load_from_file(filename, lines=True, skip=0, encoding=None):
             load(skip=skip),
         )
     else:
-        return file.read(filename, encoding=encoding).pipe(
+        return file.read(filename, size=-1, encoding=encoding).pipe(
             load(skip=skip),
         )
 
