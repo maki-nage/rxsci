@@ -81,7 +81,7 @@ def _process_many(*args, connectable, zip, combine):
                 on_completed=observer.on_completed,
                 scheduler=scheduler,
             )
-        subscriptions.append(connectable.connect())
+        subscriptions.append(connectable.connect(scheduler=scheduler))
         return CompositeDisposable(subscriptions)
 
     def subscribe(observer, scheduler):
@@ -125,7 +125,7 @@ def _process_many(*args, connectable, zip, combine):
                 functools.partial(done, i),
                 scheduler
             )
-        subscriptions.append(connectable.connect())
+        subscriptions.append(connectable.connect(scheduler=scheduler))
         return CompositeDisposable(subscriptions)
 
     if isinstance(connectable, rs.MuxObservable):

@@ -21,8 +21,8 @@ class MuxConnectableProxy(MuxObservable):
         super().__init__(subscribe)
         self.connectable = connectable
 
-    def connect(self):
-        return self.connectable.connect()
+    def connect(self, scheduler=None):
+        return self.connectable.connect(scheduler=scheduler)
 
 
 def cast_as_mux_connectable():

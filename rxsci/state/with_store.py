@@ -26,6 +26,7 @@ def with_store_mux(store, pipeline):
                 on_next=on_next,
                 on_error=observer.on_error,
                 on_completed=observer.on_completed,
+                scheduler=scheduler,
             )
         return rs.MuxObservable(on_subscribe)
 
@@ -105,6 +106,7 @@ def drop_probe_state_topology():
                 on_next=on_next,
                 on_error=observer.on_error,
                 on_completed=observer.on_completed,
+                scheduler=scheduler,
             )
         return rs.MuxObservable(on_subscribe)
 
