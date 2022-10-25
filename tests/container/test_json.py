@@ -90,6 +90,29 @@ def test_load_from_file():
     ]
 
 
+def test_load_from_file_with_errors():
+    with tempfile.TemporaryDirectory() as d:
+        f_name = os.path.join(d, "test.csv")
+
+        with open(f_name, mode="w") as f:
+            f.write('{"foo": 4, "bar": "the"}\n')
+            f.write('{"foo": 7, "bar": "quick"2}\n')
+            f.write('{"foo": 8}\n')
+            f.flush()
+
+        actual_data = rs.container.json.load_from_file(
+            f_name,
+            ignore_error=True,
+        ).pipe(
+            ops.to_list()
+        ).run()
+
+    assert actual_data == [
+        dict(foo=4, bar="the"),
+        dict(foo=8),
+    ]
+
+
 def test_load_from_no_lines():
     with tempfile.TemporaryDirectory() as d:
         f_name = os.path.join(d, "test.csv")
@@ -109,6 +132,7 @@ def test_load_from_no_lines():
         dict(foo=7, bar="quick"),
         dict(foo=8),
     ]
+
 
 def test_dump():
     source = [

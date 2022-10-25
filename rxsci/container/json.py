@@ -41,7 +41,11 @@ def load(skip=0, ignore_error=False):
     return _load
 
 
-def load_from_file(filename, lines=True, skip=0, encoding=None):
+def load_from_file(
+    filename,
+    lines=True, skip=0,
+    ignore_error=False, encoding=None
+):
     ''' Loads a json file.
 
     This factory loads the provided file. The format of the returned observable
@@ -60,11 +64,11 @@ def load_from_file(filename, lines=True, skip=0, encoding=None):
     if lines is True:
         return file.read(filename, size=64*1024, encoding=encoding).pipe(
             line.unframe(),
-            load(skip=skip),
+            load(skip=skip, ignore_error=ignore_error),
         )
     else:
         return file.read(filename, size=-1, encoding=encoding).pipe(
-            load(skip=skip),
+            load(skip=skip, ignore_error=ignore_error),
         )
 
 
