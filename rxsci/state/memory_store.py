@@ -54,81 +54,64 @@ class MemoryStore(object):
         self.state = array('B')    
         self.default_value = default_value
         self.data_type = data_type
-        self.keys = []
 
-    def add_key(self, key):
-        append_count = (key[0]+1) - len(self.state)
+    def add_key(self, key: int):
+        append_count = (key+1) - len(self.state)
         if append_count > 0:
             for _ in range(append_count):
                 self.values.append(0)
                 self.state.append(rs.state.markers.STATE_CLEARED.value())
-                self.keys.append(rs.state.markers.STATE_CLEARED.value())
-        self.state[key[0]] = rs.state.markers.STATE_NOTSET.value()
-        self.keys[key[0]] = key
+        self.state[key] = rs.state.markers.STATE_NOTSET.value()
         if self.is_mapper:
             self.set(key, {})
         elif self.default_value is not None:
             self.set(key, self.default_value)
 
-    def del_key(self, key):
-        self.state[key[0]] = rs.state.markers.STATE_CLEARED.value()
-        self.keys[key[0]] = rs.state.markers.STATE_CLEARED.value()
-        self.values[key[0]] = 0
+    def del_key(self, key: int):
+        self.state[key] = rs.state.markers.STATE_CLEARED.value()
+        self.values[key] = 0
 
     def clear(self):
         self.values = self.create_values()
         self.state = array('B')
-        self.keys.clear()
 
     def is_cleared(self, key):
-        if self.state[key[0]] == rs.state.markers.STATE_CLEARED.value():
+        if self.state[key] == rs.state.markers.STATE_CLEARED.value():
             return True
         return False
 
-    def get(self, key):
-        #if self.state[key[0]] == rs.state.markers.STATE_CLEARED
-        #    return rs.state.markers.STATE_CLEARED
-        if self.state[key[0]] == rs.state.markers.STATE_NOTSET.value():
+    def get(self, key: int):
+        if self.state[key] == rs.state.markers.STATE_NOTSET.value():
             return rs.state.markers.STATE_NOTSET
-        value = self.values[key[0]]
+        value = self.values[key]
         if self.data_type is bool:
             value = bool(value)
         return value
 
-    def set(self, key, value):
-        self.keys[key[0]] = key
-        self.state[key[0]] = rs.state.markers.STATE_SET.value()
-        self.values[key[0]] = value
+    def set(self, key: int, value):
+        self.state[key] = rs.state.markers.STATE_SET.value()
+        self.values[key] = value
 
-    def is_set(self, key):
-        if self.state[key[0]] == rs.state.markers.STATE_SET.value():
+    def is_set(self, key: int):
+        if self.state[key] == rs.state.markers.STATE_SET.value():
             return True
         return False
 
-    def iterate(self):
-        for index in range(len(self.keys)):
-            if self.state[index] is not rs.state.markers.STATE_CLEARED.value():
-                yield (
-                    self.keys[index],
-                    self.values[index],
-                    self.state[index] == rs.state.markers.STATE_SET.value(),
-                )
-
-    def add_map(self, key, map_key):
+    def add_map(self, key: int, map_key: int):
         index, self.next_index, self.free_slots = new_index(self.next_index, self.free_slots)
-        self.values[key[0]][map_key] = index
+        self.values[key][map_key] = index
         return index
 
-    def get_map(self, key, map_key):
-        if not map_key in self.values[key[0]]:
+    def get_map(self, key: int, map_key: int):
+        if not map_key in self.values[key]:
             return rs.state.markers.STATE_NOTSET
-        return self.values[key[0]][map_key]
+        return self.values[key][map_key]
 
-    def del_map(self, key, map_key):
-        if not map_key in self.values[key[0]]:
+    def del_map(self, key: int, map_key: int):
+        if not map_key in self.values[key]:
             return rs.state.markers.STATE_NOTSET
-        return self.values[key[0]][map_key]
+        return self.values[key][map_key]
 
-    def iterate_map(self, key):
-        for map_key in self.values[key[0]]:
+    def iterate_map(self, key: int):
+        for map_key in self.values[key]:
             yield map_key

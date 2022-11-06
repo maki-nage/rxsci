@@ -23,49 +23,49 @@ def roll_mux(window, stride):
                 nonlocal state_n
                 nonlocal state_w
                 if isinstance(i, rs.OnNextMux):
-                    n = i.store.get_state(state_n, i.key)
+                    n = i.store.get_state(state_n, i.key[0])
 
                     if (n % stride) == 0:
                         offset = (n // stride) % density
                         index = i.key[0] * density + offset
-                        i.store.set_state(state_w, (index, i.key), n)
+                        i.store.set_state(state_w, index, n)
                         observer.on_next(rs.OnCreateMux((index, i.key), i.store))
 
                     for offset in range(density):
                         index = i.key[0] * density + offset
-                        w_value = i.store.get_state(state_w, (index, i.key))
+                        w_value = i.store.get_state(state_w, index)
                         if w_value != -1:
                             observer.on_next(i._replace(key=(index, i.key)))                            
                             count = n - w_value + 1
                             if count == window:
-                                i.store.set_state(state_w, (index, i.key), -1)
+                                i.store.set_state(state_w, index, -1)
                                 observer.on_next(rs.OnCompletedMux((index, i.key), i.store))
 
-                    n_value = i.store.get_state(state_n, i.key)
-                    i.store.set_state(state_n, i.key, n_value+1)
+                    n_value = i.store.get_state(state_n, i.key[0])
+                    i.store.set_state(state_n, i.key[0], n_value+1)
 
                 elif isinstance(i, rs.OnCreateMux):
-                    i.store.add_key(state_n, (i.key[0], i.key))
+                    i.store.add_key(state_n, i.key[0])
                     for offset in range(density):
-                        i.store.add_key(state_w, (i.key[0]*density+offset, i.key))
+                        i.store.add_key(state_w, i.key[0]*density+offset)
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnCompletedMux):                    
                     kindex = i.key[0]
-                    i.store.set_state(state_n, (kindex, i.key), 0)
+                    i.store.set_state(state_n, kindex, 0)
                     for offset in range(density):
                         index = i.key[0] * density + offset
-                        if i.store.get_state(state_w, (index, i.key)) != -1:
+                        if i.store.get_state(state_w, index) != -1:
                             observer.on_next(i._replace(key=(index, i.key)))
-                            i.store.set_state(state_w, (index, i.key), -1)
+                            i.store.set_state(state_w, index, -1)
                     outer_observer.on_next(i)
                 elif isinstance(i, rs.OnErrorMux):
                     kindex = i.key[0]
-                    i.store.set_state(state_n, (kindex, i.key), 0)
+                    i.store.set_state(state_n, kindex, 0)
                     for offset in range(density):
                         index = i.key[0] * density + offset
-                        if i.store.get_state(state_w, (index, i.key)) != -1:
+                        if i.store.get_state(state_w, index) != -1:
                             observer.on_next(i._replace(key=(index, i.key)))
-                            i.store.set_state(state_w, (index, i.key), -1)
+                            i.store.set_state(state_w, index, -1)
                     outer_observer.on_next(i)
                 elif type(i) is rs.state.ProbeStateTopology:
                     state_n = i.topology.create_state(name="roll", data_type='uint', default_value=0)
@@ -94,7 +94,7 @@ def roll_mux(window, stride):
                 nonlocal state
 
                 if type(i) is rs.OnNextMux:
-                    count = i.store.get_state(state, i.key)
+                    count = i.store.get_state(state, i.key[0])
                     if count == 0:
                         observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
@@ -102,20 +102,20 @@ def roll_mux(window, stride):
                     observer.on_next(i._replace(key=(i.key[0], i.key)))
 
                     if count == window:
-                        i.store.set_state(state, i.key, 0)
+                        i.store.set_state(state, i.key[0], 0)
                         observer.on_next(rs.OnCompletedMux((i.key[0], i.key), i.store))
                     else:
-                        i.store.set_state(state, i.key, count)
+                        i.store.set_state(state, i.key[0], count)
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) in [rs.OnCompletedMux, rs.OnErrorMux]:
-                    count = i.store.get_state(state, i.key)
+                    count = i.store.get_state(state, i.key[0])
                     if count > 0:
                         observer.on_next(i._replace(key=(i.key[0], i.key)))
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:

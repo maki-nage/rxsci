@@ -30,23 +30,23 @@ def time_split_mux(time_mapper,
 
                 if type(i) is rs.OnNextMux:
                     new_timestamp = time_mapper(i.item)
-                    start_timestamp = i.store.get_state(state_start, i.key)
-                    last_timestamp = i.store.get_state(state_last, i.key)
+                    start_timestamp = i.store.get_state(state_start, i.key[0])
+                    last_timestamp = i.store.get_state(state_last, i.key[0])
                     if start_timestamp is rs.state.markers.STATE_NOTSET:
                         start_timestamp = new_timestamp
                         last_timestamp = new_timestamp
-                        i.store.set_state(state_start, i.key, start_timestamp)
-                        i.store.set_state(state_last, i.key, last_timestamp)
+                        i.store.set_state(state_start, i.key[0], start_timestamp)
+                        i.store.set_state(state_last, i.key[0], last_timestamp)
                         observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
                     if _session_has_expired(start_timestamp, last_timestamp, new_timestamp):
-                        i.store.set_state(state_start, i.key, new_timestamp)
-                        i.store.set_state(state_last, i.key, new_timestamp)
+                        i.store.set_state(state_start, i.key[0], new_timestamp)
+                        i.store.set_state(state_last, i.key[0], new_timestamp)
                         observer.on_next(rs.OnCompletedMux((i.key[0], i.key), i.store))
                         observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
                     elif closing_mapper is not None and closing_mapper(i.item) is True:
-                        i.store.set_state(state_start, i.key, new_timestamp)
-                        i.store.set_state(state_last, i.key, new_timestamp)
+                        i.store.set_state(state_start, i.key[0], new_timestamp)
+                        i.store.set_state(state_last, i.key[0], new_timestamp)
                         if include_closing_item is True:
                             observer.on_next(i._replace(key=(i.key[0], i.key)))
                         observer.on_next(rs.OnCompletedMux((i.key[0], i.key), i.store))
@@ -54,21 +54,21 @@ def time_split_mux(time_mapper,
                         if include_closing_item is True:
                             return
                     else:
-                        i.store.set_state(state_last, i.key, new_timestamp)
+                        i.store.set_state(state_last, i.key[0], new_timestamp)
 
                     observer.on_next(i._replace(key=(i.key[0], i.key)))
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state_start, i.key)
-                    i.store.add_key(state_last, i.key)
+                    i.store.add_key(state_start, i.key[0])
+                    i.store.add_key(state_last, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) in [rs.OnCompletedMux, rs.OnErrorMux]:
-                    start_timestamp = i.store.get_state(state_start, i.key)
+                    start_timestamp = i.store.get_state(state_start, i.key[0])
                     if start_timestamp is not rs.state.markers.STATE_NOTSET:
                         observer.on_next(i._replace(key=(i.key[0], i.key)))
-                    i.store.del_key(state_start, i.key)
-                    i.store.del_key(state_last, i.key)
+                    i.store.del_key(state_start, i.key[0])
+                    i.store.del_key(state_last, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:

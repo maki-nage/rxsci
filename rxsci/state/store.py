@@ -94,10 +94,6 @@ class StoreManager(object):
         store = self.get_store()
         return store.get(state, key)
 
-    def iterate_state(self, state):
-        store = self.get_store()
-        return store.iterate(state)
-
     def add_map(self, state, key, map_key):
         store = self.get_store()
         return store.add_map(state, key, map_key)

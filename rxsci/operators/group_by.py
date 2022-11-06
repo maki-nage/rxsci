@@ -16,7 +16,7 @@ def group_by_mux(key_mapper):
                 nonlocal state
 
                 if type(i) is rs.OnNextMux:
-                    key = i.key
+                    key = i.key[0]
                     map_key = key_mapper(i.item)
 
                     index = i.store.get_map(state, key, map_key)
@@ -26,23 +26,23 @@ def group_by_mux(key_mapper):
                     observer.on_next(i._replace(key=(index, i.key)))
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.OnCompletedMux:
-                    for k in i.store.iterate_map(state, i.key):
-                        index = i.store.get_map(state, i.key, k)
+                    for k in i.store.iterate_map(state, i.key[0]):
+                        index = i.store.get_map(state, i.key[0], k)
                         observer.on_next(i._replace(key=(index, i.key)))
-                        i.store.del_map(state, i.key, k)
-                    i.store.del_key(state, i.key)
+                        i.store.del_map(state, i.key[0], k)
+                    i.store.del_key(state, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.OnErrorMux:
-                    for k in i.store.iterate_map(state, i.key):
-                        index = i.store.get_map(state, i.key, k)
+                    for k in i.store.iterate_map(state, i.key[0]):
+                        index = i.store.get_map(state, i.key[0], k)
                         observer.on_next(i._replace(key=(index, i.key)))
-                        i.store.del_map(state, i.key, k)
-                    i.store.del_key(state, i.key)
+                        i.store.del_map(state, i.key[0], k)
+                    i.store.del_key(state, i.key[0])
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:

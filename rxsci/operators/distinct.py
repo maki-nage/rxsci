@@ -51,17 +51,17 @@ def distinct(key_mapper=None):
                             observer.on_error(ex)
                             return
 
-                    _state = x.store.get_state(state, x.key)
+                    _state = x.store.get_state(state, x.key[0])
                     if key not in _state:
                         _state.add(key)
                         observer.on_next(x)
                 elif type(x) is rs.OnCreateMux:
-                    x.store.add_key(state, x.key)
-                    x.store.set_state(state, x.key, set())
+                    x.store.add_key(state, x.key[0])
+                    x.store.set_state(state, x.key[0], set())
                     observer.on_next(x)
 
                 elif type(x) in [rs.OnCompletedMux, rs.OnErrorMux]:
-                    x.store.del_key(state, x.key)
+                    x.store.del_key(state, x.key[0])
                     observer.on_next(x)
 
                 elif type(x) is rs.state.ProbeStateTopology:

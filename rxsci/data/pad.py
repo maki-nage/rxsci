@@ -10,20 +10,20 @@ def pad_start_mux(size, value):
                 nonlocal state
 
                 if type(i) is rs.OnNextMux:
-                    v = i.store.get_state(state, i.key)
+                    v = i.store.get_state(state, i.key[0])
                     if v is rs.state.markers.STATE_NOTSET:
-                        i.store.set_state(state, i.key, True)
+                        i.store.set_state(state, i.key[0], True)
                         v = value if value is not None else i.item
                         for _ in range(size):
                             observer.on_next(i._replace(item=v))
                     observer.on_next(i)
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.OnCompletedMux or type(i) is rs.OnErrorMux:
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:
@@ -85,25 +85,25 @@ def pad_end_mux(size, value):
                 nonlocal state
 
                 if type(i) is rs.OnNextMux:
-                    i.store.set_state(state, i.key, i.item)
+                    i.store.set_state(state, i.key[0], i.item)
                     observer.on_next(i)
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.OnCompletedMux:
-                    v = i.store.get_state(state, i.key)
+                    v = i.store.get_state(state, i.key[0])
                     if v is not rs.state.markers.STATE_NOTSET:
                         if value is not None:
                             v = value
                         for _ in range(size):
                             observer.on_next(rs.OnNextMux(i.key, v, i.store))
                     observer.on_next(i)
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
 
                 elif type(i) is rs.OnErrorMux:
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                     observer.on_next(i)                    
 
                 elif type(i) is rs.state.ProbeStateTopology:
