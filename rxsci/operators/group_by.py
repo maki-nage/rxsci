@@ -5,48 +5,70 @@ import rxsci as rs
 from .multiplex import demux_mux_observable
 
 
+def new_index(next_index, free_slots):
+    if len(free_slots) > 0:
+        index = free_slots.pop()
+        return index, next_index, free_slots
+    else:
+        index = next_index
+        return index, next_index+1, free_slots
+
+
+def del_index(free_slots, index):
+    free_slots.append(index)
+    return free_slots
+
+
 def group_by_mux(key_mapper):
     outer_observer = Subject()
 
     def _group_by(source):
         def on_subscribe(observer, scheduler):
             state = None
+            state_nextindex = None
+            state_freeslots = None
 
             def on_next(i):
-                nonlocal state
+                nonlocal state, state_nextindex, state_freeslots
 
-                if type(i) is rs.OnNextMux:
+                itype = type(i)
+                if itype is rs.OnNextMux:
                     key = i.key[0]
                     map_key = key_mapper(i.item)
 
-                    index = i.store.get_map(state, key, map_key)
-                    if index is rs.state.markers.STATE_NOTSET:
-                        index = i.store.add_map(state, key, map_key)
+                    group_map = i.store.get_state(state, key)
+                    index = group_map.get(map_key, None)
+                    if index is None:
+                        next_index = i.store.get_state(state_nextindex, 0)
+                        if next_index is rs.state.markers.STATE_NOTSET:
+                            next_index = 0
+                        free_slots = i.store.get_state(state_freeslots, 0)
+                        if free_slots is rs.state.markers.STATE_NOTSET:
+                            free_slots = array('Q')
+                        index, next_index, free_slots = new_index(next_index, free_slots)
+                        i.store.set_state(state_nextindex, 0, next_index)
+                        i.store.set_state(state_freeslots, 0, free_slots)
+                        group_map[map_key] = index
                         observer.on_next(rs.OnCreateMux((index, i.key), store=i.store))
                     observer.on_next(i._replace(key=(index, i.key)))
 
-                elif type(i) is rs.OnCreateMux:
+                elif itype is rs.OnCreateMux:
                     i.store.add_key(state, i.key[0])
+                    i.store.set_state(state, i.key[0], dict())
                     outer_observer.on_next(i)
 
-                elif type(i) is rs.OnCompletedMux:
-                    for k in i.store.iterate_map(state, i.key[0]):
-                        index = i.store.get_map(state, i.key[0], k)
-                        observer.on_next(i._replace(key=(index, i.key)))
-                        i.store.del_map(state, i.key[0], k)
+                elif itype is rs.OnCompletedMux or itype is rs.OnErrorMux:
+                    group_map = i.store.get_state(state, i.key[0])
+                    print(group_map)
+                    for k, v in group_map.items():
+                        observer.on_next(i._replace(key=(v, i.key)))
                     i.store.del_key(state, i.key[0])
                     outer_observer.on_next(i)
 
-                elif type(i) is rs.OnErrorMux:
-                    for k in i.store.iterate_map(state, i.key[0]):
-                        index = i.store.get_map(state, i.key[0], k)
-                        observer.on_next(i._replace(key=(index, i.key)))
-                        i.store.del_map(state, i.key[0], k)
-                    i.store.del_key(state, i.key[0])
-                    outer_observer.on_next(i)
-
-                elif type(i) is rs.state.ProbeStateTopology:
-                    state = i.topology.create_mapper(name="groupby")
+                elif itype is rs.state.ProbeStateTopology:
+                    state = i.topology.create_state(name="groupby", data_type='dict')
+                    state_nextindex = i.topology.create_state(name="groupby_nextindex", data_type='int', global_scope=True)
+                    state_freeslots = i.topology.create_state(name="groupby_freeslots", data_type='obj', global_scope=True)
                     observer.on_next(i)
                     outer_observer.on_next(i)
                 else:

@@ -44,13 +44,6 @@ def scan_mux(accumulator, seed, reduce):
                     observer.on_next(i)
 
             def on_completed():
-                #if reduce is True:
-                #    for key, value, is_set in i.store.iterate_state(state):
-                #        if not is_set:
-                #            value = seed() if callable(seed) else copy.deepcopy(seed)
-                #        observer.on_next(rs.OnNextMux(key, value))
-                #        observer.on_next(rs.OnCompletedMux(key))
-                #state.clear()
                 observer.on_completed()
 
             return source.subscribe(

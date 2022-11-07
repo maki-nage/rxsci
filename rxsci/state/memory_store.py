@@ -3,20 +3,6 @@ from array import array
 import rxsci as rs
 
 
-def new_index(next_index, free_slots):
-    if len(free_slots) > 0:
-        index = free_slots.pop()
-        return index, next_index, free_slots
-    else:
-        index = next_index
-        return index, next_index+1, free_slots
-
-
-def del_index(free_slots, index):
-    free_slots.append(index)
-    return free_slots
-
-
 class MemoryStore(object):
     """A Memory state store
 
@@ -31,10 +17,10 @@ class MemoryStore(object):
     This class helps in managing muxed items, and store a state for each topmost
     level of the key (i.e. key[0]).
     """
-    #__slots__ = 'state', 'keys'
+    __slots__ = ['values', 'state', 'default_value', 'data_type', 'create_values']
 
 
-    def __init__(self, name=None, data_type='obj', default_value=None):
+    def __init__(self, name=None, data_type='obj', default_value=None, global_scope=False):
         if data_type is int:
             self.create_values = functools.partial(array, 'q')
         elif data_type == 'uint':
@@ -46,14 +32,12 @@ class MemoryStore(object):
         else:
             self.create_values = list
 
-        self.is_mapper = data_type == 'mapper'
-        if self.is_mapper is True:
-            self.next_index = 0
-            self.free_slots = array('Q')
         self.values = self.create_values()
-        self.state = array('B')    
+        self.state = array('B')
         self.default_value = default_value
         self.data_type = data_type
+        if global_scope is True:
+            self.add_key(0)
 
     def add_key(self, key: int):
         append_count = (key+1) - len(self.state)
@@ -62,9 +46,7 @@ class MemoryStore(object):
                 self.values.append(0)
                 self.state.append(rs.state.markers.STATE_CLEARED.value())
         self.state[key] = rs.state.markers.STATE_NOTSET.value()
-        if self.is_mapper:
-            self.set(key, {})
-        elif self.default_value is not None:
+        if self.default_value is not None:
             self.set(key, self.default_value)
 
     def del_key(self, key: int):
@@ -96,22 +78,3 @@ class MemoryStore(object):
         if self.state[key] == rs.state.markers.STATE_SET.value():
             return True
         return False
-
-    def add_map(self, key: int, map_key: int):
-        index, self.next_index, self.free_slots = new_index(self.next_index, self.free_slots)
-        self.values[key][map_key] = index
-        return index
-
-    def get_map(self, key: int, map_key: int):
-        if not map_key in self.values[key]:
-            return rs.state.markers.STATE_NOTSET
-        return self.values[key][map_key]
-
-    def del_map(self, key: int, map_key: int):
-        if not map_key in self.values[key]:
-            return rs.state.markers.STATE_NOTSET
-        return self.values[key][map_key]
-
-    def iterate_map(self, key: int):
-        for map_key in self.values[key]:
-            yield map_key

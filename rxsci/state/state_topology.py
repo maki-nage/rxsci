@@ -5,7 +5,9 @@ ProbeStateTopology = namedtuple('ProbeStateTopology', ['topology'])
 ProbeStateTopology.__doc__ = "Event sent to probe for stateful operators"
 ProbeStateTopology.topology.__doc__ = "The state topology object to fill"
 
-StateDef = namedtuple('StateDef', ['name', 'data_type', 'default_value'])
+StateDef = namedtuple('StateDef', [
+    'name', 'data_type', 'default_value', 'global_scope'
+])
 
 class StateTopology(object):
     def __init__(self):
@@ -20,11 +22,11 @@ class StateTopology(object):
         """
         return self.create_state(name, data_type='mapper')
 
-    def create_state(self, name, data_type, default_value=None):
+    def create_state(self, name, data_type, default_value=None, global_scope=False):
         if name in self.ids:
             self.ids[name] += 1
         else:
             self.ids[name] = 0
         unique_name = '{}-{}'.format(name, self.ids[name])
-        self.states.append(StateDef(unique_name, data_type, default_value))
+        self.states.append(StateDef(unique_name, data_type, default_value, global_scope))
         return len(self.states) - 1
