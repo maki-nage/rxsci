@@ -91,7 +91,7 @@ class CsvDataFile():
         return self.data
 
 
-def merge_escape_parts(parts, separator):
+def merge_escape_parts(parts, separator, escapechar):
     try:
         merged_parts = []
         agg = None
@@ -103,9 +103,9 @@ def merge_escape_parts(parts, separator):
                     agg.append('"')
                     merged_parts.append(separator.join(agg))
                     agg = None
-            elif len(t) > 0 and t[0] == '"' and t[-1] == '"' and t[-2] != '\\' and agg is None:
+            elif len(t) > 0 and t[0] == '"' and t[-1] == '"' and t[-2] != escapechar and agg is None:
                 merged_parts.append(t)
-            elif len(t) > 0 and t[-1] == '"' and t[-2] != '\\' and agg is not None:
+            elif len(t) > 0 and t[-1] == '"' and t[-2] != escapechar and agg is not None:
                 agg.append(t)
                 merged_parts.append(separator.join(agg))
                 agg = None
@@ -124,8 +124,11 @@ def merge_escape_parts(parts, separator):
         raise e
 
 
-def create_line_parser(dtype, none_values=[], separator=",",
-                       ignore_error=False, schema_name='x'):
+def create_line_parser(
+    dtype, none_values=[],
+    separator=",", escapechar="\\",
+    ignore_error=False, schema_name='x'
+):
     ''' creates a parser for csv lines
 
     Args:
@@ -194,7 +197,7 @@ def create_line_parser(dtype, none_values=[], separator=",",
         try:
             parts = split(line, separator)
             if len(parts) != columns_len:
-                parts = merge_escape_parts(parts, separator)
+                parts = merge_escape_parts(parts, separator, escapechar)
                 if len(parts) != columns_len:
                     error = "invalid number of columns: expected {}, found {} on: {}".format(
                         columns_len, len(parts), line)
@@ -203,7 +206,7 @@ def create_line_parser(dtype, none_values=[], separator=",",
             for index, i in enumerate(parts):
                 if len(i) > 0 and i[0] == '"' and i[-1] == '"':
                     i = i[1:-1]
-                    i = i.replace('\\"', '"')
+                    i = i.replace(f'{escapechar}"', '"')
                 if i in none_values:
                     parts[index] = None
                 else:
@@ -271,7 +274,7 @@ def load_from_file(filename, parse_line, skip=1, encoding=None):
     )
 
 
-def dump(header=True, separator=",", newline='\n'):
+def dump(header=True, separator=",", escapechar="\\", newline='\n'):
     ''' dumps an observable to csv.
 
     The source must be an Observable.
@@ -302,7 +305,7 @@ def dump(header=True, separator=",", newline='\n'):
                     if type(f) not in [int, float, bool, str, type(None)]:
                         f = str(f)
                     if type(f) is str:
-                        f = f.replace('"', '\\"')
+                        f = f.replace('"', f'{escapechar}"')
                         f = '"{}"'.format(f)
                     elif f is None:
                         f = ''
@@ -325,8 +328,11 @@ def dump(header=True, separator=",", newline='\n'):
     return _dump
 
 
-def dump_to_file(filename, header=True, separator=",",
-                 newline='\n', encoding=None):
+def dump_to_file(
+    filename, header=True,
+    separator=",", escapechar="\\",
+    newline='\n', encoding=None
+):
     ''' dumps each item to a csv file.
 
     The source must be an Observable.
@@ -348,7 +354,11 @@ def dump_to_file(filename, header=True, separator=",",
         if encoding is not None:
             mode = 'wb'
         return source.pipe(
-            dump(header=header, separator=separator, newline=newline),
+            dump(
+                header=header,
+                separator=separator, escapechar=escapechar,
+                newline=newline
+            ),
             ops.map(lambda i: i.encode(encoding) if encoding is not None else i),
             file.write(
                 file=filename,

@@ -144,6 +144,35 @@ def test_load_quoted():
     assert actual_data[6] == (7, ',')
 
 
+def test_load_quoted_with_escapechar():
+    parser = csv.create_line_parser(
+        dtype=[
+            ("foo", "int"),
+            ("bar", "str"),
+        ],
+        escapechar='^'
+    )
+
+    actual_data = process(rx.from_([
+        '1,"the, quick"',
+        '2,"^"brown fox^""',
+        '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^^\"[^BƆm^A^Q^]#lx"',
+        '4,""',
+        '5,"^"a^",b"',
+        '6,",ab"',
+        '7,","',
+    ]), [csv.load(parser)])
+
+    assert len(actual_data) == 7
+    assert actual_data[0] == (1, 'the, quick')
+    assert actual_data[1] == (2, '"brown fox"')
+    assert actual_data[2] == (3, 'a"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^"[^BƆm^A^Q^]#lx')
+    assert actual_data[3] == (4, '')
+    assert actual_data[4] == (5, '"a",b')
+    assert actual_data[5] == (6, ',ab')
+    assert actual_data[6] == (7, ',')
+
+
 def test_load_error():
     parser = csv.create_line_parser(
         dtype=[
@@ -313,6 +342,31 @@ def test_dump_with_quote():
 
     assert actual_data == expected_data
 
+
+def test_dump_with_quote_and_escapechar():
+    x = namedtuple('x', ['foo', 'bar', 'buz'])
+    source = [
+        x(foo='a "is" good', bar=1, buz=True),
+        x(foo='"b"', bar=2, buz=False),
+        x(foo='a "b"', bar=42, buz=False),
+        x(foo='"b^"', bar=2, buz=False),
+    ]
+    expected_data = [
+        'foo,bar,buz\n',
+        '"a ^"is^" good",1,True\n',
+        '"^"b^"",2,False\n',
+        '"a ^"b^"",42,False\n',
+        '"^"b^^"",2,False\n',
+    ]
+
+    actual_data = []
+    rx.from_(source).pipe(
+        csv.dump(escapechar='^'),
+    ).subscribe(
+        on_next=actual_data.append
+    )
+
+    assert actual_data == expected_data
 
 def test_dump_with_cr():
     x = namedtuple('x', ['foo', 'bar', 'buz'])

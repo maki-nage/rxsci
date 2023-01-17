@@ -12,6 +12,7 @@ def test_load():
         '{"foo": 4, "bar": "the"}',
         '{"foo": 7, "bar": "quick"}',
         '{"foo": 8}',
+        '{"foo": ["foo", "{\\"NetType\\":\\"wifi\\"}QIYIVideo"]}',
     ]).pipe(
         rs.container.json.load(),
         ops.to_list()
@@ -21,6 +22,7 @@ def test_load():
         dict(foo=4, bar="the"),
         dict(foo=7, bar="quick"),
         dict(foo=8),
+        dict(foo='ii: "a"'),
     ]
 
 
@@ -139,11 +141,13 @@ def test_dump():
         dict(foo=4, bar="the"),
         dict(foo=7, bar="quick"),
         dict(foo=8),
+        dict(foo='ii: "a"'),
     ]
     expected_data = [
         '{"foo": 4, "bar": "the"}\n',
         '{"foo": 7, "bar": "quick"}\n',
         '{"foo": 8}\n',
+        '{"foo": "ii: \\"a\\""}\n',
     ]
 
     actual_data = []
