@@ -20,7 +20,7 @@ install_requires = [
     'distogram>=2.0',
     'python-dateutil>=2.8',
     'Rx>=3.1.1',
-    'orjson>=3.9',
+    'orjson>=3.9;implementation_name=="cpython"',
 ]
 
 setup(
