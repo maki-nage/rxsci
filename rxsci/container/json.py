@@ -1,6 +1,10 @@
 import typing
-import orjson as json
-
+serialization_as_string = True
+try:
+    import orjson as json
+    serialization_as_string = False
+except Exception:
+    import json
 import rx
 import rx.operators as ops
 import rxsci.io.file as file
@@ -90,7 +94,9 @@ def dump(newline='\n'):
         def on_subscribe(observer, scheduler):
 
             def on_next(i):
-                line = json.dumps(i).decode()
+                line = json.dumps(i)
+                if serialization_as_string is False:
+                    line = line.decode()
                 line += newline
                 observer.on_next(line)
 
