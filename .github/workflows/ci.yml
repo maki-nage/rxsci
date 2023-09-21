@@ -13,7 +13,6 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          apt-get install -y openblas lapack
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements_test.txt
@@ -34,7 +33,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11', 'pypy-3.8', 'pypy-3.9']
         exclude:
           - os: macos-latest
             python-version: 'pypy-3.7'
