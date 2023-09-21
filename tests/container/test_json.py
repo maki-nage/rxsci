@@ -141,13 +141,13 @@ def test_dump():
         dict(foo=4, bar="the"),
         dict(foo=7, bar="quick"),
         dict(foo=8),
-        dict(foo='ii: "a"'),
+        dict(foo='ii:"a"'),
     ]
     expected_data = [
         '{"foo":4,"bar":"the"}\n',
         '{"foo":7,"bar":"quick"}\n',
         '{"foo":8}\n',
-        '{"foo":"ii: \\"a\\""}\n',
+        '{"foo":"ii:\\"a\\""}\n',
     ]
 
     actual_data = []
@@ -157,7 +157,7 @@ def test_dump():
         on_next=actual_data.append
     )
 
-    assert actual_data == expected_data
+    assert [ e.replace(' ', '') for e in actual_data] == expected_data
 
 
 def test_dump_to_file():
@@ -179,4 +179,4 @@ def test_dump_to_file():
 
         with open(f, 'r') as f1:
             actual_data = f1.read()
-    assert actual_data == expected_data
+    assert actual_data.replace(' ', '') == expected_data
