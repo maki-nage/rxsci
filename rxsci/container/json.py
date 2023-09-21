@@ -1,5 +1,5 @@
 import typing
-import json
+import orjson as json
 
 import rx
 import rx.operators as ops
@@ -55,10 +55,11 @@ def load_from_file(
         filename: Path of the file to read or a file object
         lines: Parse file as a JSON Line when set to True, as a single JSON object otherwise.
         skip: [Optional] Number of lines to skip before parsing
+        ignore_error: Ignore errors while parsing MessagePack
         encoding [Optional] Encoding used to parse the text content
 
     Returns:
-        An observable of namedtuple items, where each key is a csv column
+        An observable of objects.
     '''
 
     if lines is True:
@@ -75,7 +76,7 @@ def load_from_file(
 def dump(newline='\n'):
     ''' dumps an observable to JSON.
 
-    If several the source observable emits several items, then they are framed
+    If the source observable emits several items, then they are framed
     as JSON line.
     The source must be an Observable.
 
@@ -83,13 +84,13 @@ def dump(newline='\n'):
         newline: [Optional] Character(s) used for end of line.
 
     Returns:
-        An observable string items, where each item is a csv line.
+        An observable of string items, where each item is a JSON string.
     '''
     def _dump(source):
         def on_subscribe(observer, scheduler):
 
             def on_next(i):
-                line = json.dumps(i)
+                line = json.dumps(i).decode()
                 line += newline
                 observer.on_next(line)
 

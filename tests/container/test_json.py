@@ -12,7 +12,7 @@ def test_load():
         '{"foo": 4, "bar": "the"}',
         '{"foo": 7, "bar": "quick"}',
         '{"foo": 8}',
-        '{"foo": ["foo", "{\\"NetType\\":\\"wifi\\"}QIYIVideo"]}',
+        '{"foo": "ii: \\"a\\""}\n',
     ]).pipe(
         rs.container.json.load(),
         ops.to_list()
@@ -144,10 +144,10 @@ def test_dump():
         dict(foo='ii: "a"'),
     ]
     expected_data = [
-        '{"foo": 4, "bar": "the"}\n',
-        '{"foo": 7, "bar": "quick"}\n',
-        '{"foo": 8}\n',
-        '{"foo": "ii: \\"a\\""}\n',
+        '{"foo":4,"bar":"the"}\n',
+        '{"foo":7,"bar":"quick"}\n',
+        '{"foo":8}\n',
+        '{"foo":"ii: \\"a\\""}\n',
     ]
 
     actual_data = []
@@ -167,9 +167,9 @@ def test_dump_to_file():
         dict(foo=8),
     ]
     expected_data = \
-        '{"foo": 4, "bar": "the"}\n' \
-        '{"foo": 7, "bar": "quick"}\n' \
-        '{"foo": 8}\n'
+        '{"foo":4,"bar":"the"}\n' \
+        '{"foo":7,"bar":"quick"}\n' \
+        '{"foo":8}\n'
 
     with tempfile.TemporaryDirectory() as d:
         f = os.path.join(d, "test.csv")

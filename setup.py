@@ -20,6 +20,7 @@ install_requires = [
     'distogram>=2.0',
     'python-dateutil>=2.8',
     'Rx>=3.1.1',
+    'orjon>=3.9',
 ]
 
 setup(
