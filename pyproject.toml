@@ -1,0 +1,43 @@
+[project]
+name = "rxsci"
+version = "0.19.0"
+description = "ReactiveX for data science"
+readme = "README.rst"
+requires-python = ">=3.8"
+license = {file = "LICENSE.txt"}
+keywords = ["reactivex", "streaming", "data-science"]
+authors = [
+  {email = "romain.picard@oakbits.com"},
+  {name = "Romain Picard"}
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  'License :: OSI Approved :: MIT License',
+  'Intended Audience :: Developers',
+  'Programming Language :: Python :: 3',
+'  Topic :: Scientific/Engineering :: Artificial Intelligence',
+]
+
+dependencies = [
+  'distogram>=2.0',
+  'python-dateutil>=2.8',
+  'Rx>=3.1.1',
+  'orjson>=3.9;implementation_name=="cpython"',
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+]
+
+[project.urls]
+repository = "https://github.com/maki-nage/rxsci.git"
+
+
+[options]
+packages = ["rxsci"]
+
+[tool.setuptools.packages.find]
+where = ["./"]
+include = ["rxsci"]
+namespaces = false
