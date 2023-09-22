@@ -14,4 +14,5 @@ Operators
    Data <operators_data>
    IO <operators_io>   
    Framing <operators_framing>
+   Compression <operators_compression>
    State <operators_state>   
