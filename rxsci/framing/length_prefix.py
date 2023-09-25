@@ -9,10 +9,13 @@ def frame(prefix_size=4, byteorder='little'):
 
     The source must be an Observable.
     '''
+    mtu = 2**(prefix_size*8)
 
     def _frame(source):
         def on_subscribe(observer, scheduler):
             def on_next(i):
+                if len(i) > mtu:
+                    observer.on_error(ValueError("length_prefix: data is too big"))
                 data = int(len(i)).to_bytes(prefix_size, byteorder=byteorder)
                 data += i
                 observer.on_next(data)
