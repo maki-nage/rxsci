@@ -7,6 +7,8 @@ except Exception:
     import json
 import rx
 import rx.operators as ops
+
+import rxsci as rs
 import rxsci.io.file as file
 import rxsci.framing.line as line
 
@@ -48,7 +50,9 @@ def load(skip=0, ignore_error=False):
 def load_from_file(
     filename,
     lines=True, skip=0,
-    ignore_error=False, encoding=None
+    ignore_error=False,
+    encoding='utf-8',
+    compression=None,
 ):
     ''' Loads a json file.
 
@@ -61,19 +65,35 @@ def load_from_file(
         skip: [Optional] Number of lines to skip before parsing
         ignore_error: Ignore errors while parsing MessagePack
         encoding [Optional] Encoding used to parse the text content
+        compression [Optional]: 'gzip' or 'zstd'
 
     Returns:
         An observable of objects.
     '''
+    compressions = {
+        'gzip': rs.compression.z.decompress,
+        'zstd': rs.compression.zstd.decompress,
+    }
+    pipe_ops = []
+
+    # decompress
+    if compression:
+        pipe_ops.append(compressions[compression]())
 
     if lines is True:
-        return file.read(filename, size=64*1024, encoding=encoding).pipe(
-            line.unframe(),
-            load(skip=skip, ignore_error=ignore_error),
+        return file.read(filename, mode='rb', size=64*1024) \
+            .pipe(*pipe_ops) \
+            .pipe(
+                rs.data.decode(encoding),
+                line.unframe(),
+                load(skip=skip, ignore_error=ignore_error),
         )
     else:
-        return file.read(filename, size=-1, encoding=encoding).pipe(
-            load(skip=skip, ignore_error=ignore_error),
+        return file.read(filename, size=-1, mode='rb') \
+            .pipe(*pipe_ops) \
+            .pipe(
+                rs.data.decode(encoding),
+                load(skip=skip, ignore_error=ignore_error),
         )
 
 
@@ -114,7 +134,8 @@ def dump(newline='\n'):
 def dump_to_file(
     filename,
     newline='\n',
-    encoding=None
+    encoding='utf-8',
+    compression=None,
 ):
     ''' dumps each item to a JSON file.
 
@@ -130,17 +151,30 @@ def dump_to_file(
         observable completes or completes on error if there is an error
         while writing the csv file.
     '''
-    def _dump_to_file(source):
-        mode = None
-        if encoding is not None:
-            mode = 'wb'
-        return source.pipe(
-            dump(newline=newline),
-            ops.map(lambda i: i.encode(encoding) if encoding is not None else i),
-            file.write(
-                file=filename,
-                mode=mode,
-            ),
-        )
+    compressions = {
+        'gzip': rs.compression.z.compress,
+        'zstd': rs.compression.zstd.compress,
+    }
 
+    def _dump_to_file(source):
+
+        if compression:
+            return source.pipe(
+                dump(newline=newline),
+                rs.data.encode(encoding),
+                compressions[compression](),
+                file.write(
+                    file=filename,
+                    mode='wb',
+                ),
+            )
+        else:
+            return source.pipe(
+                dump(newline=newline),
+                rs.data.encode(encoding),
+                file.write(
+                    file=filename,
+                    mode='wb',
+                ),
+            )
     return _dump_to_file
