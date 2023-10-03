@@ -28,7 +28,7 @@ def encode(encoding='utf8', incremental=True):
 
             def on_completed():
                 if incremental:
-                    data = encoder.encode(b'', final=True)
+                    data = encoder.encode('', final=True)
                     observer.on_next(data)
                 observer.on_completed()
 
