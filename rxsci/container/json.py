@@ -28,7 +28,10 @@ def load(skip=0, ignore_error=False):
     '''
     def load_json(i):
         try:
-            i = json.loads(i)
+            if len(i) > 0:
+                i = json.loads(i)
+            else:
+                return None
         except Exception as e:
             if ignore_error is True:
                 print(f"{e}: Ignoring this object.")
