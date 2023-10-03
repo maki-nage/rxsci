@@ -1,4 +1,5 @@
 from .cache import cache
+from .codec import encode, decode
 from .clip import clip
 from .fill_none import fill_none
 from .lag import lag
