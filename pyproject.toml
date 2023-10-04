@@ -1,6 +1,6 @@
 [project]
 name = "rxsci"
-version = "version='0.20.0'"
+version = "version='0.21.0'"
 description = "ReactiveX for data science"
 readme = "README.rst"
 requires-python = ">=3.8"
