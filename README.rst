@@ -45,11 +45,11 @@ This example computes a rolling mean on a window and stride of three elements:
     source = [1, 2, 3, 4, 5, 6, 7]
 
     rx.from_(source).pipe(
-        rs.state.with_memory_store(rx.pipe(
-            rs.data.roll(window=3, stride=3, pipeline=rx.pipe(
+        rs.state.with_memory_store([
+            rs.data.roll(window=3, stride=3, pipeline=[
                 rs.math.mean(reduce=True),
-            )),
-        )),
+            ]),
+        ]),
     ).subscribe(
         on_next=print
     )
