@@ -13,4 +13,4 @@ zstd
 --------------
 
 .. automodule:: rxsci.compression.zstd
-    :members: compress, decopress
+    :members: compress, decompress
