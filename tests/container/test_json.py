@@ -3,6 +3,7 @@ import json
 import tempfile
 import pytest
 import rx
+from rx.internal import SequenceContainsNoElementsError
 import rx.operators as ops
 import rxsci as rs
 
@@ -180,3 +181,30 @@ def test_dump_to_file():
         with open(f, 'r') as f1:
             actual_data = f1.read()
     assert actual_data.replace(' ', '') == expected_data
+    assert actual_data.replace(' ', '') == expected_data
+
+
+@pytest.mark.parametrize(
+    "compression",
+    ['gzip', 'zstd'],
+)
+def test_dump_load_with_compression(compression):
+    source = [
+        dict(foo=i, bar="the")
+        for i in range(100000)
+    ]
+
+    with tempfile.TemporaryDirectory() as d:
+        f = os.path.join(d, "test.csv")
+        try:
+            rx.from_(source).pipe(
+                rs.container.json.dump_to_file(f, compression=compression),
+            ).run()
+        except SequenceContainsNoElementsError:
+            pass
+
+        actual_data = rs.container.json.load_from_file(f, compression=compression).pipe(
+            rs.data.to_list(),
+        ).run()
+
+    assert actual_data == source
