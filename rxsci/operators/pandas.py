@@ -49,7 +49,7 @@ try:
         The source must be an Observable.
 
         Args:
-            columns: [Optional]
+            columns: [Optional] The name of the columns of the dataframe
 
         Returns:
             An observable the emits a single item. This item is a pandas
