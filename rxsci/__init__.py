@@ -13,6 +13,8 @@ from .mux import (
     OnCreateMux, OnNextMux, OnCompletedMux, OnErrorMux, MuxObservable
 )
 
+from .run import run
+
 import rxsci.container as container
 import rxsci.compression as compression
 import rxsci.data as data

@@ -3,6 +3,9 @@
 Base Operators
 ================
 
+.. automodule:: rxsci
+    :members: run
+
 .. automodule:: rxsci.ops
     :members: assert_, assert_1,
                 count, distinct, distinct_until_changed, do_action, filter,
