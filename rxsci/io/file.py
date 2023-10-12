@@ -90,11 +90,13 @@ def write(file, mode=None, encoding=None):
                 f.write(i)
 
             def on_completed():
-                f.close()
+                if type(file) is str:
+                    f.close()
                 observer.on_completed()
 
             def on_error(e):
-                #f.close()
+                if type(file) is str:
+                    f.close()
                 observer.on_error(e)
 
             return source.subscribe(
