@@ -24,6 +24,28 @@ def flat_map_mux():
     return _flat_map
 
 
+def flat_map_obs():
+    def _flat_map(source):
+        def on_subscribe(observer, scheduler):
+            def on_next(i):
+                try:
+                    for ii in i:
+                        observer.on_next(ii)
+                except Exception as e:
+                    observer.on_error(e)
+
+            return source.subscribe(
+                on_next=on_next,
+                on_error=observer.on_error,
+                on_completed=observer.on_completed,
+                scheduler=scheduler,
+            )
+
+        return rx.create(on_subscribe)
+
+    return _flat_map
+
+
 def flat_map():
     """Projects each element of iterable source items as a new item.
 
@@ -44,6 +66,6 @@ def flat_map():
         if isinstance(source, rs.MuxObservable):
             return flat_map_mux()(source)
         else:
-            return ops.flat_map(lambda i: rx.from_(i))(source)
+            return flat_map_obs()(source)
 
     return _flat_map
