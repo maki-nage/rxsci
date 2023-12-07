@@ -10,7 +10,7 @@ try:
     except Exception:
         pass
 
-    def from_pandas(dataframe, scheduler=None, progress=False):
+    def from_pandas(dataframe, scheduler=None, progress=False, index=False):
         """Creates an observable from a pandas dataframe
 
         When a dict is provided as the progress argument, it accepts these keys:
@@ -31,11 +31,11 @@ try:
                 tqdm_kwargs['total']=len(dataframe)
 
             return rx.from_(
-                tqdm(dataframe.itertuples(index=False), **tqdm_kwargs),
+                tqdm(dataframe.itertuples(index=index), **tqdm_kwargs),
                 scheduler=scheduler,
             )
         return rx.from_(
-            dataframe.itertuples(index=False),
+            dataframe.itertuples(index=index),
             scheduler=scheduler,
         )
 

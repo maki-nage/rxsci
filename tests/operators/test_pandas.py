@@ -33,6 +33,28 @@ def test_from_pandas_base(progress):
     assert actual_result == 3
 
 
+@pytest.mark.parametrize(
+    "progress",
+    [
+        False, True, {'interval': 60}
+    ]
+)
+def test_from_pandas_with_index(progress):
+    data = [
+        Item("foo", 1),
+        Item("bar", 2),
+        Item("fiz", 4),
+        Item("fuz", 4),
+    ]
+
+    df = pd.DataFrame(data)
+    actual_result = rs.ops.from_pandas(df, progress=progress, index=True).pipe(
+        ops.map(lambda i: i.Index),
+        ops.sum(),
+    ).run()
+
+    assert actual_result == 6
+
 def test_to_pandas_base():
     data = [
         Item("foo", 1),
