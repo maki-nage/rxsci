@@ -38,13 +38,28 @@ def test_parser():
     )
 
     actual_data = process(rx.from_([
+        "index,f1,f2",
         "42,the,True",
         "07,quick,False",
-    ]), [ops.map(parser)])
+    ]), [parser])
 
     assert len(actual_data) == 2
     assert actual_data[0] == (42, 'the', True)
     assert actual_data[1] == (7, 'quick', False)
+
+
+def test_parser_auto():
+    parser = csv.create_line_parser()
+
+    actual_data = process(rx.from_([
+        "index,f1,f2",
+        "42,the,True",
+        "07,quick,False",
+    ]), [parser])
+
+    assert len(actual_data) == 2
+    assert actual_data[0] == ('42', 'the', 'True')
+    assert actual_data[1] == ('07', 'quick', 'False')
 
 
 def test_parser_typed():
@@ -56,9 +71,10 @@ def test_parser_typed():
     parser = csv.create_line_parser(dtype=TestLine)
 
     actual_data = process(rx.from_([
+        "index,f1,f2",
         "42,the,True",
         "07,quick,False",
-    ]), [ops.map(parser)])
+    ]), [parser])
 
     assert len(actual_data) == 2
     assert actual_data[0] == (42, 'the', True)
@@ -74,8 +90,9 @@ def test_parser_empty_numbers():
     )
 
     actual_data = process(rx.from_([
+        "f1,f2",
         ",",
-    ]), [ops.map(parser)])
+    ]), [parser])
 
     assert len(actual_data) == 1
     assert actual_data[0] == (None, None)
@@ -91,8 +108,9 @@ def test_parser_invalid_numbers():
 
     with pytest.raises(ValueError):
         process(rx.from_([
+            "f1,f2",
             "as,ds",
-        ]), [ops.map(parser)])
+        ]), [parser])
 
 
 def test_load():
@@ -105,6 +123,7 @@ def test_load():
     )
 
     actual_data = process(rx.from_([
+        "index,f1,f2",
         "42,the,True",
         "07,quick,False",
         "08,,False",
@@ -116,6 +135,20 @@ def test_load():
     assert actual_data[2] == (8, '', False)
 
 
+def test_load_auto():
+    actual_data = process(rx.from_([
+        "index,f1,f2",
+        "42,the,True",
+        "07,quick,False",
+        "08,,False",
+    ]), [csv.load()])
+
+    assert len(actual_data) == 3
+    assert actual_data[0] == ('42', 'the', 'True')
+    assert actual_data[1] == ('07', 'quick', 'False')
+    assert actual_data[2] == ('08', '', 'False')
+
+
 def test_load_quoted():
     parser = csv.create_line_parser(
         dtype=[
@@ -125,6 +158,7 @@ def test_load_quoted():
     )
 
     actual_data = process(rx.from_([
+        'index,f1,f2',
         '1,"the, quick"',
         '2,"\\"brown fox\\""',
         '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^\"[^BƆm^A^Q^]#lx"',
@@ -154,6 +188,7 @@ def test_load_quoted_with_escapechar():
     )
 
     actual_data = process(rx.from_([
+        'index,f1,f2',
         '1,"the, quick"',
         '2,"^"brown fox^""',
         '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^^\"[^BƆm^A^Q^]#lx"',
@@ -190,6 +225,7 @@ def test_load_error():
         error = e
 
     source = rx.from_([
+        "index,f1,f2",
         "42,the,True",
         "07",
     ])

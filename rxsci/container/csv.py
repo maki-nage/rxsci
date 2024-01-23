@@ -1,6 +1,7 @@
 import typing
 import json
 import csv
+import logging
 from collections import namedtuple
 from datetime import datetime, timezone
 from dateutil.parser import isoparse
@@ -42,7 +43,7 @@ def parse_decimal(ii):
 
         return float(i) + r
     except Exception:
-        #print("parse error on {}: {}".format(ii, e))
+        logging.error(f"parse error on {ii}: {e}")
         return float(ii)
 
 
@@ -118,21 +119,23 @@ def merge_escape_parts(parts, separator, escapechar):
 
         return merged_parts
     except Exception as e:
-        print(e)
-        print(parts)
-        print(merged_parts)
+        logging.error(e)
+        logging.error(parts)
+        logging.error(merged_parts)
         raise e
 
 
 def create_line_parser(
-    dtype, none_values=[],
+    dtype=None, none_values=[],
     separator=",", escapechar="\\",
     ignore_error=False, schema_name='x'
 ):
     ''' creates a parser for csv lines
 
     Args:
-        dtype: A list of (name, type) tuples, or a typing.NamedTuple class.
+        dtype: [Optional] A list of (name, type) tuples, or a typing.NamedTuple
+            class. When set to None, then the csv header is used to create a
+            schema where all columns are parsed as strings.
         none_values: [Optional] Values to consider as None values
         separator: [Optional] Token used to separate each columns
         ignore_error: [Optional] when set to True, any line that does not
@@ -143,59 +146,9 @@ def create_line_parser(
         A Parsing function, that can parse text lines as specified in the
         parameters.
     '''
-    Item, columns, types = create_schema_factory(dtype, schema_name)
-    columns_parser = [type_parser(t) for t in types]
-    columns_len = len(columns)
-
-    #csv_file = CsvDataFile()
-    #reader = csv.reader(csv_file)
-
-    def parse_column(index, i):
-        return columns_parser[index](i)
-
-    def split(line, separator):
-        return line.split(separator)
-
-    """
-    def parse_line_as_csv(line):
-        csv_file.set_data(line)
-        parts = next(reader)
-        if len(parts) != columns_len:
-            error = "invalid number of columns: expected {}, found {} on: {}".format(
-                columns_len, len(parts), line)
-            if ignore_error is True:
-                print(error)
-                return None
-            else:
-                raise ValueError(error)
-
-        for index, i in enumerate(parts):
-            if i in none_values:
-                parts[index] = None
-            else:
-                parts[index] = parse_column(index, i)
-        return Item(*parts)
-        #return parts
-
-    def parse_line_as_json(line):
-        line = "[{}]".format(line)
-        parts = json.loads(line)
-        if len(parts) != columns_len:
-            error = "invalid number of columns: expected {}, found {} on: {}".format(
-                columns_len, len(parts), line)
-            if ignore_error is True:
-                print(error)
-                return None
-            else:
-                raise ValueError(error)
-
-        return Item(*parts)
-        #return parts
-    """
-
-    def parse_line(line):
+    def parse_line(line, columns_parser, columns_len, Item):
         try:
-            parts = split(line, separator)
+            parts = line.split(separator)
             if len(parts) != columns_len:
                 parts = merge_escape_parts(parts, separator, escapechar)
                 if len(parts) != columns_len:
@@ -210,26 +163,61 @@ def create_line_parser(
                 if i in none_values:
                     parts[index] = None
                 else:
-                    parts[index] = parse_column(index, i)
+                    parts[index] = columns_parser[index](i)
 
         except Exception as e:
             if ignore_error is True:
-                print("{}, \nignoring this line".format(e))
+                logging.error(f"{e}, \nignoring this line")
                 return None
             else:
                 raise e
-        #return item(*parsed_parts)
         return Item(*parts)
-        #return parts
 
-    #if separator == ',':
-    #    print("parsing as json")
-    #    return parse_line_as_json
-    return parse_line
-    #return parse_line_as_csv
+    def _parse(source):
+        def on_subscribe(observer, scheduler):
+            Item = None
+            columns_parser = None
+            columns_len = None
+
+            def on_next(i):
+                nonlocal Item
+                nonlocal columns_parser
+                nonlocal columns_len
+
+                if Item is None:
+                    if dtype is not None:
+                        Item, columns, types = create_schema_factory(dtype, schema_name)
+                    else:
+                        # create a dummy schema with all fields as string
+                        parts = i.split(separator)
+                        Item, columns, types = create_schema_factory(
+                            [(p, str) for p in parts],
+                            schema_name
+                        )
+                    columns_parser = [type_parser(t) for t in types]
+                    columns_len = len(columns)
+
+                else:
+                    try:
+                        item = parse_line(i, columns_parser, columns_len, Item)
+                    except Exception as e:
+                        observer.on_error(e)
+                        return
+                    observer.on_next(item)
+
+            source.subscribe(
+                on_next=on_next,
+                on_completed=observer.on_completed,
+                on_error=observer.on_error,
+                scheduler=scheduler,
+            )
+
+        return rx.create(on_subscribe)
+    
+    return _parse
 
 
-def load(parse_line, skip=0):
+def load(parse_line=create_line_parser(), skip=0):
     ''' Loads a csv observable.
 
     The source observable must emit one csv row per item
@@ -237,22 +225,22 @@ def load(parse_line, skip=0):
 
     Args:
         parse_line: A line parser, e.g. created with create_line_parser
-        skip: number of items to skip before parsing
+        skip: number of items to skip before parsing (excluding the header)
 
     Returns:
         An observable of namedtuple items, where each key is a csv column
     '''
     def _load(source):
         return source.pipe(
+            parse_line,
             ops.skip(skip),
-            ops.map(parse_line),
             ops.filter(lambda i: i is not None),
         )
 
     return _load
 
 
-def load_from_file(filename, parse_line, skip=1, encoding=None):
+def load_from_file(filename, parse_line=create_line_parser(), skip=0, encoding=None):
     ''' Loads a csv file.
 
     This factory loads the provided file and returns its content as an
@@ -261,7 +249,7 @@ def load_from_file(filename, parse_line, skip=1, encoding=None):
     Args:
         filename: Path of the file to read or a file object
         parse_line: A line parser, e.g. created with create_line_parser
-        skip: [Optional] Number of lines to skip before parsing
+        skip: [Optional] Number of lines to skip before parsing (excluding the header)
         encoding [Optional] Encoding used to parse the text content
 
     Returns:
