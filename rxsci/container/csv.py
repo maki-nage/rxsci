@@ -42,7 +42,7 @@ def parse_decimal(ii):
             r = 0
 
         return float(i) + r
-    except Exception:
+    except Exception as e:
         logging.error(f"parse error on {ii}: {e}")
         return float(ii)
 
