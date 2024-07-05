@@ -256,6 +256,7 @@ def load_from_file(
         parse_line: A line parser, e.g. created with create_line_parser
         skip: [Optional] Number of lines to skip before parsing (excluding the header)
         encoding [Optional] Encoding used to parse the text content
+        open_obj: [Optional] A custom function used to open the provided file.
 
     Returns:
         An observable of namedtuple items, where each key is a csv column
@@ -338,6 +339,7 @@ def dump_to_file(
         separator: [Optional] Token used to separate each columns.
         newline: [Optional] Character(s) used for end of line.
         encoding [Optional] Encoding used to parse the text content
+        open_obj: [Optional] A custom function used to open the provided file.
 
     Returns:
         An empty observable that completes on success when the source

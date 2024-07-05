@@ -56,6 +56,7 @@ def load_from_file(
     ignore_error=False,
     encoding='utf-8',
     compression=None,
+    open_obj=open,
 ):
     ''' Loads a json file.
 
@@ -84,7 +85,7 @@ def load_from_file(
         pipe_ops.append(compressions[compression]())
 
     if lines is True:
-        return file.read(filename, mode='rb', size=64*1024) \
+        return file.read(filename, mode='rb', size=64*1024, open_obj=open_obj) \
             .pipe(*pipe_ops) \
             .pipe(
                 rs.data.decode(encoding),
@@ -92,7 +93,7 @@ def load_from_file(
                 load(skip=skip, ignore_error=ignore_error),
         )
     else:
-        return file.read(filename, size=-1, mode='rb') \
+        return file.read(filename, size=-1, mode='rb', open_obj=open_obj) \
             .pipe(*pipe_ops) \
             .pipe(
                 rs.data.decode(encoding),
@@ -139,6 +140,7 @@ def dump_to_file(
     newline='\n',
     encoding='utf-8',
     compression=None,
+    open_obj=open,
 ):
     ''' dumps each item to a JSON file.
 
@@ -169,6 +171,7 @@ def dump_to_file(
                 file.write(
                     file=filename,
                     mode='wb',
+                    open_obj=open_obj,
                 ),
             )
         else:
@@ -178,6 +181,7 @@ def dump_to_file(
                 file.write(
                     file=filename,
                     mode='wb',
+                    open_obj=open_obj,
                 ),
             )
     return _dump_to_file
