@@ -3,15 +3,19 @@ from rx.scheduler import CurrentThreadScheduler
 from rx.disposable import CompositeDisposable, Disposable
 
 
-def read(file, mode='r', size=None, encoding=None):
+def read(file, mode='r', size=None, encoding=None, open_obj=open):
     ''' Reads the content of a file
 
+        When provided, the open_obj function must have the following prototype:
+        open(filename, mode, encoding)
+
     Args:
-        file: the path of the file to read, or a file object
-        mode: how the file must be opened. either 'r' to read text or 'rb' to
+        file: The path of the file to read, or a file object
+        mode: [Optional] how the file must be opened. either 'r' to read text or 'rb' to
             read binary
         size: [Optional] If set file if read by chunks of this size
-        encoding: [Optional] text encoding to use when reading in text mode
+        encoding: [Optional] The text encoding to use when reading in text mode
+        open_obj: [Optional] A custom function used to open the provided file.
 
     Returns:
         An observable where each item is a chunk of data, or the whole
@@ -38,7 +42,7 @@ def read(file, mode='r', size=None, encoding=None):
 
             try:
                 if type(file) is str:
-                    with open(file, mode, encoding=encoding) as f:
+                    with open_obj(file, mode, encoding=encoding) as f:
                         read_data(f)
                 else:
                     read_data(file)
@@ -58,8 +62,11 @@ def read(file, mode='r', size=None, encoding=None):
     return rx.create(on_subscribe)
 
 
-def write(file, mode=None, encoding=None):
+def write(file, mode=None, encoding=None, open_obj=open):
     ''' Writes the content of a file
+
+    When provided, the open_ibj function must have the following prototype:
+        open(filename, mode, encoding)
 
     The source must be an Observable.
 
@@ -69,6 +76,7 @@ def write(file, mode=None, encoding=None):
             read binary
         size: [Optional] If set file if read by chunks of this size
         encoding: [Optional] text encoding to use when reading in text mode
+        open_obj: [Optional] A custom function used to open the provided file.
 
     Returns:
         An observable where eeach item is a chunk of data, or the while
@@ -81,7 +89,7 @@ def write(file, mode=None, encoding=None):
             try:
                 f = file
                 if type(file) is str:
-                    f = open(file, mode, encoding=encoding)
+                    f = open_obj(file, mode, encoding=encoding)
 
             except Exception as e:
                 observer.on_error(e)

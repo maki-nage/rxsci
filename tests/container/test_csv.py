@@ -1,11 +1,13 @@
 import os
 from collections import namedtuple
+from typing import NamedTuple
 import typing
 import tempfile
 import pytest
 import rx
 import rx.operators as ops
 import rxsci.container.csv as csv
+import rxsci.framing.line as line
 
 
 def process(source, pipeline=None):
@@ -164,7 +166,7 @@ def test_load_quoted():
         '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^\"[^BƆm^A^Q^]#lx"',
         '4,""',
         '5,"\\"a\\",b"',
-        '6,",ab"',
+        '6,",a\\\\b"',
         '7,","',
     ]), [csv.load(parser)])
 
@@ -174,7 +176,7 @@ def test_load_quoted():
     assert actual_data[2] == (3, 'a"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^"[^BƆm^A^Q^]#lx')
     assert actual_data[3] == (4, '')
     assert actual_data[4] == (5, '"a",b')
-    assert actual_data[5] == (6, ',ab')
+    assert actual_data[5] == (6, ',a\\b')
     assert actual_data[6] == (7, ',')
 
 
@@ -191,7 +193,7 @@ def test_load_quoted_with_escapechar():
         'index,f1,f2',
         '1,"the, quick"',
         '2,"^"brown fox^""',
-        '3,"a\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^^\"[^BƆm^A^Q^]#lx"',
+        '3,"a^\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^^^\"[^BƆm^A^Q^]#lx"',
         '4,""',
         '5,"^"a^",b"',
         '6,",ab"',
@@ -361,12 +363,14 @@ def test_dump_with_quote():
         x(foo='a "is" good', bar=1, buz=True),
         x(foo='"b"', bar=2, buz=False),
         x(foo='a "b"', bar=42, buz=False),
+        x(foo='a b\\', bar=43, buz=False),
     ]
     expected_data = [
         'foo,bar,buz\n',
         '"a \\"is\\" good",1,True\n',
         '"\\"b\\"",2,False\n',
         '"a \\"b\\"",42,False\n',
+        '"a b\\\\",43,False\n',
     ]
 
     actual_data = []
@@ -392,7 +396,7 @@ def test_dump_with_quote_and_escapechar():
         '"a ^"is^" good",1,True\n',
         '"^"b^"",2,False\n',
         '"a ^"b^"",42,False\n',
-        '"^"b^^"",2,False\n',
+        '"^"b^^^"",2,False\n',
     ]
 
     actual_data = []
@@ -473,3 +477,28 @@ def test_dump_pipe_separator():
     )
 
     assert actual_data == expected_data
+
+
+def test_dump_load_with_quote_and_escapechar():
+    class X(NamedTuple):
+        foo: str
+        bar: int
+        buz: bool
+
+    source = [
+        X(foo='"ldrobot"', bar=1, buz=True),
+        X(foo='"b"', bar=2, buz=False),
+        X(foo='a "b"', bar=42, buz=False),
+        X(foo='"b\\', bar=2, buz=False),
+    ]
+
+    actual_data = []
+    rx.from_(source).pipe(
+        csv.dump(),
+        line.unframe(),
+        csv.load(parse_line=csv.create_line_parser(X)),
+    ).subscribe(
+        on_next=actual_data.append
+    )
+
+    assert actual_data == source

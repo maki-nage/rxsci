@@ -43,7 +43,7 @@ def parse_decimal(ii):
 
         return float(i) + r
     except Exception as e:
-        logging.error(f"parse error on {ii}: {e}")
+        logging.debug(f"parse error on {ii}: {e}")
         return float(ii)
 
 
@@ -159,6 +159,7 @@ def create_line_parser(
             for index, i in enumerate(parts):
                 if len(i) > 0 and i[0] == '"' and i[-1] == '"':
                     i = i[1:-1]
+                    i = i.replace(f'{escapechar}{escapechar}', escapechar)
                     i = i.replace(f'{escapechar}"', '"')
                 if i in none_values:
                     parts[index] = None
@@ -240,7 +241,11 @@ def load(parse_line=create_line_parser(), skip=0):
     return _load
 
 
-def load_from_file(filename, parse_line=create_line_parser(), skip=0, encoding=None):
+def load_from_file(
+    filename, parse_line=create_line_parser(),
+    skip=0, encoding=None,
+    open_obj=open
+):
     ''' Loads a csv file.
 
     This factory loads the provided file and returns its content as an
@@ -256,7 +261,7 @@ def load_from_file(filename, parse_line=create_line_parser(), skip=0, encoding=N
         An observable of namedtuple items, where each key is a csv column
     '''
 
-    return file.read(filename, size=64*1024, encoding=encoding).pipe(
+    return file.read(filename, size=64*1024, encoding=encoding, open_obj=open_obj).pipe(
         line.unframe(),
         load(parse_line, skip=skip),
     )
@@ -293,6 +298,7 @@ def dump(header=True, separator=",", escapechar="\\", newline='\n'):
                     if type(f) not in [int, float, bool, str, type(None)]:
                         f = str(f)
                     if type(f) is str:
+                        f = f.replace(escapechar, f'{escapechar}{escapechar}')
                         f = f.replace('"', f'{escapechar}"')
                         f = '"{}"'.format(f)
                     elif f is None:
@@ -319,7 +325,8 @@ def dump(header=True, separator=",", escapechar="\\", newline='\n'):
 def dump_to_file(
     filename, header=True,
     separator=",", escapechar="\\",
-    newline='\n', encoding=None
+    newline='\n', encoding=None,
+    open_obj=open,
 ):
     ''' dumps each item to a csv file.
 
@@ -351,6 +358,7 @@ def dump_to_file(
             file.write(
                 file=filename,
                 mode=mode,
+                open_obj=open_obj,
             ),
         )
 
