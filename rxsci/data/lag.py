@@ -10,18 +10,18 @@ def _lag1(source):
         def on_next(i):
             nonlocal state
             if type(i) is rs.OnNextMux:
-                iprev = i.store.get_state(state, i.key)
+                iprev = i.store.get_state(state, i.key[0])
                 if iprev is rs.state.markers.STATE_NOTSET:
                     iprev = i.item
 
                 ii = (iprev, i.item)
-                i.store.set_state(state, i.key, i.item)
+                i.store.set_state(state, i.key[0], i.item)
                 observer.on_next(i._replace(item=ii))
             elif type(i) is rs.OnCreateMux:
-                i.store.add_key(state, i.key)
+                i.store.add_key(state, i.key[0])
                 observer.on_next(i)
             elif type(i) is rs.OnCompletedMux or type(i) is rs.OnErrorMux:
-                i.store.del_key(state, i.key)
+                i.store.del_key(state, i.key[0])
                 observer.on_next(i)
             elif type(i) is rs.state.ProbeStateTopology:
                 state = i.topology.create_state(name='lag1', data_type='obj')
@@ -76,20 +76,20 @@ def lag(size=1, data_type='obj'):
                 nonlocal state
 
                 if isinstance(i, rs.OnNextMux):
-                    q = i.store.get_state(state, i.key)
+                    q = i.store.get_state(state, i.key[0])
                     q.append(i.item)
                     observer.on_next(i._replace(item=(q[0], i.item)))
                     if len(q) > size:
                         q.popleft()
 
                 elif isinstance(i, rs.OnCreateMux):
-                    i.store.add_key(state, i.key)
-                    i.store.set_state(state, i.key, deque())
+                    i.store.add_key(state, i.key[0])
+                    i.store.set_state(state, i.key[0], deque())
                     observer.on_next(i)
 
                 elif isinstance(i, rs.OnCompletedMux) \
                 or isinstance(i, rs.OnErrorMux):
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:

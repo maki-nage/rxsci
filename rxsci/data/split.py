@@ -16,31 +16,31 @@ def split_mux(predicate):
 
                 if type(i) is rs.OnNextMux:
                     new_predicate = predicate(i.item)
-                    current_predicate = i.store.get_state(state, i.key)
+                    current_predicate = i.store.get_state(state, i.key[0])
                     if current_predicate is rs.state.markers.STATE_NOTSET:
                         current_predicate = new_predicate
-                        i.store.set_state(state, i.key, current_predicate)
+                        i.store.set_state(state, i.key[0], current_predicate)
                         observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
                     if new_predicate != current_predicate:
-                        i.store.set_state(state, i.key, new_predicate)
+                        i.store.set_state(state, i.key[0], new_predicate)
                         observer.on_next(rs.OnCompletedMux((i.key[0], i.key), i.store))
                         observer.on_next(rs.OnCreateMux((i.key[0], i.key), i.store))
 
                     observer.on_next(i._replace(key=(i.key[0], i.key)))
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     outer_observer.on_next(i)
 
                 elif isinstance(i, rs.OnCompletedMux):
-                    current_predicate = i.store.get_state(state, i.key)
+                    current_predicate = i.store.get_state(state, i.key[0])
                     if current_predicate is not rs.state.markers.STATE_NOTSET:
                         observer.on_next(i._replace(key=(i.key[0], i.key)))
                     outer_observer.on_next(i)
 
                 elif type(i) is rs.OnErrorMux:
-                    current_predicate = i.store.get_state(state, i.key)
+                    current_predicate = i.store.get_state(state, i.key[0])
                     if current_predicate is not rs.state.markers.STATE_NOTSET:
                         observer.on_next(i._replace(key=(i.key[0], i.key)))
                     outer_observer.on_next(i)

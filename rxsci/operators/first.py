@@ -11,18 +11,18 @@ def first_mux():
                 nonlocal state
 
                 if type(i) is rs.OnNextMux:
-                    value = i.store.get_state(state, i.key)
+                    value = i.store.get_state(state, i.key[0])
                     if value is False:
                         observer.on_next(i)
-                        i.store.set_state(state, i.key, True)
+                        i.store.set_state(state, i.key[0], True)
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.OnCompletedMux:
                     observer.on_next(i)
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
 
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='first', data_type=bool, default_value=False)

@@ -30,19 +30,19 @@ def start_with(padding):
                 nonlocal state
 
                 if type(i) is rs.OnNextMux:
-                    s = i.store.get_state(state, i.key)
+                    s = i.store.get_state(state, i.key[0])
                     if s is rs.state.markers.STATE_NOTSET:
-                        i.store.set_state(state, i.key, True)
+                        i.store.set_state(state, i.key[0], True)
                         for p in padding:
                             observer.on_next(i._replace(item=p))
                     observer.on_next(i)
 
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) in [rs.OnCompletedMux, rs.OnErrorMux]:
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:
