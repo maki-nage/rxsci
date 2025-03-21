@@ -109,7 +109,6 @@ def scan_obs(accumulator, seed, reduce, terminator):
                 if reduce is True:
                     value = state
                     if has_state is False:
-                        print("no state")
                         value = seed() if callable(seed) else copy.deepcopy(seed)
                     observer.on_next(value)
                 observer.on_completed()
