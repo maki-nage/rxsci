@@ -56,8 +56,8 @@ def test_dump_to_file(compression, expected_compression):
         table = pq.read_table(f_name)
         metadata = pq.read_metadata(f_name).to_dict()
 
-        assert len(table) == 3
-        assert metadata['row_groups'][0]['columns'][0]['compression'] == expected_compression
+    assert len(table) == 3
+    assert metadata['row_groups'][0]['columns'][0]['compression'] == expected_compression
 
 
 def test_load_from_file():
@@ -89,6 +89,6 @@ def test_load_from_file():
             on_error=actual_error.append,
         )
 
-        assert actual_error == []
-        assert actual_completed == [True]
-        assert actual_result == source
+    assert actual_error == []
+    assert actual_completed == [True]
+    assert actual_result == source

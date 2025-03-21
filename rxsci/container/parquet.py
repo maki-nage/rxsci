@@ -63,12 +63,6 @@ try:
                     encryption_properties=encryption_properties,
                 )
 
-                def on_next(i):
-                    try:
-                        writer.write(i, row_group_size=row_group_size)
-                    except Exception as e:
-                        observer.on_error(e)    
-
                 def on_completed():
                     nonlocal writer
 
@@ -82,6 +76,12 @@ try:
                     writer.close()
                     writer = None
                     observer.on_error(e)
+
+                def on_next(i):
+                    try:
+                        writer.write(i, row_group_size=row_group_size)
+                    except Exception as e:
+                        on_error(e)
 
                 return source.subscribe(
                     on_next=on_next,
@@ -133,6 +133,7 @@ try:
                         if disposed:
                             break
 
+                    pf.close()
                     observer.on_completed()
 
                 except Exception as e:
