@@ -11,7 +11,7 @@ def test_max_empty():
         rs.math.max()
     ).subscribe(on_next=actual_result.append)
 
-    assert actual_result == [None]
+    assert actual_result == []
 
 
 def test_max_empty_reduce():

@@ -18,7 +18,7 @@ def clip(lower_bound=None, higher_bound=None):
         higher_bound: [Optional] The maximal value to emit.
 
     Returns:
-        AN observable emiting the source items, clipped to the provided bounds.
+        An observable emiting the source items, clipped to the provided bounds.
 
     Raises:
         ValueError if no bound is provided or lower_bound is bigger than

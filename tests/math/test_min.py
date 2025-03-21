@@ -11,7 +11,7 @@ def test_min_empty():
         rs.math.min()
     ).subscribe(on_next=actual_result.append)
 
-    assert actual_result == [None]
+    assert actual_result == []
 
 
 def test_min_int():
