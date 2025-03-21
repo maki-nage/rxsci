@@ -1,3 +1,4 @@
+from .batch import batch
 from .cache import cache
 from .codec import encode, decode
 from .clip import clip
