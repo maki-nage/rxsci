@@ -3,8 +3,12 @@ import os
 import tempfile
 import pytest
 
-import pyarrow as pa
-import pyarrow.parquet as pq
+try:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+except ModuleNotFoundError:
+     pytest.skip("skipping parquet test without pyarrow installed", allow_module_level=True)
+
 import rx
 import rxsci as rs
 
