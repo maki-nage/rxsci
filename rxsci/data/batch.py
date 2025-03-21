@@ -10,9 +10,9 @@ def batch(batch_size):
     .. marble::
         :alt: batch
 
-        -0-1-2--1-3-4-2-6--|
-        [    batch(3)    ]
-        -----[0,1,2]-[1,3,4][2,6]|
+        -0-1-2--1-3-4---2-6--|
+        [      batch(3)      ]
+        -----0,1,2--1,3,4-2,6|
 
     Args:
         batch_size: The size of each batch.
