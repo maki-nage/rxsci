@@ -65,16 +65,12 @@ def create_error_router():
         def route_to_dead_letter(source):
             def on_subscribe(observer, scheduler):
                 def on_next(i):
-                    nonlocal dead_letter_observer
-
                     if type(i) is rs.OnErrorMux and dead_letter_observer is not None:
                         dead_letter_observer.on_next(i.error)
                     else:
                         observer.on_next(i)
 
                 def on_error(e):
-                    nonlocal dead_letter_observer
-
                     if dead_letter_observer is not None:
                         dead_letter_observer.on_next(e)
                         dead_letter_observer.on_completed()
@@ -82,8 +78,6 @@ def create_error_router():
                     observer.on_error(e)
 
                 def on_completed():
-                    nonlocal dead_letter_observer
-
                     if dead_letter_observer is not None:
                         dead_letter_observer.on_completed()
 

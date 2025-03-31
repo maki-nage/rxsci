@@ -21,7 +21,6 @@ def to_deque(extend=False):
             acc = deque()
 
             def on_next(i):
-                nonlocal acc
                 if extend is True:
                     acc.extend(i)
                 else:

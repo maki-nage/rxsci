@@ -22,7 +22,6 @@ def test_walk_files():
 
     with TemporaryDirectory() as workdir:
         def on_next(i):
-            nonlocal actual_files
             actual_files.append(i)
         create_file_tree(workdir, files=expected_files)
 
@@ -48,7 +47,6 @@ def test_walk_dirs():
     with TemporaryDirectory() as workdir:
         def on_next(i):
             print(i)
-            nonlocal actual_files
             actual_files.append(i)
 
         create_file_tree(

@@ -39,8 +39,6 @@ def from_iterable(iterable, scheduler=None, progress=False):
         iterator = iter(itbl)
 
         def action(_, __=None):
-            nonlocal disposed
-
             try:
                 while not disposed:
                     value = next(iterator)

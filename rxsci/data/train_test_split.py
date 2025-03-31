@@ -19,7 +19,6 @@ def ref_count():
 
             def dispose():
                 nonlocal count
-                nonlocal connectable_subscription
                 subscription.dispose()
                 count -= 1
                 if not count:

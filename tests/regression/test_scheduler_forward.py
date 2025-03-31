@@ -8,8 +8,6 @@ def test_scheduler_forward():
     scheduler = None
 
     def catch_scheduler(source):
-        nonlocal scheduler
-
         def on_subscribe(observer, _scheduler):
             nonlocal scheduler
 

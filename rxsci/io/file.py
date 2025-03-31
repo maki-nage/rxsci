@@ -26,11 +26,7 @@ def read(file, mode='r', size=None, encoding=None, open_obj=open):
         _scheduler = scheduler_ or CurrentThreadScheduler.singleton()
 
         def _action(_, __):
-            nonlocal disposed
-
             def read_data(f):
-                nonlocal disposed
-
                 if size is None:
                     data = f.read(size)
                     observer.on_next(data)

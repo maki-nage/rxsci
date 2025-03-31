@@ -136,8 +136,6 @@ try:
 
 
             def _load_file(filename):
-                nonlocal disposed
-
                 pf = pq.parquet_file = pq.ParquetFile(
                     filename,
                     decryption_properties=decryption_properties,
@@ -156,8 +154,6 @@ try:
                 observer.on_completed()
 
             def _action(_, __):
-                nonlocal disposed
-
                 try:
                     if type(filename) is str:
                         with open_obj(filename, mode='rb') as f:
