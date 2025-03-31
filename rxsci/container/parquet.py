@@ -52,22 +52,33 @@ try:
         row_group_size: int = None,
         compression: str = None,
         encryption_properties: pq.FileEncryptionProperties = None,
+        open_obj=open,
     ):
         _schema = schema
 
         def _dump(source):
             def on_subscribe(observer, scheduler):
-                writer = pq.ParquetWriter(
-                    filename, schema,
-                    compression=compression, 
-                    encryption_properties=encryption_properties,
-                )
+                try:
+                    f = filename
+                    if type(filename) is str:
+                        f = open_obj(filename, mode='wb')
+
+                    writer = pq.ParquetWriter(
+                        f, schema,
+                        compression=compression,
+                        encryption_properties=encryption_properties,
+                    )
+                except Exception as e:
+                    observer.on_error(e)
 
                 def on_completed():
                     nonlocal writer
 
                     writer.close()
                     writer = None
+                    if type(filename) is str:
+                        f.close()
+
                     observer.on_completed()
 
                 def on_error(e):
@@ -75,6 +86,9 @@ try:
 
                     writer.close()
                     writer = None
+
+                    if type(filename) is str:
+                        f.close()
                     observer.on_error(e)
 
                 def on_next(i):
@@ -98,15 +112,20 @@ try:
         filename: str,
         batch_size: int = 1024,
         decryption_properties: pq.FileDecryptionProperties = None,
+        open_obj=open,
     ):
         '''loads a parquet file.
 
         This factory loads the provided parquet file.
 
+        The open_obj function must return a file-like object. Its prototype is:
+        open_obj(filename: str, mode: str, encoding: str) -> file-like object
+
         Args:
             filename: Path of the file to write or a file object
             batch_size: Size of internal batches when writing in the parquet file
             decryption_properties: [Optional] decryption configuration.
+            open_obj: A function to open the source file.
 
         Returns:
             An observable of objects.
@@ -115,26 +134,36 @@ try:
             disposed = False
             _scheduler = scheduler_ or CurrentThreadScheduler.singleton()
 
+
+            def _load_file(filename):
+                nonlocal disposed
+
+                pf = pq.parquet_file = pq.ParquetFile(
+                    filename,
+                    decryption_properties=decryption_properties,
+                )
+
+                schema = pf.schema.to_arrow_schema()
+                schema_names = schema.names
+                for batch in pf.iter_batches(batch_size = batch_size, use_threads=False):
+                    rows = [dict(zip(schema_names, row)) for row in zip(*batch.to_pydict().values())]
+                    for r in rows:
+                        observer.on_next(r)
+                    if disposed:
+                        break
+
+                pf.close()
+                observer.on_completed()
+
             def _action(_, __):
                 nonlocal disposed
 
                 try:
-                    pf = pq.parquet_file = pq.ParquetFile(
-                        filename,
-                        decryption_properties=decryption_properties,
-                    )
-
-                    schema = pf.schema.to_arrow_schema()
-                    schema_names = schema.names
-                    for batch in pf.iter_batches(batch_size = batch_size, use_threads=False):
-                        rows = [dict(zip(schema_names, row)) for row in zip(*batch.to_pydict().values())]
-                        for r in rows:
-                            observer.on_next(r)
-                        if disposed:
-                            break
-
-                    pf.close()
-                    observer.on_completed()
+                    if type(filename) is str:
+                        with open_obj(filename, mode='rb') as f:
+                            _load_file(f)
+                    else:
+                        _load_file(filename)
 
                 except Exception as e:
                     observer.on_error(e)
@@ -156,6 +185,7 @@ try:
         row_group_size: int = None,
         compression: str = 'snappy',
         encryption_properties: pq.FileEncryptionProperties = None,
+        open_obj=open,
     ):
         '''dumps each item to a parquet file.
 
@@ -184,6 +214,7 @@ try:
                     row_group_size=row_group_size,
                     compression=compression,
                     encryption_properties=encryption_properties,
+                    open_obj=open_obj,
                 ),
             )
         return _dump_to_file
@@ -197,12 +228,14 @@ except Exception:
         row_group_size=None,
         compression='snappy',
         encryption_properties=None,
+        open_obj=open,
     ):
         raise ImportError('pyarrow not found. Please install it to use this operator')
     
     def load_from_file(
         filename,
         batch_size=1024,
-        decryption_properties=None
+        decryption_properties=None,
+        open_obj=open,
     ):
         raise ImportError('pyarrow not found. Please install it to use this operator')

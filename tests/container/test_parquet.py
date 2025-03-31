@@ -35,17 +35,24 @@ schema = pa.schema([
 ])
 
 
+@pytest.mark.parametrize("open_obj", [True, False])
 @pytest.mark.parametrize("compression, expected_compression", [
     ("NONE", "UNCOMPRESSED"),
     ("snappy", "SNAPPY"),
     ("zstd", "ZSTD"),
 ])
-def test_dump_to_file(compression, expected_compression):
+def test_dump_to_file(compression, expected_compression, open_obj):
     source = [
         dict(a=1, b="foo", c=dict(sa="a", sb=[1,2])),
         dict(a=2, b="bar", c=dict(sa="b", sb=[3,4])),
         dict(a=3, b="biz", c=dict(sa="c", sb=[5,6])),
     ]
+
+    opened = False
+    def my_open(f, mode):
+        nonlocal opened
+        opened = True
+        return open(f, mode)
 
     with tempfile.TemporaryDirectory() as d:
         f_name = os.path.join(d, "test.parquet")
@@ -54,22 +61,33 @@ def test_dump_to_file(compression, expected_compression):
                 filename=f_name,
                 schema=schema,
                 compression=compression,
+                open_obj=my_open if open_obj else open
             )
         ).subscribe()
 
         table = pq.read_table(f_name)
         metadata = pq.read_metadata(f_name).to_dict()
 
+    if open_obj:
+        assert opened == True
+
     assert len(table) == 3
     assert metadata['row_groups'][0]['columns'][0]['compression'] == expected_compression
 
 
-def test_load_from_file():
+@pytest.mark.parametrize("open_obj", [True, False])
+def test_load_from_file(open_obj):
     source = [
         dict(a=1, b="foo", c=dict(sa="a", sb=[1,2])),
         dict(a=2, b="bar", c=dict(sa="b", sb=[3,4])),
         dict(a=3, b="biz", c=dict(sa="c", sb=[5,6])),
     ]
+
+    opened = False
+    def my_open(f, mode):
+        nonlocal opened
+        opened = True
+        return open(f, mode)
 
     with tempfile.TemporaryDirectory() as d:
         f_name = os.path.join(d, "test.parquet")
@@ -86,12 +104,18 @@ def test_load_from_file():
 
         def on_completed(): actual_completed.append(True)
 
-        rs.container.parquet.load_from_file(f_name).pipe(
+        rs.container.parquet.load_from_file(
+            f_name,
+            open_obj=my_open if open_obj else open,
+        ).pipe(
         ).subscribe(
             on_next=actual_result.append,
             on_completed=on_completed,
             on_error=actual_error.append,
         )
+
+    if open_obj:
+        assert opened == True
 
     assert actual_error == []
     assert actual_completed == [True]

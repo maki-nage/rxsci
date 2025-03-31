@@ -63,6 +63,9 @@ def load_from_file(
     This factory loads the provided file. The format of the returned observable
     depends on the *lines* parameter.
 
+    The open_obj function must return a file-like object. Its prototype is:
+        open_obj(filename: str, mode: str, encoding: str) -> file-like object
+
     Args:
         filename: Path of the file to read or a file object
         lines: Parse file as a JSON Line when set to True, as a single JSON object otherwise.
@@ -70,6 +73,7 @@ def load_from_file(
         ignore_error: Ignore errors while parsing MessagePack
         encoding [Optional] Encoding used to parse the text content
         compression [Optional]: 'gzip' or 'zstd'
+        open_obj: A function to open the source file.
 
     Returns:
         An observable of objects.
@@ -146,10 +150,14 @@ def dump_to_file(
 
     The source must be an Observable.
 
+    The open_obj function must return a file-like object. Its prototype is:
+        open_obj(filename: str, mode: str, encoding: str) -> file-like object
+
     Args:
         filename: Path of the file to read or a file object
         newline: [Optional] Character(s) used for end of line.
         encoding [Optional] Encoding used to parse the text content
+        open_obj: A function to open the source file.
 
     Returns:
         An empty observable that completes on success when the source
