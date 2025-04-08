@@ -14,17 +14,17 @@ def scan_mux(accumulator, seed, reduce, terminator):
 
                 if type(i) is rs.OnNextMux:
                     try:
-                        value = i.store.get_state(state, i.key)
+                        value = i.store.get_state(state, i.key[0])
                         if value is rs.state.markers.STATE_NOTSET:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
                         acc = accumulator(value, i.item)
-                        i.store.set_state(state, i.key, acc)
+                        i.store.set_state(state, i.key[0], acc)
                         if reduce is False:
                             observer.on_next(rs.OnNextMux(i.key, acc, i.store))
                     except Exception as e:
                         observer.on_next(rs.OnErrorMux(i.key, e, i.store))
                 elif type(i) is rs.OnCreateMux:
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     observer.on_next(i)
                 elif type(i) is rs.OnCompletedMux:
                     if terminator:
@@ -37,16 +37,16 @@ def scan_mux(accumulator, seed, reduce, terminator):
                             observer.on_next(rs.OnNextMux(i.key, acc, i.store))
 
                     if reduce is True:
-                        value = i.store.get_state(state, i.key)
+                        value = i.store.get_state(state, i.key[0])
                         if value is rs.state.markers.STATE_NOTSET:
                             value = seed() if callable(seed) else copy.deepcopy(seed)
                         observer.on_next(rs.OnNextMux(i.key, value, i.store))
 
                     observer.on_next(i)
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                 elif type(i) is rs.OnErrorMux:
                     observer.on_next(i)
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                 elif type(i) is rs.state.ProbeStateTopology:
                     state = i.topology.create_state(name='scan', data_type=type(seed))
                     observer.on_next(i)
@@ -54,13 +54,6 @@ def scan_mux(accumulator, seed, reduce, terminator):
                     observer.on_next(i)
 
             def on_completed():
-                #if reduce is True:
-                #    for key, value, is_set in i.store.iterate_state(state):
-                #        if not is_set:
-                #            value = seed() if callable(seed) else copy.deepcopy(seed)
-                #        observer.on_next(rs.OnNextMux(key, value))
-                #        observer.on_next(rs.OnCompletedMux(key))
-                #state.clear()
                 observer.on_completed()
 
             return source.subscribe(
