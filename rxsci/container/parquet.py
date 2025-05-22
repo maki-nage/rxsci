@@ -21,7 +21,7 @@ try:
         def _create_record(data):
             for v in data:
                 for i, n in enumerate(columns_name):
-                    columns_data[i].append(v[n])
+                    columns_data[i].append(v.get(n, None))
 
             try:
                 record_batch = pa.RecordBatch.from_arrays(

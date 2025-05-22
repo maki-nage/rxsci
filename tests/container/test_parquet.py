@@ -24,7 +24,7 @@ class NativeSchema(NamedTuple):
 
 
 schema_struct = pa.struct(fields=[
-    ('sa', pa.string()),
+    pa.field('sa', pa.string(), nullable=False),
     ('sb', pa.list_(pa.uint16())),
 ])
 
@@ -35,16 +35,19 @@ schema = pa.schema([
 ])
 
 
+@pytest.mark.parametrize("sa_null", [True, False])
 @pytest.mark.parametrize("open_obj", [True, False])
 @pytest.mark.parametrize("compression, expected_compression", [
     ("NONE", "UNCOMPRESSED"),
     ("snappy", "SNAPPY"),
     ("zstd", "ZSTD"),
 ])
-def test_dump_to_file(compression, expected_compression, open_obj):
+def test_dump_to_file(compression, expected_compression, open_obj, sa_null):
     source = [
-        dict(a=1, b="foo", c=dict(sa="a", sb=[1,2])),
-        dict(a=2, b="bar", c=dict(sa="b", sb=[3,4])),
+        dict(a=1, b="foo", c=dict(sa="a", sb=[1,2])) if sa_null is False else
+        dict(a=1, b="foo", c=dict(sb=[1,2])),
+        # b is optional on schema, omit on this utterrance to check that
+        dict(a=2, c=dict(sa="b", sb=[3,4])),
         dict(a=3, b="biz", c=dict(sa="c", sb=[5,6])),
     ]
 
@@ -56,15 +59,21 @@ def test_dump_to_file(compression, expected_compression, open_obj):
 
     with tempfile.TemporaryDirectory() as d:
         f_name = os.path.join(d, "test.parquet")
-        rx.from_(source).pipe(
+        p = rx.from_(source).pipe(
             rs.container.parquet.dump_to_file(
                 filename=f_name,
                 schema=schema,
                 compression=compression,
                 open_obj=my_open if open_obj else open
             )
-        ).subscribe()
+        )
 
+        if sa_null is True:
+            with pytest.raises(pa.lib.ArrowInvalid):
+                p.subscribe()
+            return
+
+        p.subscribe()
         table = pq.read_table(f_name)
         metadata = pq.read_metadata(f_name).to_dict()
 
@@ -79,7 +88,13 @@ def test_dump_to_file(compression, expected_compression, open_obj):
 def test_load_from_file(open_obj):
     source = [
         dict(a=1, b="foo", c=dict(sa="a", sb=[1,2])),
-        dict(a=2, b="bar", c=dict(sa="b", sb=[3,4])),
+        dict(a=2, c=dict(sa="b", sb=[3,4])),
+        dict(a=3, b="biz", c=dict(sa="c", sb=[5,6])),
+    ]
+
+    expected_result = [
+        dict(a=1, b="foo", c=dict(sa="a", sb=[1,2])),
+        dict(a=2, b=None, c=dict(sa="b", sb=[3,4])),
         dict(a=3, b="biz", c=dict(sa="c", sb=[5,6])),
     ]
 
@@ -119,4 +134,4 @@ def test_load_from_file(open_obj):
 
     assert actual_error == []
     assert actual_completed == [True]
-    assert actual_result == source
+    assert actual_result == expected_result
