@@ -15,10 +15,11 @@ try:
         '''Transpose a batch of items into a batch of column-oriented records.
         '''
         columns_name = schema.names
-        columns_data = [ [] for n in columns_name]
         columns_type = [t for t in schema.types]
 
         def _create_record(data):
+            columns_data = [ [] for n in columns_name]
+
             for v in data:
                 for i, n in enumerate(columns_name):
                     columns_data[i].append(v.get(n, None))
@@ -67,6 +68,7 @@ try:
                         f, schema,
                         compression=compression,
                         encryption_properties=encryption_properties,
+                        #write_statistics=False,
                     )
                 except Exception as e:
                     observer.on_error(e)
