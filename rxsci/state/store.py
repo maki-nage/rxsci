@@ -9,7 +9,8 @@ class Store(object):
             self.states.append(store_factory(
                 name=state.name,
                 data_type=state.data_type,
-                default_value=state.default_value
+                default_value=state.default_value,
+                global_scope=state.global_scope,
             ))
 
     def add_key(self, state, key):
@@ -23,21 +24,6 @@ class Store(object):
 
     def get(self, state, key):
         return self.states[state].get(key)
-
-    def iterate(self, state):
-        return self.states[state].iterate()
-
-    def add_map(self, state, key, map_key):
-        return self.states[state].add_map(key, map_key)
-
-    def del_map(self, state, key, map_key):
-        return self.states[state].del_map(key, map_key)
-
-    def get_map(self, state, key, map_key):
-        return self.states[state].get_map(key, map_key)
-
-    def iterate_map(self, state, key):
-        return self.states[state].iterate_map(key)
 
 
 class StoreManager(object):
@@ -93,26 +79,6 @@ class StoreManager(object):
         """
         store = self.get_store()
         return store.get(state, key)
-
-    def iterate_state(self, state):
-        store = self.get_store()
-        return store.iterate(state)
-
-    def add_map(self, state, key, map_key):
-        store = self.get_store()
-        return store.add_map(state, key, map_key)
-
-    def del_map(self, state, key, map_key):
-        store = self.get_store()
-        return store.del_map(state, key, map_key)
-
-    def get_map(self, state, key, map_key):
-        store = self.get_store()
-        return store.get_map(state, key, map_key)
-
-    def iterate_map(self, state, key):
-        store = self.get_store()
-        return store.iterate_map(state, key)
 
     def on_partitions_revoked(self, revoked):
         return

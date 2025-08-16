@@ -8,22 +8,22 @@ def test_topoplogy():
     state = tp.create_state("foo", int)
     assert state == 0
     assert tp.states == [
-        StateDef("foo-0", int, None),
+        StateDef("foo-0", int, None, global_scope=False),
     ]
 
     state = tp.create_state("foo", float)
     assert state == 1
     assert tp.states == [
-        StateDef("foo-0", int, None),
-        StateDef("foo-1", float, None),
+        StateDef("foo-0", int, None, global_scope=False),
+        StateDef("foo-1", float, None, global_scope=False),
     ]
 
     state = tp.create_state("bar", float, default_value=1.4)
     assert state == 2
     assert tp.states == [
-        StateDef("foo-0", int, None),
-        StateDef("foo-1", float, None),
-        StateDef("bar-0", float, 1.4),
+        StateDef("foo-0", int, None, global_scope=False),
+        StateDef("foo-1", float, None, global_scope=False),
+        StateDef("bar-0", float, 1.4, global_scope=False),
     ]
 
 
@@ -33,7 +33,7 @@ def test_topology_create_mapper():
     state = tp.create_mapper("foo")
     assert state == 0
     assert tp.states == [
-        StateDef("foo-0", 'mapper', None),
+        StateDef("foo-0", 'mapper', None, global_scope=False),
     ]
 
 

@@ -124,7 +124,7 @@ def assert_1(predicate, name="", error=ValueError):
             def on_next(i):
                 nonlocal state
                 if isinstance(i, rs.OnNextMux):
-                    value = i.store.get_state(state, i.key)
+                    value = i.store.get_state(state, i.key[0])
                     if value is not rs.state.markers.STATE_NOTSET:
                         if predicate(value, i.item) is True:
                             observer.on_next(i)
@@ -133,15 +133,15 @@ def assert_1(predicate, name="", error=ValueError):
                     else:
                         observer.on_next(i)
 
-                    i.store.set_state(state, i.key, i.item)
+                    i.store.set_state(state, i.key[0], i.item)
 
                 elif isinstance(i, rs.OnCreateMux):
-                    i.store.add_key(state, i.key)
+                    i.store.add_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif isinstance(i, rs.OnCompletedMux) \
                 or isinstance(i, rs.OnErrorMux):
-                    i.store.del_key(state, i.key)
+                    i.store.del_key(state, i.key[0])
                     observer.on_next(i)
 
                 elif type(i) is rs.state.ProbeStateTopology:

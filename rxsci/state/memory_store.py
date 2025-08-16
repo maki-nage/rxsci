@@ -3,20 +3,6 @@ from array import array
 import rxsci as rs
 
 
-def new_index(next_index, free_slots):
-    if len(free_slots) > 0:
-        index = free_slots.pop()
-        return index, next_index, free_slots
-    else:
-        index = next_index
-        return index, next_index+1, free_slots
-
-
-def del_index(free_slots, index):
-    free_slots.append(index)
-    return free_slots
-
-
 class MemoryStore(object):
     """A Memory state store
 
@@ -31,10 +17,10 @@ class MemoryStore(object):
     This class helps in managing muxed items, and store a state for each topmost
     level of the key (i.e. key[0]).
     """
-    #__slots__ = 'state', 'keys'
+    __slots__ = ['values', 'state', 'default_value', 'data_type', 'create_values']
 
 
-    def __init__(self, name=None, data_type='obj', default_value=None):
+    def __init__(self, name=None, data_type='obj', default_value=None, global_scope=False):
         if data_type is int:
             self.create_values = functools.partial(array, 'q')
         elif data_type == 'uint':
@@ -46,89 +32,49 @@ class MemoryStore(object):
         else:
             self.create_values = list
 
-        self.is_mapper = data_type == 'mapper'
-        if self.is_mapper is True:
-            self.next_index = 0
-            self.free_slots = array('Q')
         self.values = self.create_values()
-        self.state = array('B')    
+        self.state = array('B')
         self.default_value = default_value
         self.data_type = data_type
-        self.keys = []
+        if global_scope is True:
+            self.add_key(0)
 
-    def add_key(self, key):
-        append_count = (key[0]+1) - len(self.state)
+    def add_key(self, key: int):
+        append_count = (key+1) - len(self.state)
         if append_count > 0:
             for _ in range(append_count):
                 self.values.append(0)
                 self.state.append(rs.state.markers.STATE_CLEARED.value())
-                self.keys.append(rs.state.markers.STATE_CLEARED.value())
-        self.state[key[0]] = rs.state.markers.STATE_NOTSET.value()
-        self.keys[key[0]] = key
-        if self.is_mapper:
-            self.set(key, {})
-        elif self.default_value is not None:
+        self.state[key] = rs.state.markers.STATE_NOTSET.value()
+        if self.default_value is not None:
             self.set(key, self.default_value)
 
-    def del_key(self, key):
-        self.state[key[0]] = rs.state.markers.STATE_CLEARED.value()
-        self.keys[key[0]] = rs.state.markers.STATE_CLEARED.value()
-        self.values[key[0]] = 0
+    def del_key(self, key: int):
+        self.state[key] = rs.state.markers.STATE_CLEARED.value()
+        self.values[key] = 0
 
     def clear(self):
         self.values = self.create_values()
         self.state = array('B')
-        self.keys.clear()
 
     def is_cleared(self, key):
-        if self.state[key[0]] == rs.state.markers.STATE_CLEARED.value():
+        if self.state[key] == rs.state.markers.STATE_CLEARED.value():
             return True
         return False
 
-    def get(self, key):
-        #if self.state[key[0]] == rs.state.markers.STATE_CLEARED
-        #    return rs.state.markers.STATE_CLEARED
-        if self.state[key[0]] == rs.state.markers.STATE_NOTSET.value():
+    def get(self, key: int):
+        if self.state[key] == rs.state.markers.STATE_NOTSET.value():
             return rs.state.markers.STATE_NOTSET
-        value = self.values[key[0]]
+        value = self.values[key]
         if self.data_type is bool:
             value = bool(value)
         return value
 
-    def set(self, key, value):
-        self.keys[key[0]] = key
-        self.state[key[0]] = rs.state.markers.STATE_SET.value()
-        self.values[key[0]] = value
+    def set(self, key: int, value):
+        self.state[key] = rs.state.markers.STATE_SET.value()
+        self.values[key] = value
 
-    def is_set(self, key):
-        if self.state[key[0]] == rs.state.markers.STATE_SET.value():
+    def is_set(self, key: int):
+        if self.state[key] == rs.state.markers.STATE_SET.value():
             return True
         return False
-
-    def iterate(self):
-        for index in range(len(self.keys)):
-            if self.state[index] is not rs.state.markers.STATE_CLEARED.value():
-                yield (
-                    self.keys[index],
-                    self.values[index],
-                    self.state[index] == rs.state.markers.STATE_SET.value(),
-                )
-
-    def add_map(self, key, map_key):
-        index, self.next_index, self.free_slots = new_index(self.next_index, self.free_slots)
-        self.values[key[0]][map_key] = index
-        return index
-
-    def get_map(self, key, map_key):
-        if not map_key in self.values[key[0]]:
-            return rs.state.markers.STATE_NOTSET
-        return self.values[key[0]][map_key]
-
-    def del_map(self, key, map_key):
-        if not map_key in self.values[key[0]]:
-            return rs.state.markers.STATE_NOTSET
-        return self.values[key[0]][map_key]
-
-    def iterate_map(self, key):
-        for map_key in self.values[key[0]]:
-            yield map_key
