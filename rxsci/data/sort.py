@@ -11,7 +11,7 @@ def sort(key=lambda i: i, reverse=False):
     True, they are sorted by descending order.
 
     Impementation note: This operator caches all the items of the source
-    observable before sorting them. Si, it can be used only on a batch source,
+    observable before sorting them. So, it can be used only on a batch source,
     and can lead to high memory usage.
 
     The source must be an Observable.
