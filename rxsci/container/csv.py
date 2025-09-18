@@ -125,9 +125,38 @@ def merge_escape_parts(parts, separator, escapechar):
         raise e
 
 
+def merge_doublequote_parts(parts, separator):
+    try:
+        merged_parts = []
+        agg = None
+        qcount = 0
+        for t in parts:
+            if len(t) > 0 and t[0] == '"' and agg is None:
+                qcount = t.count('"')
+                agg = [t]
+            elif agg is not None:
+                agg.append(t)
+                qcount += t.count('"')
+                # ends with quote and not an quote escaping
+                if t[-1] == '"' and qcount % 2 == 0:
+                    merged_parts.append(separator.join(agg))
+                    agg = None
+                    qcount = 0
+            else:
+                merged_parts.append(t)
+
+        return merged_parts
+    except Exception as e:
+        logging.error(e)
+        logging.error(parts)
+        logging.error(merged_parts)
+        raise e
+
+
 def create_line_parser(
     dtype=None, none_values=[],
-    separator=",", escapechar="\\",
+    separator=",",
+    escapechar="\\", doublequote=False,
     ignore_error=False, schema_name='x'
 ):
     ''' creates a parser for csv lines
@@ -138,6 +167,8 @@ def create_line_parser(
             schema where all columns are parsed as strings.
         none_values: [Optional] Values to consider as None values
         separator: [Optional] Token used to separate each columns
+        escapechar: Token used to escape quotes
+        doublequote: When set to True, parse as specified in RFC 4180, escapechar is then ignored.
         ignore_error: [Optional] when set to True, any line that does not
             match the provided number of columns raise an error an stop
             the parsing. When set to False, error lines are skipped.
@@ -150,7 +181,10 @@ def create_line_parser(
         try:
             parts = line.split(separator)
             if len(parts) != columns_len:
-                parts = merge_escape_parts(parts, separator, escapechar)
+                if doublequote:
+                    parts = merge_doublequote_parts(parts, separator)
+                else:
+                    parts = merge_escape_parts(parts, separator, escapechar)
                 if len(parts) != columns_len:
                     error = "invalid number of columns: expected {}, found {} on: {}".format(
                         columns_len, len(parts), line)
@@ -159,8 +193,11 @@ def create_line_parser(
             for index, i in enumerate(parts):
                 if len(i) > 0 and i[0] == '"' and i[-1] == '"':
                     i = i[1:-1]
-                    i = i.replace(f'{escapechar}{escapechar}', escapechar)
-                    i = i.replace(f'{escapechar}"', '"')
+                    if doublequote:
+                        i = i.replace(f'""', '"')
+                    elif escapechar:
+                        i = i.replace(f'{escapechar}{escapechar}', escapechar)
+                        i = i.replace(f'{escapechar}"', '"')
                 if i in none_values:
                     parts[index] = None
                 else:
@@ -268,7 +305,7 @@ def load_from_file(
     )
 
 
-def dump(header=True, separator=",", escapechar="\\", newline='\n'):
+def dump(header=True, separator=",", escapechar="\\", doublequote=False, newline='\n'):
     ''' dumps an observable to csv.
 
     The source must be an Observable.
@@ -276,6 +313,8 @@ def dump(header=True, separator=",", escapechar="\\", newline='\n'):
     Args:
         header: [Optional] indicates whether a header line must be added.
         separator: [Optional] Token used to separate each columns.
+        escapechar: Token used to escape quotes
+        doublequote: When set to True, dump as specified in RFC 4180, escapechar is then ignored.
         newline: [Optional] Character(s) used for end of line.
 
     Returns:
@@ -299,9 +338,12 @@ def dump(header=True, separator=",", escapechar="\\", newline='\n'):
                     if type(f) not in [int, float, bool, str, type(None)]:
                         f = str(f)
                     if type(f) is str:
-                        f = f.replace(escapechar, f'{escapechar}{escapechar}')
-                        f = f.replace('"', f'{escapechar}"')
-                        f = '"{}"'.format(f)
+                        if doublequote:
+                            f = f.replace('"', f'""')
+                        elif escapechar:
+                            f = f.replace(escapechar, f'{escapechar}{escapechar}')
+                            f = f.replace('"', f'{escapechar}"')
+                        f = f'"{f}"'
                     elif f is None:
                         f = ''
                     else:
@@ -326,6 +368,7 @@ def dump(header=True, separator=",", escapechar="\\", newline='\n'):
 def dump_to_file(
     filename, header=True,
     separator=",", escapechar="\\",
+    doublequote=False,
     newline='\n', encoding=None,
     open_obj=open,
 ):
@@ -353,7 +396,8 @@ def dump_to_file(
         return source.pipe(
             dump(
                 header=header,
-                separator=separator, escapechar=escapechar,
+                separator=separator,
+                escapechar=escapechar, doublequote=doublequote,
                 newline=newline
             ),
             ops.map(lambda i: i.encode(encoding) if encoding is not None else i),

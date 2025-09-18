@@ -190,7 +190,7 @@ def test_load_quoted_with_escapechar():
     )
 
     actual_data = process(rx.from_([
-        'index,f1,f2',
+        'index,f1',
         '1,"the, quick"',
         '2,"^"brown fox^""',
         '3,"a^\"$#ܟ<a;.b^F ^M^E^Aa^Bov^D^^^\"[^BƆm^A^Q^]#lx"',
@@ -208,6 +208,42 @@ def test_load_quoted_with_escapechar():
     assert actual_data[4] == (5, '"a",b')
     assert actual_data[5] == (6, ',ab')
     assert actual_data[6] == (7, ',')
+
+
+def test_load_quoted_with_double_quote_escapechar():
+    # This is the default escaping in RFC 4180
+    parser = csv.create_line_parser(
+        dtype=[
+            ("foo", "int"),
+            ("bar", "str"),
+        ],
+        escapechar='""',
+        doublequote=True,
+    )
+
+    actual_data = process(rx.from_([
+        'index,f1',
+        '1,"the, quick"',
+        '2,"""brown fox"""',
+        '3,""',
+        '4,"""a"",b"',
+        '5,",ab"',
+        '6,","',
+        '7,"size is 10"""',
+        '8,"size is 10"" and more"',
+        '9,"one,two"",3"'
+    ]), [csv.load(parser)])
+
+    assert len(actual_data) == 9
+    assert actual_data[0] == (1, 'the, quick')
+    assert actual_data[1] == (2, '"brown fox"')
+    assert actual_data[2] == (3, '')
+    assert actual_data[3] == (4, '"a",b')
+    assert actual_data[4] == (5, ',ab')
+    assert actual_data[5] == (6, ',')
+    assert actual_data[6] == (7, 'size is 10"')
+    assert actual_data[7] == (8, 'size is 10" and more')
+    assert actual_data[8] == (9, 'one,two",3')
 
 
 def test_load_error():
@@ -407,6 +443,39 @@ def test_dump_with_quote_and_escapechar():
     )
 
     assert actual_data == expected_data
+
+
+def test_dump_with_quote_and_doublequoute_escapechar():
+    x = namedtuple('x', ['foo', 'bar', 'buz'])
+    source = [
+        x(foo='a "is" good', bar=1, buz=True),
+        x(foo='"b"', bar=2, buz=False),
+        x(foo='a "b"', bar=42, buz=False),
+        x(foo='"b^"', bar=2, buz=False),
+        x(foo='size=10"', bar=2, buz=False),
+        x(foo='size=10" and more', bar=2, buz=False),
+        x(foo='one,two",3', bar=2, buz=False),
+    ]
+    expected_data = [
+        'foo,bar,buz\n',
+        '"a ""is"" good",1,True\n',
+        '"""b""",2,False\n',
+        '"a ""b""",42,False\n',
+        '"""b^""",2,False\n',
+        '"size=10""",2,False\n',
+        '"size=10"" and more",2,False\n',
+        '"one,two"",3",2,False\n',
+    ]
+
+    actual_data = []
+    rx.from_(source).pipe(
+        csv.dump(doublequote=True),
+    ).subscribe(
+        on_next=actual_data.append
+    )
+
+    assert actual_data == expected_data
+
 
 def test_dump_with_cr():
     x = namedtuple('x', ['foo', 'bar', 'buz'])
